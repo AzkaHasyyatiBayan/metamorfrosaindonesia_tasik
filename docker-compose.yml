@@ -1,0 +1,9 @@
+services:
+  metamorfrosaindonesia_tasik:
+    build: .
+    container_name: metamorfrosaindonesia_tasik
+    ports:
+    - "3000:3000"
+    env_file:
+    - .env.local
+    restart: unless-stopped
