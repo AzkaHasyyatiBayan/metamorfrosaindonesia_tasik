@@ -1,30 +1,39 @@
-// app/layout.tsx
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import AuthProvider from "./components/AuthProvider";
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import Footer from './components/Footer'
+import Navbar from './components/Navigation'
 
-const inter = Inter({
-  subsets: ["latin"],
-});
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
-  title: "Metamorfrosa Indonesia Tasikmalaya",
-  description: "Komunitas inklusif untuk penyandang disabilitas di Tasikmalaya",
-};
+  title: 'Metamorfosa Community - Wadah Belajar Bahasa Isyarat',
+  description: 'Komunitas Metamorfosa Indonesia - Berbagi, belajar, dan tumbuh bersama melalui bahasa isyarat',
+  keywords: 'bahasa isyarat, komunitas, event, inklusif, metamorfosa',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="id">
-      <body className={inter.className}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+    <html lang="id" className="scroll-smooth">
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+      </head>
+      <body className={`${inter.className} antialiased`}>
+        <div className="min-h-screen flex flex-col bg-white">
+          <Navbar />
+          <main className="flex-1 w-full">
+            {children}
+          </main>
+          <Footer />
+        </div>
       </body>
     </html>
-  );
+  )
 }

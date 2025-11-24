@@ -1,4 +1,3 @@
-// app/types/database.types.ts
 export type UserRole = 'ADMIN' | 'USER' | 'VOLUNTEER';
 export type RegistrationType = 'PARTICIPANT' | 'VOLUNTEER';
 export type RegistrationStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED';
