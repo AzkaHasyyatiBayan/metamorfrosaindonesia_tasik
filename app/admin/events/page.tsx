@@ -1,92 +1,104 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabase'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '../../components/AuthProvider'
 
-type EventWithRegistrations = {
+import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
+import Image from 'next/image'
+
+// PERBAIKAN: Update Event type dengan registrations
+type Event = {
   id: string
   title: string
+  description: string
   date_time: string
   location: string
-  is_active: boolean
-  registrations: { count: number }[]
   category: string[]
-  max_participants: number | null
+  max_participants?: number
+  image_url?: string
+  is_active: boolean
+  creator_id: string
+  created_at: string
+  updated_at: string
+  participants_count?: number
+  // PERBAIKAN: Tambahkan type untuk registrations
+  registrations?: Array<{ count: number }>
 }
 
-type StatusFilter = 'all' | 'active' | 'inactive'
+type EventFormData = {
+  title: string
+  description: string
+  date_time: string
+  location: string
+  category: string[]
+  max_participants: string
+  image_url: string
+  is_active: boolean
+}
 
-// SVG Icons
-const CalendarIcon = () => (
+const ACCESSIBILITY_CATEGORIES = [
+  'tuna_rungu',
+  'tuna_wicara', 
+  'tuna_netra',
+  'disabilitas_fisik',
+  'ramah_disabilitas',
+  'umum'
+]
+
+// SVG Icon untuk placeholder gambar
+const EventPlaceholderIcon = () => (
+  <svg 
+    className="w-12 h-12 text-gray-400" 
+    fill="none" 
+    stroke="currentColor" 
+    viewBox="0 0 24 24"
+  >
+    <path 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      strokeWidth={1.5} 
+      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" 
+    />
+  </svg>
+)
+
+// PERBAIKAN: XIcon untuk error display
+const XIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </svg>
 )
 
-const LocationIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
-
-const UsersIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-  </svg>
-)
-
-const EditIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-  </svg>
-)
-
-const DeleteIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-  </svg>
-)
-
-const PlusIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-  </svg>
-)
-
-const AccessibilityIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
-  </svg>
-)
-
-export default function AdminEvents() {
-  const [events, setEvents] = useState<EventWithRegistrations[]>([])
+export default function AdminEventsPage() {
+  const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const { user, userProfile } = useAuth()
-  const router = useRouter()
+  const [showForm, setShowForm] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [saving, setSaving] = useState(false)
+  // PERBAIKAN: Tambahkan state error
+  const [error, setError] = useState<string | null>(null)
+  
+  const [formData, setFormData] = useState<EventFormData>({
+    title: '',
+    description: '',
+    date_time: '',
+    location: '',
+    category: [],
+    max_participants: '',
+    image_url: '',
+    is_active: true
+  })
 
   useEffect(() => {
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
+    loadEvents()
+  }, [])
 
-    if (userProfile && userProfile.role !== 'ADMIN') {
-      router.push('/')
-      return
-    }
-
-    fetchEvents()
-  }, [user, userProfile, router])
-
-  const fetchEvents = async () => {
+  // PERBAIKAN LENGKAP: Ganti fungsi loadEvents
+  const loadEvents = async () => {
     try {
-      const { data, error } = await supabase
+      setLoading(true)
+      setError(null)
+      
+      // PERBAIKAN: Gunakan 'registrations' bukan 'event_participants'
+      const { data: events, error } = await supabase
         .from('events')
         .select(`
           *,
@@ -94,29 +106,132 @@ export default function AdminEvents() {
         `)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setEvents(data || [])
+      if (error) {
+        console.error('Error fetching events:', error)
+        setError('Gagal memuat data events: ' + error.message)
+        return
+      }
+
+      // Process data untuk include participants count
+      const processedEvents = events.map(event => ({
+        ...event,
+        participants_count: event.registrations?.[0]?.count || 0
+      })) as Event[]
+
+      setEvents(processedEvents)
     } catch (error) {
-      console.error('Error fetching events:', error)
+      console.error('Error:', error)
+      setError('Terjadi kesalahan saat memuat events')
     } finally {
       setLoading(false)
     }
   }
 
-  const toggleEventActive = async (eventId: string, currentStatus: boolean) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     try {
+      setSaving(true)
+      setError(null)
+
+      const eventData = {
+        title: formData.title,
+        description: formData.description,
+        date_time: formData.date_time,
+        location: formData.location,
+        category: formData.category,
+        max_participants: formData.max_participants ? parseInt(formData.max_participants) : null,
+        image_url: formData.image_url || null,
+        is_active: formData.is_active,
+        updated_at: new Date().toISOString()
+      }
+
+      if (editingEvent) {
+        // Update existing event
+        const { error } = await supabase
+          .from('events')
+          .update(eventData)
+          .eq('id', editingEvent.id)
+
+        if (error) throw error
+      } else {
+        // Create new event
+        const { error } = await supabase
+          .from('events')
+          .insert([{
+            ...eventData,
+            creator_id: (await supabase.auth.getUser()).data.user?.id,
+            created_at: new Date().toISOString()
+          }])
+
+        if (error) throw error
+      }
+
+      // Reset form dan reload data
+      resetForm()
+      loadEvents()
+      
+    } catch (error) {
+      console.error('Error saving event:', error)
+      setError('Error menyimpan event: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      date_time: '',
+      location: '',
+      category: [],
+      max_participants: '',
+      image_url: '',
+      is_active: true
+    })
+    setEditingEvent(null)
+    setShowForm(false)
+    setError(null)
+  }
+
+  const editEvent = (event: Event) => {
+    setFormData({
+      title: event.title,
+      description: event.description,
+      date_time: event.date_time.slice(0, 16), // Format untuk datetime-local
+      location: event.location,
+      category: event.category || [],
+      max_participants: event.max_participants?.toString() || '',
+      image_url: event.image_url || '',
+      is_active: event.is_active
+    })
+    setEditingEvent(event)
+    setShowForm(true)
+    setError(null)
+  }
+
+  const toggleEventStatus = async (eventId: string, currentStatus: boolean) => {
+    try {
+      setError(null)
       const { error } = await supabase
         .from('events')
-        .update({ is_active: !currentStatus })
+        .update({ 
+          is_active: !currentStatus,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', eventId)
 
       if (error) throw error
 
+      // Update local state
       setEvents(events.map(event => 
-        event.id === eventId ? { ...event, is_active: !currentStatus } : event
+        event.id === eventId 
+          ? { ...event, is_active: !currentStatus }
+          : event
       ))
     } catch (error) {
-      console.error('Error updating event:', error)
+      console.error('Error updating event status:', error)
+      setError('Error mengubah status event')
     }
   }
 
@@ -124,6 +239,7 @@ export default function AdminEvents() {
     if (!confirm('Apakah Anda yakin ingin menghapus event ini?')) return
 
     try {
+      setError(null)
       const { error } = await supabase
         .from('events')
         .delete()
@@ -131,268 +247,374 @@ export default function AdminEvents() {
 
       if (error) throw error
 
+      // Update local state
       setEvents(events.filter(event => event.id !== eventId))
     } catch (error) {
       console.error('Error deleting event:', error)
+      setError('Error menghapus event')
     }
   }
 
-  // Filter events based on search and status
-  const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.location.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'active' && event.is_active) ||
-                         (statusFilter === 'inactive' && !event.is_active)
+  const handleCategoryChange = (category: string) => {
+    setFormData(prev => ({
+      ...prev,
+      category: prev.category.includes(category)
+        ? prev.category.filter(c => c !== category)
+        : [...prev.category, category]
+    }))
+  }
+
+  // Komponen untuk menampilkan gambar event
+  const EventImage = ({ event }: { event: Event }) => {
+    if (event.image_url) {
+      return (
+        <div className="h-12 w-12 flex-shrink-0 relative">
+          <Image
+            src={event.image_url}
+            alt={event.title}
+            fill
+            className="rounded-lg object-cover"
+            sizes="48px"
+          />
+        </div>
+      )
+    }
     
-    return matchesSearch && matchesStatus
-  })
-
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      'SIGN_LANGUAGE': 'bg-blue-100 text-blue-800',
-      'WHEELCHAIR_ACCESS': 'bg-green-100 text-green-800',
-      'BRAILLE': 'bg-purple-100 text-purple-800',
-      'AUDIO_DESCRIPTION': 'bg-orange-100 text-orange-800',
-      'TACTILE': 'bg-indigo-100 text-indigo-800'
-    }
-    return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800'
-  }
-
-  const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setStatusFilter(e.target.value as StatusFilter)
-  }
-
-  if (!user || (userProfile && userProfile.role !== 'ADMIN')) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center bg-white rounded-2xl shadow-lg p-8 max-w-md mx-4 border border-gray-200">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Akses Ditolak</h2>
-          <p className="text-gray-600 mb-6">Anda tidak memiliki akses ke halaman admin.</p>
-          <button 
-            onClick={() => router.push('/')}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-          >
-            Kembali ke Beranda
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-lg text-gray-600">Memuat event...</p>
-        </div>
+      <div className="h-12 w-12 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+        <EventPlaceholderIcon />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div className="mb-4 lg:mb-0">
-              <h1 className="text-3xl font-bold text-gray-900">Kelola Event</h1>
-              <p className="text-gray-600 mt-1">
-                Kelola semua event dan pendaftaran peserta
-              </p>
-            </div>
-            <Link 
-              href="/admin/events/create"
-              className="inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-md"
-            >
-              <PlusIcon />
-              <span className="ml-2">Buat Event Baru</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Filters */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cari Event
-              </label>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Cari berdasarkan judul atau lokasi..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Filter Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={handleStatusFilterChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              >
-                <option value="all">Semua Status</option>
-                <option value="active">Aktif</option>
-                <option value="inactive">Nonaktif</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Events Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredEvents.map((event) => (
-            <div key={event.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 hover:scale-105 group">
-              <div className="p-6">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 text-lg group-hover:text-red-600 transition-colors line-clamp-2">
-                      {event.title}
-                    </h3>
-                    <div className="flex items-center mt-2 space-x-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        event.is_active 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {event.is_active ? '🟢 Aktif' : '🔴 Nonaktif'}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {event.registrations[0]?.count || 0} pendaftar
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Details */}
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center text-gray-600">
-                    <CalendarIcon />
-                    <span className="ml-2 text-sm">
-                      {new Date(event.date_time).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <LocationIcon />
-                    <span className="ml-2 text-sm line-clamp-1">{event.location}</span>
-                  </div>
-                  {event.max_participants && (
-                    <div className="flex items-center text-gray-600">
-                      <UsersIcon />
-                      <span className="ml-2 text-sm">
-                        Maks. {event.max_participants} peserta
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Accessibility Categories */}
-                {event.category && event.category.length > 0 && (
-                  <div className="mb-4">
-                    <div className="flex items-center text-gray-700 mb-2">
-                      <AccessibilityIcon />
-                      <span className="ml-1 text-sm font-medium">Aksesibilitas</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {event.category.slice(0, 3).map((cat) => (
-                        <span 
-                          key={cat}
-                          className={`px-2 py-1 rounded-lg text-xs ${getCategoryColor(cat)}`}
-                        >
-                          {cat.replace('_', ' ')}
-                        </span>
-                      ))}
-                      {event.category.length > 3 && (
-                        <span className="px-2 py-1 rounded-lg text-xs bg-gray-100 text-gray-600">
-                          +{event.category.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => toggleEventActive(event.id, event.is_active)}
-                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                        event.is_active
-                          ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                          : 'bg-green-500 hover:bg-green-600 text-white'
-                      }`}
-                    >
-                      {event.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                    </button>
-                    <Link 
-                      href={`/admin/events/${event.id}/edit`}
-                      className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-                    >
-                      <EditIcon />
-                      <span className="ml-1">Edit</span>
-                    </Link>
-                  </div>
-                  <button
-                    onClick={() => deleteEvent(event.id)}
-                    className="flex items-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-                  >
-                    <DeleteIcon />
-                    <span className="ml-1">Hapus</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredEvents.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-2xl shadow-lg border border-gray-200">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CalendarIcon />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {events.length === 0 ? 'Belum ada event' : 'Event tidak ditemukan'}
-            </h3>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              {events.length === 0 
-                ? 'Mulai dengan membuat event pertama Anda untuk komunitas'
-                : 'Coba ubah kata kunci pencarian atau filter status'
-              }
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Kelola Event</h1>
+            <p className="text-gray-600 mt-2">
+              Kelola semua event - {events.length} event ditemukan
             </p>
-            {events.length === 0 && (
-              <Link 
-                href="/admin/events/create"
-                className="inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
-              >
-                <PlusIcon />
-                <span className="ml-2">Buat Event Pertama</span>
-              </Link>
-            )}
+          </div>
+          <button
+            onClick={() => {
+              resetForm()
+              setShowForm(true)
+            }}
+            className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+          >
+            + Buat Event Baru
+          </button>
+        </div>
+
+        {/* PERBAIKAN: Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="flex items-center">
+              <XIcon />
+              <span className="ml-2">{error}</span>
+            </div>
+            <button 
+              onClick={loadEvents}
+              className="mt-2 text-red-600 hover:text-red-800 text-sm font-medium"
+            >
+              Coba Lagi
+            </button>
           </div>
         )}
+
+        {/* Create/Edit Form Modal */}
+        {showForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {editingEvent ? 'Edit Event' : 'Buat Event Baru'}
+                  </h2>
+                  <button
+                    onClick={resetForm}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Judul Event *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.title}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Deskripsi *
+                    </label>
+                    <textarea
+                      required
+                      rows={4}
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tanggal & Waktu *
+                      </label>
+                      <input
+                        type="datetime-local"
+                        required
+                        value={formData.date_time}
+                        onChange={(e) => setFormData(prev => ({ ...prev, date_time: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Lokasi *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.location}
+                        onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Kategori Aksesibilitas *
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {ACCESSIBILITY_CATEGORIES.map((category) => (
+                        <label key={category} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.category.includes(category)}
+                            onChange={() => handleCategoryChange(category)}
+                            className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                          />
+                          <span className="text-sm text-gray-700 capitalize">
+                            {category.replace('_', ' ')}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Maksimal Peserta
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.max_participants}
+                        onChange={(e) => setFormData(prev => ({ ...prev, max_participants: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                        placeholder="Kosongkan untuk tidak terbatas"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        URL Gambar
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.image_url}
+                        onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_active}
+                        onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
+                        className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                      />
+                      <span className="text-sm text-gray-700">Event Aktif</span>
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end space-x-3 pt-4 border-t">
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                    >
+                      {saving ? 'Menyimpan...' : editingEvent ? 'Update Event' : 'Buat Event'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Events Table dengan Laporan */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+              <p className="text-gray-600 mt-4">Memuat event...</p>
+            </div>
+          ) : events.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <EventPlaceholderIcon />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada event</h3>
+              <p className="text-gray-500 mb-4">Mulai dengan membuat event pertama Anda</p>
+              <button
+                onClick={() => {
+                  resetForm()
+                  setShowForm(true)
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+              >
+                Buat Event Pertama
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Event
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tanggal
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Peserta
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Aksi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {events.map((event) => (
+                    <tr key={event.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <EventImage event={event} />
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {event.title}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {event.location}
+                            </div>
+                            <div className="text-xs text-gray-400 mt-1">
+                              {event.category.join(', ')}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div>
+                          {new Date(event.date_time).toLocaleDateString('id-ID', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </div>
+                        <div className="text-gray-500 text-xs">
+                          {new Date(event.date_time).toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="text-center">
+                          <div className="font-semibold">{event.participants_count || 0}</div>
+                          <div className="text-xs text-gray-500">
+                            {event.max_participants ? `/${event.max_participants}` : '∞'}
+                          </div>
+                        </div>
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            event.is_active
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {event.is_active ? 'Aktif' : 'Nonaktif'}
+                        </span>
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button
+                          onClick={() => editEvent(event)}
+                          className="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-blue-50"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => toggleEventStatus(event.id, event.is_active)}
+                          className={`px-2 py-1 rounded ${
+                            event.is_active
+                              ? 'text-orange-600 hover:text-orange-900 hover:bg-orange-50'
+                              : 'text-green-600 hover:text-green-900 hover:bg-green-50'
+                          }`}
+                        >
+                          {event.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                        </button>
+                        <button
+                          onClick={() => deleteEvent(event.id)}
+                          className="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50"
+                        >
+                          Hapus
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

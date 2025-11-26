@@ -40,7 +40,7 @@ export default function AnalyticsPage() {
       return
     }
 
-    if (userProfile && userProfile.role !== 'ADMIN') {
+    if (userProfile && userProfile.role !== 'admin') { // PERBAIKAN: 'admin' bukan 'ADMIN'
       router.push('/')
       return
     }
@@ -52,7 +52,7 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       const { data, error } = await supabase
-        .from('admin_dashboard_stats')
+        .from('admin_dashboard_stats') // PERBAIKAN: view yang sudah dibuat
         .select('*')
         .single()
 
@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
   const fetchEventStatistics = async () => {
     try {
       const { data, error } = await supabase
-        .from('event_statistics')
+        .from('event_statistics') // PERBAIKAN: view yang sudah dibuat
         .select('*')
         .order('date_time', { ascending: false })
 
@@ -79,11 +79,17 @@ export default function AnalyticsPage() {
     }
   }
 
-  if (!user || (userProfile && userProfile.role !== 'ADMIN')) {
+  if (!user || (userProfile && userProfile.role !== 'admin')) { // PERBAIKAN: 'admin' bukan 'ADMIN'
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg text-gray-600">Unauthorized access</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Akses Ditolak</h2>
+          <p className="text-gray-600">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
         </div>
       </div>
     )
@@ -91,87 +97,221 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-lg text-gray-600">Loading analytics...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Memuat analitik...</p>
         </div>
       </div>
     )
   }
 
+  const StatCard = ({ title, value, color, icon }: { title: string; value: number; color: string; icon: React.ReactNode }) => (
+    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition-all duration-300">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className={`text-3xl font-bold mt-2 text-${color}-600`}>{value}</p>
+        </div>
+        <div className={`w-12 h-12 bg-${color}-100 rounded-xl flex items-center justify-center`}>
+          {icon}
+        </div>
+      </div>
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Analytics & Statistik</h1>
-        
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Analitik & Statistik</h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Pantau performa dan aktivitas komunitas dalam satu dashboard
+          </p>
+        </div>
+
+        {/* Main Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-2">Total Pengguna</h3>
-            <p className="text-2xl font-bold text-blue-600">{stats?.total_users || 0}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-2">Event Aktif</h3>
-            <p className="text-2xl font-bold text-green-600">{stats?.active_events || 0}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-2">Total Pendaftaran</h3>
-            <p className="text-2xl font-bold text-purple-600">{stats?.total_registrations || 0}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-2">Relawan</h3>
-            <p className="text-2xl font-bold text-orange-600">{stats?.total_volunteers || 0}</p>
-          </div>
+          <StatCard 
+            title="Total Pengguna" 
+            value={stats?.total_users || 0} 
+            color="blue"
+            icon={
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+            }
+          />
+          <StatCard 
+            title="Event Aktif" 
+            value={stats?.active_events || 0} 
+            color="green"
+            icon={
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            }
+          />
+          <StatCard 
+            title="Total Pendaftaran" 
+            value={stats?.total_registrations || 0} 
+            color="purple"
+            icon={
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            }
+          />
+          <StatCard 
+            title="Relawan" 
+            value={stats?.total_volunteers || 0} 
+            color="orange"
+            icon={
+              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            }
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-2">Event Mendatang</h3>
-            <p className="text-2xl font-bold text-indigo-600">{stats?.upcoming_events || 0}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-2">Pendaftaran Bulan Ini</h3>
-            <p className="text-2xl font-bold text-teal-600">{stats?.monthly_registrations || 0}</p>
-          </div>
+        {/* Secondary Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard 
+            title="Event Mendatang" 
+            value={stats?.upcoming_events || 0} 
+            color="indigo"
+            icon={
+              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatCard 
+            title="Pendaftaran Bulan Ini" 
+            value={stats?.monthly_registrations || 0} 
+            color="teal"
+            icon={
+              <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            }
+          />
+          <StatCard 
+            title="Dokumentasi" 
+            value={stats?.total_galleries || 0} 
+            color="pink"
+            icon={
+              <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            }
+          />
+          <StatCard 
+            title="Pending Review" 
+            value={stats?.pending_registrations || 0} 
+            color="yellow"
+            icon={
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-6">Statistik Event</h2>
+        {/* Event Statistics Table */}
+        <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Statistik Event</h2>
+            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              {eventStats.length} Event
+            </span>
+          </div>
+          
           <div className="overflow-x-auto">
-            <table className="min-w-full">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left">Event</th>
-                  <th className="px-6 py-3 text-left">Tanggal</th>
-                  <th className="px-6 py-3 text-left">Total Pendaftar</th>
-                  <th className="px-6 py-3 text-left">Peserta Dikonfirmasi</th>
-                  <th className="px-6 py-3 text-left">Relawan</th>
-                  <th className="px-6 py-3 text-left">Tingkat Partisipasi</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Event
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Tanggal
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Total Pendaftar
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Dikonfirmasi
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Relawan
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Tingkat Partisipasi
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {eventStats.map((event) => (
-                  <tr key={event.id}>
-                    <td className="px-6 py-4">{event.title}</td>
+                  <tr key={event.id} className="hover:bg-gray-50 transition-colors duration-200">
                     <td className="px-6 py-4">
-                      {new Date(event.date_time).toLocaleDateString('id-ID')}
+                      <div className="font-medium text-gray-900">{event.title}</div>
+                      <div className="text-sm text-gray-500">{event.location}</div>
                     </td>
-                    <td className="px-6 py-4">{event.total_registrations}</td>
-                    <td className="px-6 py-4">{event.confirmed_participants}</td>
-                    <td className="px-6 py-4">{event.volunteer_registrations}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {new Date(event.date_time).toLocaleDateString('id-ID', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </td>
                     <td className="px-6 py-4">
-                      {event.participation_rate ? `${event.participation_rate}%` : 'N/A'}
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {event.total_registrations}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        {event.confirmed_participants}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        {event.volunteer_registrations}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-red-600 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(event.participation_rate, 100)}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">
+                          {event.participation_rate ? `${event.participation_rate}%` : '0%'}
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
-            {eventStats.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Belum ada data statistik event.</p>
-              </div>
-            )}
           </div>
+
+          {eventStats.length === 0 && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada data statistik</h3>
+              <p className="text-gray-500">Data statistik akan muncul setelah ada event dengan pendaftaran.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
