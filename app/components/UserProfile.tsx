@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../components/AuthProvider'
@@ -21,7 +21,18 @@ interface Registration {
   created_at: string
 }
 
-// SVG Icons
+interface UserProfileWithBio {
+  id: string
+  email: string
+  name: string
+  role: 'ADMIN' | 'USER' | 'VOLUNTEER'
+  phone?: string
+  address?: string
+  interests?: string[]
+  location?: string
+  bio?: string
+}
+
 const UserIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -98,25 +109,7 @@ export default function UserProfile() {
     bio: ''
   })
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-
-    if (userProfile) {
-      setFormData({
-        name: userProfile.name || '',
-        email: user.email || '',
-        phone: userProfile.phone || '',
-        bio: userProfile.bio || ''
-      })
-    }
-
-    fetchRegistrations()
-  }, [user, userProfile, router])
-
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('registrations')
@@ -134,7 +127,26 @@ export default function UserProfile() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+
+    if (userProfile) {
+      const profileWithBio = userProfile as UserProfileWithBio
+      setFormData({
+        name: userProfile.name || '',
+        email: user?.email || '',
+        phone: userProfile.phone || '',
+        bio: profileWithBio.bio || ''
+      })
+    }
+
+    fetchRegistrations()
+  }, [user, userProfile, router, fetchRegistrations])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -149,7 +161,7 @@ export default function UserProfile() {
         name: formData.name,
         phone: formData.phone,
         bio: formData.bio
-      })
+      } as Partial<UserProfileWithBio>)
 
       setMessage({
         type: 'success',
@@ -177,7 +189,6 @@ export default function UserProfile() {
 
   const pendingRegistrations = registrations.filter(reg => reg.status === 'pending')
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -189,7 +200,6 @@ export default function UserProfile() {
     )
   }
 
-  // Not logged in
   if (!user) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -212,7 +222,6 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -232,25 +241,21 @@ export default function UserProfile() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-6">
-              {/* User Info */}
               <div className="text-center mb-6">
                 <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <UserIcon />
                 </div>
                 <h3 className="font-bold text-gray-900 text-lg">{userProfile?.name || 'User'}</h3>
-                <p className="text-gray-600 text-sm">{user.email}</p>
+                <p className="text-gray-600 text-sm">{user?.email}</p>
                 <span className="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium mt-2">
                   Member
                 </span>
               </div>
 
-              {/* Navigation */}
               <nav className="space-y-2">
                 <button
                   onClick={() => setActiveTab('dashboard')}
@@ -289,9 +294,7 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Message Alert */}
             {message && (
               <div className={`mb-6 p-4 rounded-xl ${
                 message.type === 'success' 
@@ -309,13 +312,11 @@ export default function UserProfile() {
               </div>
             )}
 
-            {/* Dashboard Tab */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Dashboard Saya</h2>
                   
-                  {/* Stats Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-red-50 rounded-2xl p-6 text-center">
                       <div className="text-2xl font-bold text-red-600 mb-2">
@@ -337,7 +338,6 @@ export default function UserProfile() {
                     </div>
                   </div>
 
-                  {/* Quick Actions */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button
                       onClick={() => router.push('/events')}
@@ -354,7 +354,6 @@ export default function UserProfile() {
                   </div>
                 </div>
 
-                {/* Upcoming Events */}
                 {upcomingEvents.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Event Mendatang</h3>
@@ -387,7 +386,6 @@ export default function UserProfile() {
               </div>
             )}
 
-            {/* Profile Tab */}
             {activeTab === 'profile' && (
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Profil</h2>
@@ -480,10 +478,8 @@ export default function UserProfile() {
               </div>
             )}
 
-            {/* History Tab */}
             {activeTab === 'history' && (
               <div className="space-y-6">
-                {/* Pending Registrations */}
                 {pendingRegistrations.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Menunggu Konfirmasi</h3>
@@ -515,7 +511,6 @@ export default function UserProfile() {
                   </div>
                 )}
 
-                {/* Upcoming Events */}
                 {upcomingEvents.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Event Mendatang</h3>
@@ -547,7 +542,6 @@ export default function UserProfile() {
                   </div>
                 )}
 
-                {/* Past Events */}
                 {pastEvents.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Event Selesai</h3>
@@ -578,7 +572,6 @@ export default function UserProfile() {
                   </div>
                 )}
 
-                {/* Empty State */}
                 {registrations.length === 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
                     <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

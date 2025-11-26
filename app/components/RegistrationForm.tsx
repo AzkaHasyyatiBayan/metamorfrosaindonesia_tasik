@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthProvider'
 import { useRouter } from 'next/navigation'
+import { Icons } from './Icons'
 
 type RegistrationType = 'PARTICIPANT' | 'VOLUNTEER'
 
@@ -10,30 +11,13 @@ interface RegistrationFormProps {
   eventId: string
 }
 
-const UserIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-)
-
-const VolunteerIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
-
-const NotesIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-  </svg>
-)
-
 export default function RegistrationForm({ eventId }: RegistrationFormProps) {
   const { user } = useAuth()
   const [type, setType] = useState<RegistrationType>('PARTICIPANT')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [isSuccess, setIsSuccess] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,6 +30,7 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
 
     setLoading(true)
     setMessage('')
+    setIsSuccess(false)
 
     try {
       const { error } = await supabase
@@ -62,11 +47,17 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
 
       if (error) throw error
 
+      setIsSuccess(true)
       setMessage(`Pendaftaran sebagai ${type === 'PARTICIPANT' ? 'Peserta' : 'Relawan'} berhasil! Tunggu konfirmasi admin.`)
       setNotes('')
+      setType('PARTICIPANT')
       
     } catch (error) {
-      setMessage(`Terjadi kesalahan: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      if (error instanceof Error && error.message.includes('maximum capacity')) {
+        setMessage('Mohon maaf, kuota peserta untuk event ini sudah penuh.')
+      } else {
+        setMessage(`Terjadi kesalahan: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
     } finally {
       setLoading(false)
     }
@@ -76,7 +67,7 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
     return (
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-center">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <UserIcon />
+          <Icons.User />
         </div>
         <h3 className="text-xl font-semibold text-gray-900 mb-3">Login Diperlukan</h3>
         <p className="text-gray-600 mb-6">Silakan login untuk mendaftar event ini</p>
@@ -98,7 +89,6 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Registration Type */}
         <div>
           <label className="text-sm font-semibold text-gray-900 mb-4">
             Saya ingin mendaftar sebagai:
@@ -107,6 +97,7 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
             <button
               type="button"
               onClick={() => setType('PARTICIPANT')}
+              disabled={isSuccess}
               className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                 type === 'PARTICIPANT'
                   ? 'border-red-500 bg-red-50 text-red-700 shadow-sm'
@@ -114,7 +105,7 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
               }`}
             >
               <div className="flex flex-col items-center">
-                <UserIcon />
+                <Icons.User />
                 <span className="font-medium mt-2">Peserta</span>
                 <span className="text-xs text-gray-500 mt-1">Ikut serta dalam event</span>
               </div>
@@ -123,6 +114,7 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
             <button
               type="button"
               onClick={() => setType('VOLUNTEER')}
+              disabled={isSuccess}
               className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                 type === 'VOLUNTEER'
                   ? 'border-red-500 bg-red-50 text-red-700 shadow-sm'
@@ -130,7 +122,7 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
               }`}
             >
               <div className="flex flex-col items-center">
-                <VolunteerIcon />
+                <Icons.Community />
                 <span className="font-medium mt-2">Relawan</span>
                 <span className="text-xs text-gray-500 mt-1">Bantu jalankan event</span>
               </div>
@@ -138,10 +130,8 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
           </div>
         </div>
 
-        {/* Additional Notes */}
         <div>
           <div className="flex items-center mb-3">
-            <NotesIcon />
             <label htmlFor="notes" className="text-sm font-semibold text-gray-900 ml-2">
               Catatan Tambahan
             </label>
@@ -151,16 +141,16 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
+            disabled={isSuccess}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none disabled:bg-gray-100"
             placeholder="Kebutuhan khusus, pertanyaan, atau informasi tambahan yang perlu admin ketahui..."
           />
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 flex items-center justify-center"
+          disabled={loading || isSuccess}
+          className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 flex items-center justify-center"
         >
           {loading ? (
             <>
@@ -170,15 +160,16 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
               </svg>
               Memproses...
             </>
+          ) : isSuccess ? (
+            'Terdaftar'
           ) : (
             `Daftar sebagai ${type === 'PARTICIPANT' ? 'Peserta' : 'Relawan'}`
           )}
         </button>
 
-        {/* Message */}
         {message && (
           <div className={`p-4 rounded-xl text-center border ${
-            message.includes('berhasil') 
+            isSuccess 
               ? 'bg-green-50 border-green-200 text-green-700' 
               : 'bg-red-50 border-red-200 text-red-700'
           }`}>

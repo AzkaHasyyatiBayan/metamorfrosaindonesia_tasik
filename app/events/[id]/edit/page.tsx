@@ -33,33 +33,45 @@ type Gallery = {
 
 async function getEvent(id: string): Promise<Event | null> {
   try {
-    const { data: event } = await supabase
+    const { data: event, error } = await supabase
       .from('events')
       .select('*')
       .eq('id', id)
       .eq('is_active', true)
       .single()
 
+    if (error) {
+      console.error('Error fetching event:', error)
+      return null
+    }
+
     if (!event) {
       return null
     }
 
     return event as Event
-  } catch {
+  } catch (error) {
+    console.error('Error in getEvent:', error)
     return null
   }
 }
 
 async function getEventGalleries(eventId: string): Promise<Gallery[]> {
   try {
-    const { data: galleries } = await supabase
+    const { data: galleries, error } = await supabase
       .from('galleries')
       .select('*')
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
 
+    if (error) {
+      console.error('Error fetching galleries:', error)
+      return []
+    }
+
     return galleries as Gallery[] || []
-  } catch {
+  } catch (error) {
+    console.error('Error in getEventGalleries:', error)
     return []
   }
 }
@@ -108,7 +120,7 @@ export default async function EventEditPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">

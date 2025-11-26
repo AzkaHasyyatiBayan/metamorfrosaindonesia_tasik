@@ -1,6 +1,6 @@
 export type UserRole = 'ADMIN' | 'USER' | 'VOLUNTEER';
 export type RegistrationType = 'PARTICIPANT' | 'VOLUNTEER';
-export type RegistrationStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED';
+export type RegistrationStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'CANCELLED';
 export type AccessibilityCategory = 'SIGN_LANGUAGE' | 'WHEELCHAIR_ACCESS' | 'BRAILLE' | 'AUDIO_DESCRIPTION' | 'TACTILE';
 export type AboutSection = 'PROFILE' | 'VISION_MISSION' | 'GOALS' | 'STRUCTURE' | 'CONTACT';
 
@@ -23,24 +23,52 @@ export interface Event {
   description: string;
   date_time: string;
   location: string;
-  category: AccessibilityCategory[];
-  max_participants?: number;
-  image_url?: string;
+  category: string[];
+  max_participants?: number | null;
+  image_url?: string | null;
   is_active: boolean;
   creator_id: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface About {
+export interface Registration {
   id: string;
-  section: AboutSection;
-  title: string;
-  content: string;
-  image_url?: string;
-  display_order: number;
-  is_active: boolean;
-  updated_by?: string;
+  event_id: string;
+  user_id: string;
+  type: RegistrationType;
+  status: RegistrationStatus;
+  notes?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface RegistrationWithDetails extends Registration {
+  events: {
+    title: string;
+    date_time: string;
+    location: string;
+    max_participants?: number | null;
+  };
+  profiles?: {
+    name: string;
+    email: string;
+  };
+}
+
+export interface AdminStats {
+  totalEvents: number;
+  upcomingEvents: number;
+  totalRegistrations: number;
+  pendingRegistrations: number;
+  participationRate: string;
+  volunteerCount: number;
+}
+
+export interface TableEvent {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  registrations: number;
 }

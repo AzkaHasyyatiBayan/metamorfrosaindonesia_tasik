@@ -1,33 +1,37 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
 
-// Define proper error type for Supabase
+// Interface untuk menangani struktur error umum dari Supabase/PostgreSQL
 interface SupabaseError {
-  message: string
-  details?: string
-  hint?: string
-  code?: string
+  code?: string;
+  message?: string;
+  details?: string;
+  hint?: string;
 }
 
-export function handleSupabaseError(error: unknown): never {
-  console.error('Supabase error:', error)
+export const handleSupabaseError = (error: unknown): string => {
+  if (!error) return 'Unknown error occurred';
   
-  if (error instanceof Error) {
-    throw new Error(`Database error: ${error.message}`)
-  }
+  // Casting error ke tipe SupabaseError agar properti code/message bisa diakses
+  const err = error as SupabaseError;
   
-  if (typeof error === 'object' && error !== null && 'message' in error) {
-    const supabaseError = error as SupabaseError
-    throw new Error(supabaseError.message || 'Database error occurred')
-  }
+  if (err.code === '23505') return 'Data sudah ada dalam sistem';
+  if (err.code === '42501') return 'Anda tidak memiliki akses untuk operasi ini';
+  if (err.code === 'PGRST116') return 'Data tidak ditemukan';
+  if (err.message?.includes('JWT')) return 'Sesi telah berakhir, silakan login kembali';
   
-  throw new Error('An unexpected database error occurred')
-}
+  return err.message || 'Terjadi kesalahan yang tidak terduga';
+};

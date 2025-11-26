@@ -1,3 +1,4 @@
+// app/components/AuthProvider.tsx
 'use client'
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
@@ -12,6 +13,7 @@ interface UserProfile {
   address?: string
   interests?: string[]
   location?: string
+  bio?: string
 }
 
 interface AuthContextType {
@@ -20,6 +22,8 @@ interface AuthContextType {
   userProfile: UserProfile | null
   loading: boolean
   error: string | null
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>
+  signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({ 
@@ -27,7 +31,9 @@ const AuthContext = createContext<AuthContextType>({
   session: null, 
   userProfile: null,
   loading: true,
-  error: null
+  error: null,
+  updateProfile: async () => {},
+  signOut: async () => {}
 })
 
 export const useAuth = () => {
@@ -45,39 +51,49 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const updateUserRoleInJWT = useCallback(async (userId: string, role: string) => {
+  const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
+    if (!user) throw new Error('No user logged in')
+    
     try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser()
-      if (currentUser) {
-        await supabase.auth.updateUser({
-          data: { role: role }
-        })
-      }
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id)
+      
+      if (error) throw error
+      
+      setUserProfile(prev => prev ? { ...prev, ...updates } : null)
     } catch (error) {
-      console.error('Error updating JWT role:', error)
+      console.error('Error updating profile:', error)
+      throw error
+    }
+  }, [user])
+
+  const signOut = useCallback(async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+    } catch (error) {
+      console.error('Error signing out:', error)
+      throw error
     }
   }, [])
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()
 
       if (error) throw error
-      
       setUserProfile(data)
-      
-      if (data?.role) {
-        await updateUserRoleInJWT(userId, data.role)
-      }
     } catch (error) {
       console.error('Error fetching user profile:', error)
       setUserProfile(null)
     }
-  }, [updateUserRoleInJWT])
+  }, [])
 
   useEffect(() => {
     let mounted = true
@@ -132,7 +148,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, [fetchUserProfile])
 
   return (
-    <AuthContext.Provider value={{ user, session, userProfile, loading, error }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      userProfile, 
+      loading, 
+      error,
+      updateProfile,
+      signOut
+    }}>
       {children}
     </AuthContext.Provider>
   )

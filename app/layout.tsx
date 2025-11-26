@@ -1,8 +1,11 @@
+// app/layout.tsx
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Footer from './components/Footer'
-import Navbar from './components/Navigation'
+import Navbar from './components/NavBar'
+import AuthProvider from './components/AuthProvider'
+import { EnhancedErrorBoundary } from './components/EnhancedErrorBoundary'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -26,13 +29,17 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <div className="min-h-screen flex flex-col bg-white">
-          <Navbar />
-          <main className="flex-1 w-full">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        <EnhancedErrorBoundary>
+          <AuthProvider>
+            <div className="min-h-screen flex flex-col bg-white">
+              <Navbar />
+              <main className="flex-1 w-full">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </AuthProvider>
+        </EnhancedErrorBoundary>
       </body>
     </html>
   )

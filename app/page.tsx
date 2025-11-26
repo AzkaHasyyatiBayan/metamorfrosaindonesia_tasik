@@ -1,12 +1,10 @@
-'use client'
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Button from './components/Button'
 import EventList from './components/EventList'
+import HomeCTA from './components/HomeCTA'
 import { getUpcomingEvents } from './lib/data'
-import { Event } from './types/database.types'
-import { useAuth } from './components/AuthProvider'
 
+// --- Icons Components ---
 const SignLanguageIcon = () => (
   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
@@ -59,44 +57,27 @@ const VisionIcon = () => (
   </svg>
 )
 
-export default function HomePage() {
-  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(true)
-  const { user } = useAuth() // Menggunakan AuthProvider untuk cek status login
+// Cache homepage for 30 minutes for better performance
+// Data will be revalidated automatically after 1800 seconds
+export const revalidate = 1800
 
-  useEffect(() => {
-    const loadUpcomingEvents = async () => {
-      try {
-        setLoading(true)
-        const events = await getUpcomingEvents()
-        setUpcomingEvents(events)
-      } catch (error) {
-        console.error('Error loading upcoming events:', error)
-        setUpcomingEvents([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadUpcomingEvents()
-  }, [])
+export default async function HomePage() {
+  // Fetching data langsung di server
+  const upcomingEvents = await getUpcomingEvents()
+  const displayedEvents = upcomingEvents.slice(0, 3)
 
   return (
     <div>
-      {/* Hero Banner dengan Gambar Background */}
       <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center">
-        {/* Background Image dengan Overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: 'url("/banner.jpeg")',
           }}
         >
-          {/* Overlay blur dan gelap */}
           <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
         </div>
         
-        {/* Content di atas gambar */}
         <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 drop-shadow-lg">
             Metamorfosa Community
@@ -120,7 +101,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section: Yuk Kenalan Sama Metamorfosa */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
@@ -133,7 +113,6 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {/* Tentang Kami */}
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center group hover:shadow-xl transition-all duration-300">
               <div className="bg-red-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:bg-red-200 transition-colors duration-300">
                 <AboutIcon />
@@ -145,7 +124,6 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Misi */}
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center group hover:shadow-xl transition-all duration-300">
               <div className="bg-orange-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:bg-orange-200 transition-colors duration-300">
                 <MissionIcon />
@@ -157,7 +135,6 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Visi */}
             <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center group hover:shadow-xl transition-all duration-300">
               <div className="bg-yellow-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:bg-yellow-200 transition-colors duration-300">
                 <VisionIcon />
@@ -170,7 +147,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* CTA Section - Background putih */}
           <div className="bg-white rounded-2xl p-8 text-center border border-gray-200 shadow-lg">
             <h3 className="text-2xl font-bold text-gray-800 mb-4">Mau Tau Lebih Banyak?</h3>
             <p className="text-gray-600 mb-6 text-lg max-w-2xl mx-auto">
@@ -186,7 +162,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section: Ada Apa Saja di Metamorfosa */}
       <section className="py-20 bg-red-600">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
@@ -198,11 +173,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Main Container dengan Border */}
           <div className="bg-white rounded-2xl border-4 border-red-700 shadow-2xl p-8 md:p-12">
-            {/* Grid untuk poin-poin utama */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-              {/* Poin 1: Kenal dan Interaksi */}
               <div className="text-center group">
                 <div className="bg-red-100 rounded-2xl p-6 border-2 border-red-200 group-hover:border-red-400 transition-all duration-300 group-hover:transform group-hover:scale-105 mb-4">
                   <div className="bg-red-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-white">
@@ -217,7 +189,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Poin 2: Belajar Bahasa Isyarat */}
               <div className="text-center group">
                 <div className="bg-red-100 rounded-2xl p-6 border-2 border-red-200 group-hover:border-red-400 transition-all duration-300 group-hover:transform group-hover:scale-105 mb-4">
                   <div className="bg-red-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-white">
@@ -232,7 +203,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Poin 3: Pertemuan dan Event */}
               <div className="text-center group">
                 <div className="bg-red-100 rounded-2xl p-6 border-2 border-red-200 group-hover:border-red-400 transition-all duration-300 group-hover:transform group-hover:scale-105 mb-4">
                   <div className="bg-red-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-white">
@@ -247,7 +217,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Poin 4: Komunikasi Bahasa Isyarat */}
               <div className="text-center group">
                 <div className="bg-red-100 rounded-2xl p-6 border-2 border-red-200 group-hover:border-red-400 transition-all duration-300 group-hover:transform group-hover:scale-105 mb-4">
                   <div className="bg-red-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-white">
@@ -263,27 +232,12 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Additional Info Box - HANYA TAMPIL JIKA USER BELUM LOGIN */}
-            {!user && (
-              <div className="bg-red-50 rounded-xl border-2 border-red-200 p-6 text-center animate-fade-in">
-                <h4 className="text-xl font-semibold text-red-800 mb-2">
-                  Update Informasi Lebih Lengkap Mengenai Komunitas
-                </h4>
-                <p className="text-red-700 mb-4">
-                  Dapatkan pengalaman baru dengan pembelajaran yang interaktif bermakna bersama teman-teman baru
-                </p>
-                <Link href="/auth/login">
-                  <Button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors duration-300">
-                    Daftar Sekarang
-                  </Button>
-                </Link>
-              </div>
-            )}
+            {/* HomeCTA menangani logika rendering kondisional (tombol Daftar) */}
+            <HomeCTA />
           </div>
         </div>
       </section>
 
-      {/* Upcoming Events */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
@@ -293,14 +247,9 @@ export default function HomePage() {
             </p>
           </div>
           
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Memuat event...</p>
-            </div>
-          ) : upcomingEvents.length > 0 ? (
+          {displayedEvents.length > 0 ? (
             <>
-              <EventList events={upcomingEvents.slice(0, 3)} />
+              <EventList events={displayedEvents} />
               <div className="text-center mt-12">
                 <Link href="/events">
                   <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg font-semibold rounded-lg transition-colors duration-300">
@@ -326,7 +275,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section yang Diperbarui */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-8">
@@ -354,16 +302,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out;
-        }
-      `}</style>
     </div>
   )
 }

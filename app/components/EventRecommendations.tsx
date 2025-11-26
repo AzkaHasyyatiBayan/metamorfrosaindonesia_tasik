@@ -1,4 +1,3 @@
-// app/components/EventRecommendations.tsx
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
@@ -12,7 +11,7 @@ type Recommendation = {
   date_time: string
   location: string
   category: string[]
-  image_url?: string
+  image_url?: string | null
   is_active: boolean
   total_score: number
 }
@@ -39,11 +38,7 @@ export default function EventRecommendations() {
       try {
         setError(null)
         const { data, error } = await supabase
-          .from('user_event_recommendations')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('total_score', { ascending: false })
-          .limit(3)
+          .rpc('get_recommendations_for_user', { target_user_id: user.id })
 
         if (error) throw error
         setRecommendations(data || [])
@@ -72,7 +67,6 @@ export default function EventRecommendations() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
               <div key={i} className="bg-white rounded-2xl shadow-lg p-6 animate-pulse border border-gray-200">
-                <div className="h-48 bg-gray-200 rounded-xl mb-4"></div>
                 <div className="h-4 bg-gray-200 rounded mb-3"></div>
                 <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
                 <div className="h-10 bg-gray-200 rounded-xl"></div>
@@ -109,16 +103,15 @@ export default function EventRecommendations() {
     category: rec.category,
     image_url: rec.image_url,
     is_active: rec.is_active,
-    max_participants: undefined,
+    max_participants: null,
     creator_id: '',
     created_at: '',
     updated_at: ''
   }))
 
   return (
-    <section className="py-12 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-12 bg-linear-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center bg-red-50 px-4 py-2 rounded-full border border-red-200 mb-4">
             <RecommendationIcon />
@@ -132,11 +125,9 @@ export default function EventRecommendations() {
           </p>
         </div>
 
-        {/* Recommendations Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {formattedEvents.map((event, index) => (
             <div key={event.id} className="relative">
-              {/* Recommendation Badge */}
               <div className="absolute -top-3 -right-3 z-10">
                 <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                   #{index + 1}

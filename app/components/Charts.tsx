@@ -22,8 +22,8 @@ export default function Charts({ type }: ChartsProps) {
             <div 
               className={`w-full rounded-t transition-all ${
                 type === 'participation' 
-                  ? 'bg-gradient-to-t from-red-500 to-orange-500' 
-                  : 'bg-gradient-to-t from-yellow-500 to-orange-400'
+                  ? 'bg-linear-to-t from-red-500 to-orange-500' 
+                  : 'bg-linear-to-t from-yellow-500 to-orange-400'
               }`}
               style={{ height: `${(value / maxValue) * 100}%` }}
             ></div>

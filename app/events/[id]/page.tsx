@@ -127,7 +127,7 @@ export default async function EventDetail({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       {/* HAPUS Navigation karena sudah ada di layout */}
       
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -147,7 +147,7 @@ export default async function EventDetail({ params }: PageProps) {
                     priority
                   />
                   {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent"></div>
                 </div>
               )}
               
