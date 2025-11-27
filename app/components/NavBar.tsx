@@ -15,9 +15,7 @@ export default function NavBar() {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
 
-  // Cek halaman aktif untuk menentukan warna tombol
   const isRegisterPage = pathname === '/auth/register'
-  // const isLoginPage = pathname === '/auth/login' // Opsional jika butuh logika spesifik login
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,16 +31,12 @@ export default function NavBar() {
     { href: '/user/about', label: 'Tentang Kami' },
   ]
 
-  // Style Tombol Solid (Background Merah, Teks Putih)
-  const solidBtnClass = "py-2! px-6! text-sm font-semibold bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border-2 border-transparent"
-  
-  // Style Tombol Outline (Background Putih, Teks Merah, Border Merah)
-  // Perbaikan: Tidak ada lagi teks putih di sini, selalu merah agar terlihat di bg putih
-  const outlineBtnClass = "py-2! px-6! text-sm font-semibold bg-white text-red-600 border-2 border-red-600 hover:bg-red-50 transition-all transform hover:-translate-y-0.5"
+  // Kita hapus solidBtnClass dan outlineBtnClass yang panjang
+  // Kita ganti dengan kelas utilitas tambahan saja untuk ukuran padding
+  const buttonBaseClass = "py-2! px-6! text-sm font-semibold shadow-md"
 
   return (
     <nav
-      // Background SELALU PUTIH, shadow muncul saat discroll
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white ${
         isScrolled || isMobileMenuOpen ? 'shadow-sm py-3' : 'py-4'
       }`}
@@ -71,9 +65,8 @@ export default function NavBar() {
             </div>
             
             <div className="flex flex-col">
-              {/* Teks selalu hitam/merah karena background putih */}
               <span className="text-base font-bold leading-none text-gray-900">
-                Metamorfosa
+                Metamorfrosa
               </span>
               <span className="text-[10px] font-medium tracking-wider text-red-600">
                 INDONESIA
@@ -116,22 +109,24 @@ export default function NavBar() {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                {/* Tombol Masuk: 
-                    - Jika di halaman Register: Outline (Putih/Merah)
-                    - Jika BUKAN di halaman Register (Home/Login): Solid (Merah) 
+                {/* PERBAIKAN DI SINI:
+                    Gunakan prop variant='primary' atau variant='outline'.
+                    Komponen Button akan otomatis mengatur warna teks (Putih untuk Primary, Merah untuk Outline).
                 */}
                 <Link href="/auth/login">
-                  <Button className={!isRegisterPage ? solidBtnClass : outlineBtnClass}>
+                  <Button 
+                    variant={!isRegisterPage ? 'primary' : 'outline'}
+                    className={buttonBaseClass}
+                  >
                     Masuk
                   </Button>
                 </Link>
 
-                {/* Tombol Daftar: 
-                    - Jika di halaman Register: Solid (Merah)
-                    - Jika BUKAN di halaman Register (Home/Login): Outline (Putih/Merah)
-                */}
                 <Link href="/auth/register">
-                  <Button className={isRegisterPage ? solidBtnClass : outlineBtnClass}>
+                  <Button 
+                    variant={isRegisterPage ? 'primary' : 'outline'}
+                    className={buttonBaseClass}
+                  >
                     Daftar
                   </Button>
                 </Link>
@@ -199,13 +194,20 @@ export default function NavBar() {
               </>
             ) : (
               <div className="flex flex-col gap-3">
+                {/* Terapkan logika variant yang sama untuk Mobile Menu */}
                 <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className={`w-full justify-center ${!isRegisterPage ? 'bg-red-600 text-white' : 'bg-white text-red-600 border-2 border-red-600'}`}>
+                  <Button 
+                    variant={!isRegisterPage ? 'primary' : 'outline'}
+                    className="w-full justify-center"
+                  >
                     Masuk
                   </Button>
                 </Link>
                 <Link href="/auth/register" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className={`w-full justify-center ${isRegisterPage ? 'bg-red-600 text-white' : 'bg-white text-red-600 border-2 border-red-600'}`}>
+                  <Button 
+                    variant={isRegisterPage ? 'primary' : 'outline'}
+                    className="w-full justify-center"
+                  >
                     Daftar
                   </Button>
                 </Link>
