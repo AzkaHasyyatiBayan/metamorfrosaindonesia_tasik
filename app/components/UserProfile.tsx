@@ -3,35 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../components/AuthProvider'
-
-interface Event {
-  id: string
-  title: string
-  date_time: string
-  location: string
-  image_url?: string
-  category: string[]
-}
-
-interface Registration {
-  id: string
-  event_id: string
-  status: 'pending' | 'approved' | 'rejected'
-  events: Event
-  created_at: string
-}
-
-interface UserProfileWithBio {
-  id: string
-  email: string
-  name: string
-  role: 'ADMIN' | 'USER' | 'VOLUNTEER'
-  phone?: string
-  address?: string
-  interests?: string[]
-  location?: string
-  bio?: string
-}
+import { avatarOptions } from '../components/AvatarIcons'
 
 const UserIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,89 +66,318 @@ const DashboardIcon = () => (
   </svg>
 )
 
+const ArrowLeftIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+  </svg>
+)
+
+interface Event {
+  id: string
+  title: string
+  date_time: string
+  location: string
+  image_url?: string
+  category: string[]
+  max_participants?: number
+}
+
+interface RegistrationWithEvent {
+  id: string
+  event_id: string
+  user_id: string
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
+  role: 'peserta' | 'volunteer'
+  volunteer_type?: string
+  events: Event
+  created_at: string
+  updated_at: string
+}
+
+interface FormData {
+  name: string
+  email: string
+  phone: string
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+  avatar: string
+  bio: string
+}
+
+interface OriginalData {
+  name: string
+  email: string
+  phone: string
+  avatar: string
+  bio: string
+}
+
 export default function UserProfile() {
   const router = useRouter()
-  const { user, userProfile, updateProfile } = useAuth()
+  const { user, userProfile, loading: authLoading, updateUserProfile, refreshProfile } = useAuth()
   const [activeTab, setActiveTab] = useState<'profile' | 'history' | 'dashboard'>('dashboard')
-  const [registrations, setRegistrations] = useState<Registration[]>([])
-  const [loading, setLoading] = useState(true)
+  const [registrations, setRegistrations] = useState<RegistrationWithEvent[]>([])
   const [updating, setUpdating] = useState(false)
+  const [updatingPassword, setUpdatingPassword] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     phone: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+    avatar: 'flower',
     bio: ''
   })
+  const [originalData, setOriginalData] = useState<OriginalData>({
+    name: '',
+    email: '',
+    phone: '',
+    avatar: 'flower',
+    bio: ''
+  })
+  const [profileLoaded, setProfileLoaded] = useState(false)
 
   const fetchRegistrations = useCallback(async () => {
     try {
+      if (!user?.id) return
+      
       const { data, error } = await supabase
         .from('registrations')
         .select(`
           *,
-          events (*)
+          events:event_id (*)
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setRegistrations(data || [])
+      if (error) {
+        console.error('Error fetching registrations:', error)
+        throw error
+      }
+      
+      if (data) {
+        const typedData = data.map((item) => ({
+          id: item.id,
+          event_id: item.event_id,
+          user_id: item.user_id,
+          status: item.status,
+          role: item.role,
+          volunteer_type: item.volunteer_type,
+          events: item.events as unknown as Event,
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        })) as RegistrationWithEvent[];
+        setRegistrations(typedData)
+      }
     } catch (error) {
       console.error('Error fetching registrations:', error)
-    } finally {
-      setLoading(false)
+      setMessage({
+        type: 'error',
+        text: 'Gagal memuat data pendaftaran event'
+      })
     }
   }, [user?.id])
 
   useEffect(() => {
+    if (authLoading) return
+
     if (!user) {
       router.push('/auth/login')
       return
     }
 
+    const timeoutId = setTimeout(() => {
+      if (!profileLoaded) {
+        const defaultData = {
+          name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+          email: user.email || '',
+          phone: '',
+          avatar: 'flower',
+          bio: ''
+        }
+        setFormData(prev => ({ ...prev, ...defaultData }))
+        setOriginalData(defaultData)
+        setProfileLoaded(true)
+      }
+    }, 3000)
+
     if (userProfile) {
-      const profileWithBio = userProfile as UserProfileWithBio
-      setFormData({
-        name: userProfile.name || '',
-        email: user?.email || '',
+      const profileData = {
+        name: userProfile.name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+        email: user.email || '',
         phone: userProfile.phone || '',
-        bio: profileWithBio.bio || ''
-      })
+        avatar: userProfile.avatar_url || 'flower',
+        bio: userProfile.bio || ''
+      }
+      setFormData(prev => ({
+        ...prev,
+        ...profileData
+      }))
+      setOriginalData(profileData)
+      setProfileLoaded(true)
+      clearTimeout(timeoutId)
+      
+      fetchRegistrations()
     }
 
-    fetchRegistrations()
-  }, [user, userProfile, router, fetchRegistrations])
+    return () => clearTimeout(timeoutId)
+  }, [user, userProfile, router, authLoading, profileLoaded, fetchRegistrations])
+
+  const hasProfileChanges = (): boolean => {
+    return (
+      formData.name !== originalData.name ||
+      formData.phone !== originalData.phone ||
+      formData.avatar !== originalData.avatar ||
+      formData.bio !== originalData.bio
+    )
+  }
+
+  const hasPasswordChanges = (): boolean => {
+    return (
+      formData.newPassword.trim() !== '' && 
+      formData.newPassword === formData.confirmPassword
+    )
+  }
+
+  const updateProfileOnly = async (): Promise<boolean> => {
+    try {
+      const updateData = {
+        name: formData.name,
+        phone: formData.phone,
+        avatar_url: formData.avatar,
+        bio: formData.bio,
+        updated_at: new Date().toISOString()
+      }
+
+      await updateUserProfile(updateData)
+      await refreshProfile()
+      
+      setOriginalData({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        avatar: formData.avatar,
+        bio: formData.bio
+      })
+
+      return true
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      throw error
+    }
+  }
+
+  const updatePasswordOnly = async (): Promise<boolean> => {
+    try {
+      if (!formData.currentPassword) {
+        throw new Error('Harap masukkan password saat ini')
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: formData.currentPassword
+      })
+
+      if (signInError) {
+        throw new Error('Password saat ini salah')
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: formData.newPassword
+      })
+
+      if (updateError) {
+        throw updateError
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      }))
+
+      return true
+    } catch (error) {
+      console.error('Error updating password:', error)
+      throw error
+    }
+  }
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!user) return
 
-    try {
-      setUpdating(true)
-      setMessage(null)
+    const profileChanged = hasProfileChanges()
+    const passwordChanged = hasPasswordChanges()
 
-      await updateProfile({
-        name: formData.name,
-        phone: formData.phone,
-        bio: formData.bio
-      } as Partial<UserProfileWithBio>)
+    if (!profileChanged && !passwordChanged) {
+      setMessage({
+        type: 'error',
+        text: 'Tidak ada perubahan yang perlu disimpan.'
+      })
+      return
+    }
+
+    if (passwordChanged) {
+      if (formData.newPassword.length < 6) {
+        setMessage({
+          type: 'error',
+          text: 'Password baru harus minimal 6 karakter.'
+        })
+        return
+      }
+    }
+
+    try {
+      setMessage(null)
+      
+      if (profileChanged && passwordChanged) {
+        setUpdating(true)
+        await updateProfileOnly()
+        setUpdatingPassword(true)
+        await updatePasswordOnly()
+      } else if (profileChanged) {
+        setUpdating(true)
+        await updateProfileOnly()
+      } else if (passwordChanged) {
+        setUpdatingPassword(true)
+        await updatePasswordOnly()
+      }
 
       setMessage({
         type: 'success',
-        text: 'Profile berhasil diperbarui!'
+        text: 'Perubahan berhasil disimpan!'
       })
       
-    } catch (error) {
-      console.error('Error updating profile:', error)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Gagal menyimpan perubahan. Silakan coba lagi.'
       setMessage({
         type: 'error',
-        text: 'Gagal memperbarui profile. Silakan coba lagi.'
+        text: errorMessage
       })
     } finally {
       setUpdating(false)
+      setUpdatingPassword(false)
     }
+  }
+
+  const handleCancel = () => {
+    setFormData({
+      ...formData,
+      name: originalData.name,
+      phone: originalData.phone,
+      avatar: originalData.avatar,
+      bio: originalData.bio,
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    })
+    setMessage(null)
   }
 
   const upcomingEvents = registrations.filter(reg => 
@@ -189,7 +390,7 @@ export default function UserProfile() {
 
   const pendingRegistrations = registrations.filter(reg => reg.status === 'pending')
 
-  if (loading) {
+  if (authLoading && !profileLoaded) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -200,7 +401,7 @@ export default function UserProfile() {
     )
   }
 
-  if (!user) {
+  if (!authLoading && !user) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center bg-white rounded-2xl shadow-lg p-8 max-w-md mx-4 border border-gray-200">
@@ -225,11 +426,17 @@ export default function UserProfile() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div className="mb-4 lg:mb-0">
-              <h1 className="text-3xl font-bold text-gray-900">Profil Saya</h1>
-              <p className="text-gray-600 mt-1">
-                Kelola profil dan lihat aktivitas Anda
-              </p>
+            <div className="flex items-center space-x-4 mb-4 lg:mb-0">
+              <button
+                onClick={() => router.push('/')}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeftIcon />
+              </button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Profil Saya</h1>
+                <p className="text-gray-600 mt-1">Kelola profil dan lihat aktivitas Anda</p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -246,10 +453,12 @@ export default function UserProfile() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-6">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <UserIcon />
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                  avatarOptions.find(a => a.id === formData.avatar)?.color || 'bg-red-100 text-red-600'
+                }`}>
+                  {avatarOptions.find(a => a.id === formData.avatar)?.icon || <UserIcon />}
                 </div>
-                <h3 className="font-bold text-gray-900 text-lg">{userProfile?.name || 'User'}</h3>
+                <h3 className="font-bold text-gray-900 text-lg">{formData.name || 'User'}</h3>
                 <p className="text-gray-600 text-sm">{user?.email}</p>
                 <span className="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium mt-2">
                   Member
@@ -260,9 +469,7 @@ export default function UserProfile() {
                 <button
                   onClick={() => setActiveTab('dashboard')}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all ${
-                    activeTab === 'dashboard'
-                      ? 'bg-red-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                    activeTab === 'dashboard' ? 'bg-red-600 text-white' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   <DashboardIcon />
@@ -271,9 +478,7 @@ export default function UserProfile() {
                 <button
                   onClick={() => setActiveTab('profile')}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all ${
-                    activeTab === 'profile'
-                      ? 'bg-red-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                    activeTab === 'profile' ? 'bg-red-600 text-white' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   <UserIcon />
@@ -282,9 +487,7 @@ export default function UserProfile() {
                 <button
                   onClick={() => setActiveTab('history')}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all ${
-                    activeTab === 'history'
-                      ? 'bg-red-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                    activeTab === 'history' ? 'bg-red-600 text-white' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   <HistoryIcon />
@@ -297,16 +500,10 @@ export default function UserProfile() {
           <div className="lg:col-span-3">
             {message && (
               <div className={`mb-6 p-4 rounded-xl ${
-                message.type === 'success' 
-                  ? 'bg-green-100 border border-green-200 text-green-700' 
-                  : 'bg-red-100 border border-red-200 text-red-700'
+                message.type === 'success' ? 'bg-green-100 border border-green-200 text-green-700' : 'bg-red-100 border border-red-200 text-red-700'
               }`}>
                 <div className="flex items-center">
-                  {message.type === 'success' ? (
-                    <CheckIcon />
-                  ) : (
-                    <XIcon />
-                  )}
+                  {message.type === 'success' ? <CheckIcon /> : <XIcon />}
                   <span className="ml-2">{message.text}</span>
                 </div>
               </div>
@@ -316,28 +513,20 @@ export default function UserProfile() {
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Dashboard Saya</h2>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-red-50 rounded-2xl p-6 text-center">
-                      <div className="text-2xl font-bold text-red-600 mb-2">
-                        {upcomingEvents.length}
-                      </div>
+                      <div className="text-2xl font-bold text-red-600 mb-2">{upcomingEvents.length}</div>
                       <div className="text-gray-700">Event Mendatang</div>
                     </div>
                     <div className="bg-yellow-50 rounded-2xl p-6 text-center">
-                      <div className="text-2xl font-bold text-yellow-600 mb-2">
-                        {pendingRegistrations.length}
-                      </div>
+                      <div className="text-2xl font-bold text-yellow-600 mb-2">{pendingRegistrations.length}</div>
                       <div className="text-gray-700">Menunggu Konfirmasi</div>
                     </div>
                     <div className="bg-green-50 rounded-2xl p-6 text-center">
-                      <div className="text-2xl font-bold text-green-600 mb-2">
-                        {pastEvents.length}
-                      </div>
+                      <div className="text-2xl font-bold text-green-600 mb-2">{pastEvents.length}</div>
                       <div className="text-gray-700">Event Selesai</div>
                     </div>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button
                       onClick={() => router.push('/events')}
@@ -353,7 +542,7 @@ export default function UserProfile() {
                     </button>
                   </div>
                 </div>
-
+                
                 {upcomingEvents.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Event Mendatang</h3>
@@ -365,9 +554,7 @@ export default function UserProfile() {
                             <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
                               <div className="flex items-center">
                                 <CalendarIcon />
-                                <span className="ml-1">
-                                  {new Date(reg.events.date_time).toLocaleDateString('id-ID')}
-                                </span>
+                                <span className="ml-1">{new Date(reg.events.date_time).toLocaleDateString('id-ID')}</span>
                               </div>
                               <div className="flex items-center">
                                 <LocationIcon />
@@ -375,8 +562,9 @@ export default function UserProfile() {
                               </div>
                             </div>
                           </div>
-                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                            Disetujui
+                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium flex items-center space-x-1">
+                            <CheckIcon />
+                            <span>Disetujui</span>
                           </span>
                         </div>
                       ))}
@@ -389,54 +577,61 @@ export default function UserProfile() {
             {activeTab === 'profile' && (
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Profil</h2>
-                
                 <form onSubmit={handleUpdateProfile} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-3">Pilih Avatar</label>
+                    <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                      {avatarOptions.map((avatar) => (
+                        <button
+                          key={avatar.id}
+                          type="button"
+                          onClick={() => setFormData({...formData, avatar: avatar.id})}
+                          className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center ${
+                            formData.avatar === avatar.id ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${avatar.color}`}>
+                            {avatar.icon}
+                          </div>
+                          <span className="text-xs mt-2 text-gray-600">{avatar.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
-                        Nama Lengkap *
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-900 mb-2">Nama Lengkap</label>
                       <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        required
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                        placeholder="Masukkan nama lengkap"
                       />
                     </div>
-
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
-                        Email
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-900 mb-2">Email</label>
                       <input
                         type="email"
                         value={formData.email}
                         disabled
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-500"
                       />
-                      <p className="text-xs text-gray-500 mt-1">Email tidak dapat diubah</p>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
-                      Nomor Telepon
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">Nomor Telepon</label>
                     <input
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                      placeholder="Masukkan nomor telepon"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
-                      Bio
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">Bio</label>
                     <textarea
                       value={formData.bio}
                       onChange={(e) => setFormData({...formData, bio: e.target.value})}
@@ -446,32 +641,62 @@ export default function UserProfile() {
                     />
                   </div>
 
+                  <div className="border-t border-gray-200 pt-6">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <LockIcon />
+                      <h3 className="text-lg font-semibold text-gray-900">Ubah Password</h3>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">Password Saat Ini</label>
+                        <input
+                          type="password"
+                          value={formData.currentPassword}
+                          onChange={(e) => setFormData({...formData, currentPassword: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">Password Baru</label>
+                          <input
+                            type="password"
+                            value={formData.newPassword}
+                            onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">Konfirmasi Password Baru</label>
+                          <input
+                            type="password"
+                            value={formData.confirmPassword}
+                            onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex space-x-4">
                     <button
                       type="submit"
-                      disabled={updating}
-                      className="bg-red-600 hover:bg-red-700 text-white py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
+                      disabled={updating || updatingPassword}
+                      className="bg-red-600 hover:bg-red-700 text-white py-3 px-8 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 flex items-center space-x-2"
                     >
-                      {updating ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                          <span>Menyimpan...</span>
-                        </>
-                      ) : (
-                        <>
-                          <EditIcon />
-                          <span>Simpan Perubahan</span>
-                        </>
-                      )}
+                      {(updating || updatingPassword) ? <span>Menyimpan...</span> : <>
+                        <EditIcon />
+                        <span>Simpan Perubahan</span>
+                      </>}
                     </button>
-                    
                     <button
                       type="button"
-                      onClick={() => router.push('/auth/change-password')}
-                      className="bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-xl font-semibold transition-colors flex items-center space-x-2"
+                      onClick={handleCancel}
+                      disabled={updating || updatingPassword}
+                      className="bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50"
                     >
-                      <LockIcon />
-                      <span>Ubah Password</span>
+                      Batal
                     </button>
                   </div>
                 </form>
@@ -491,14 +716,15 @@ export default function UserProfile() {
                             <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
                               <div className="flex items-center">
                                 <CalendarIcon />
-                                <span className="ml-1">
-                                  {new Date(reg.events.date_time).toLocaleDateString('id-ID')}
-                                </span>
+                                <span className="ml-1">{new Date(reg.events.date_time).toLocaleDateString('id-ID')}</span>
                               </div>
                               <div className="flex items-center">
                                 <LocationIcon />
                                 <span className="ml-1">{reg.events.location}</span>
                               </div>
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500">
+                              Role: {reg.role === 'volunteer' ? 'Relawan' : 'Peserta'} {reg.volunteer_type && ` - ${reg.volunteer_type}`}
                             </div>
                           </div>
                           <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium flex items-center space-x-1">
@@ -522,14 +748,15 @@ export default function UserProfile() {
                             <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
                               <div className="flex items-center">
                                 <CalendarIcon />
-                                <span className="ml-1">
-                                  {new Date(reg.events.date_time).toLocaleDateString('id-ID')}
-                                </span>
+                                <span className="ml-1">{new Date(reg.events.date_time).toLocaleDateString('id-ID')}</span>
                               </div>
                               <div className="flex items-center">
                                 <LocationIcon />
                                 <span className="ml-1">{reg.events.location}</span>
                               </div>
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500">
+                              Role: {reg.role === 'volunteer' ? 'Relawan' : 'Peserta'} {reg.volunteer_type && ` - ${reg.volunteer_type}`}
                             </div>
                           </div>
                           <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium flex items-center space-x-1">
@@ -553,19 +780,18 @@ export default function UserProfile() {
                             <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
                               <div className="flex items-center">
                                 <CalendarIcon />
-                                <span className="ml-1">
-                                  {new Date(reg.events.date_time).toLocaleDateString('id-ID')}
-                                </span>
+                                <span className="ml-1">{new Date(reg.events.date_time).toLocaleDateString('id-ID')}</span>
                               </div>
                               <div className="flex items-center">
                                 <LocationIcon />
                                 <span className="ml-1">{reg.events.location}</span>
                               </div>
                             </div>
+                            <div className="mt-2 text-xs text-gray-500">
+                              Role: {reg.role === 'volunteer' ? 'Relawan' : 'Peserta'} {reg.volunteer_type && ` - ${reg.volunteer_type}`}
+                            </div>
                           </div>
-                          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                            Selesai
-                          </span>
+                          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">Selesai</span>
                         </div>
                       ))}
                     </div>
@@ -578,9 +804,7 @@ export default function UserProfile() {
                       <CalendarIcon />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Belum ada event</h3>
-                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                      Anda belum mendaftar event apapun. Mulai jelajahi event yang tersedia!
-                    </p>
+                    <p className="text-gray-500 mb-6 max-w-md mx-auto">Anda belum mendaftar event apapun. Mulai jelajahi event yang tersedia!</p>
                     <button
                       onClick={() => router.push('/events')}
                       className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors"

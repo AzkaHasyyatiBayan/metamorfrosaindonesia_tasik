@@ -11,11 +11,8 @@ const CalendarIcon = () => (
 
 const MushroomIcon = () => (
   <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
-    {/* Batang jamur */}
     <path d="M11 14H13V20H11z" fill="#8B4513"/>
-    {/* Topi jamur */}
     <ellipse cx="12" cy="10" rx="6" ry="4" fill="#FF6B6B"/>
-    {/* Bintik-bintik jamur */}
     <circle cx="9" cy="9" r="1" fill="white"/>
     <circle cx="12" cy="8" r="1" fill="white"/>
     <circle cx="15" cy="9" r="1" fill="white"/>
@@ -30,7 +27,6 @@ const CommunityIcon = () => (
   </svg>
 )
 
-// Icon Jamur Kecil untuk kartu
 const SmallMushroomIcon = () => (
   <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
     <path d="M11 14H13V20H11z" fill="#8B4513"/>
@@ -62,7 +58,6 @@ export default function NoEventsHero({ hasEvents, searchQuery, selectedCategorie
       setTimeout(() => setIsJumping(false), 300)
     }, 2000)
 
-    // Animasi scale jamur
     const mushroomInterval = setInterval(() => {
       setMushroomScale(1.2)
       setTimeout(() => setMushroomScale(1), 500)
@@ -113,7 +108,6 @@ export default function NoEventsHero({ hasEvents, searchQuery, selectedCategorie
   return (
     <div className="text-center py-16">
       <div className="max-w-4xl mx-auto">
-        {/* Animated Mario-like Character dengan Jamur */}
         <div className="relative h-32 mb-12">
           <div 
             className="absolute bottom-0 w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm transition-all duration-300"
@@ -125,10 +119,8 @@ export default function NoEventsHero({ hasEvents, searchQuery, selectedCategorie
             <MushroomIcon />
           </div>
           
-          {/* Ground dengan rumput */}
           <div className="absolute bottom-0 left-0 right-0 h-4 bg-green-500 rounded-t-lg"></div>
           
-          {/* Jamur-jamur kecil di ground */}
           <div 
             className="absolute bottom-2 left-1/4 transition-transform duration-500"
             style={{ transform: `scale(${mushroomScale})` }}
@@ -142,14 +134,11 @@ export default function NoEventsHero({ hasEvents, searchQuery, selectedCategorie
             <SmallMushroomIcon />
           </div>
           
-          {/* Clouds */}
           <div className="absolute top-4 left-1/4 w-20 h-8 bg-white rounded-full opacity-80"></div>
           <div className="absolute top-8 left-3/4 w-16 h-6 bg-white rounded-full opacity-80"></div>
         </div>
 
-        {/* Content */}
         <div className="bg-white rounded-2xl shadow-2xl p-12 border-4 border-yellow-400 relative overflow-hidden">
-          {/* Background Pattern dengan Jamur */}
           <div className="absolute inset-0 opacity-5">
             <div className="absolute top-4 right-4">
               <CommunityIcon />
@@ -157,7 +146,6 @@ export default function NoEventsHero({ hasEvents, searchQuery, selectedCategorie
             <div className="absolute bottom-4 left-4">
               <CalendarIcon />
             </div>
-            {/* Jamur background */}
             <div className="absolute top-1/4 left-1/4 opacity-10">
               <MushroomIcon />
             </div>

@@ -1,20 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Sacramento&family=Inter:wght@300;400;500;600;700&display=swap');
-@import "tailwindcss/preflight";
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    --font-disney: 'Sacramento', cursive;
-    --font-inter: 'Inter', sans-serif;
-    
-    --color-background-start: rgb(255, 255, 255);
-    --color-background-end: rgb(255, 255, 255);
-    --color-primary-red: #dc2626;
-    --color-primary-red-dark: #b91c1c;
-    --color-primary-orange: #f97316;
-    --color-primary-orange-dark: #ea580c;
-  }
+@theme {
+  --font-disney: 'Sacramento', cursive;
+  --font-inter: 'Inter', sans-serif;
+  --color-background-start: rgb(255, 255, 255);
+  --color-background-end: rgb(255, 255, 255);
+  --color-primary-red: #dc2626;
+  --color-primary-red-dark: #b91c1c;
+  --color-primary-orange: #f97316;
+  --color-primary-orange-dark: #ea580c;
+}
 
+@layer base {
   body {
     color: #000;
     background: linear-gradient(to bottom, transparent, var(--color-background-end)) var(--color-background-start);

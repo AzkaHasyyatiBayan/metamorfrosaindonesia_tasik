@@ -42,7 +42,7 @@ export default function AdminRegistrations() {
   const fetchRegistrations = async () => {
     try {
       const { data, error } = await supabase
-        .from('event_registrations_detail') // PERBAIKAN: ganti view name
+        .from('event_registrations_detail')
         .select('*')
         .order('created_at', { ascending: false })
 
@@ -110,7 +110,6 @@ export default function AdminRegistrations() {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Kelola Pendaftaran</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -118,7 +117,6 @@ export default function AdminRegistrations() {
           </p>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
@@ -177,7 +175,6 @@ export default function AdminRegistrations() {
           </div>
         </div>
 
-        {/* Filter Buttons */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-3">
             {[
@@ -190,8 +187,8 @@ export default function AdminRegistrations() {
                 key={key}
                 onClick={() => setFilter(key)}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  filter === key 
-                    ? `bg-${color}-600 text-white shadow-lg transform scale-105` 
+                  filter === key
+                    ? `bg-${color}-600 text-white shadow-lg transform scale-105`
                     : 'bg-white text-gray-700 shadow-md hover:shadow-lg hover:bg-gray-50'
                 }`}
               >
@@ -206,7 +203,6 @@ export default function AdminRegistrations() {
           </div>
         </div>
 
-        {/* Registrations Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -260,8 +256,8 @@ export default function AdminRegistrations() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        registration.type === 'VOLUNTEER' 
-                          ? 'bg-purple-100 text-purple-800' 
+                        registration.type === 'VOLUNTEER'
+                          ? 'bg-purple-100 text-purple-800'
                           : 'bg-blue-100 text-blue-800'
                       }`}>
                         {registration.type === 'VOLUNTEER' ? '🤝 Relawan' : '👤 Peserta'}
@@ -269,13 +265,13 @@ export default function AdminRegistrations() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        registration.status === 'CONFIRMED' 
+                        registration.status === 'CONFIRMED'
                           ? 'bg-green-100 text-green-800'
                           : registration.status === 'REJECTED'
                           ? 'bg-red-100 text-red-800'
                           : 'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {registration.status === 'CONFIRMED' ? '✅ Dikonfirmasi' : 
+                        {registration.status === 'CONFIRMED' ? '✅ Dikonfirmasi' :
                          registration.status === 'REJECTED' ? '❌ Ditolak' : '⏳ Pending'}
                       </span>
                     </td>
@@ -332,8 +328,8 @@ export default function AdminRegistrations() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada pendaftaran</h3>
               <p className="text-gray-500 max-w-sm mx-auto">
-                {filter === 'ALL' 
-                  ? 'Belum ada pendaftaran event.' 
+                {filter === 'ALL'
+                  ? 'Belum ada pendaftaran event.'
                   : `Tidak ada pendaftaran dengan status ${filter.toLowerCase()}.`}
               </p>
             </div>

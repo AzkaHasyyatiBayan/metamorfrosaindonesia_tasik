@@ -49,7 +49,6 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-red-50 via-white to-orange-50 flex items-center justify-center py-8 px-4">
-      {/* Background Animation */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-32 w-80 h-80 bg-red-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
         <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -57,7 +56,6 @@ export default function RegisterPage() {
       </div>
 
       <div className="max-w-md w-full space-y-8 relative z-10">
-        {/* Header dengan Logo */}
         <div className="text-center transform transition-all duration-500 hover:scale-105">
           <div className="mx-auto w-24 h-24 rounded-2xl flex items-center justify-center mb-6">
             {!logoError ? (
@@ -75,7 +73,7 @@ export default function RegisterPage() {
             )}
           </div>
           <h1 className="text-4xl font-bold mb-2 bg-linear-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
-            Metamorfosa
+            Metamorfrosa
           </h1>
           <h2 className="text-2xl font-semibold text-gray-700 mb-4">Daftar Akun Baru</h2>
           <p className="text-gray-600">
@@ -89,7 +87,6 @@ export default function RegisterPage() {
           </p>
         </div>
         
-        {/* Message */}
         {message && (
           <div className={`p-4 rounded-xl text-center border animate-fade-in ${
             message.includes('berhasil') 
@@ -111,10 +108,8 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* Register Form */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 transform transition-all duration-500 hover:shadow-2xl">
           <form className="space-y-6" onSubmit={handleRegister}>
-            {/* Name Input */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                 Nama Lengkap
@@ -138,7 +133,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Email Input */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email
@@ -162,7 +156,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Password Input */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -186,7 +179,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -207,12 +199,10 @@ export default function RegisterPage() {
           </form>
         </div>
 
-        {/* Additional Info */}
         <div className="text-center text-sm text-gray-500 bg-white/50 backdrop-blur-sm rounded-lg p-4 border border-white/20">
           <p>Dengan mendaftar, Anda menyetujui <span className="text-red-600 font-medium">Syarat & Ketentuan</span> dan <span className="text-red-600 font-medium">Kebijakan Privasi</span> kami</p>
         </div>
 
-        {/* Loading Overlay */}
         {loading && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
             <div className="bg-white rounded-2xl p-8 flex flex-col items-center space-y-4 transform transition-all duration-300 scale-105">

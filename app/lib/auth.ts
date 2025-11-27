@@ -1,6 +1,15 @@
 import { supabase } from './supabase';
 
-export const checkRateLimit = async (identifier: string, maxAttempts = 5, windowSeconds = 900): Promise<boolean> => {
+const RATE_LIMIT_CONFIG = {
+  maxAttempts: 5,
+  windowSeconds: 900,
+}
+
+export const checkRateLimit = async (
+  identifier: string, 
+  maxAttempts: number = RATE_LIMIT_CONFIG.maxAttempts, 
+  windowSeconds: number = RATE_LIMIT_CONFIG.windowSeconds
+): Promise<boolean> => {
   try {
     const windowStart = new Date(Date.now() - windowSeconds * 1000).toISOString();
 
@@ -14,10 +23,11 @@ export const checkRateLimit = async (identifier: string, maxAttempts = 5, window
 
     if (error) {
       console.error('Rate limit check error:', error);
-      return true; 
+      return true;
     }
 
     if ((count || 0) >= maxAttempts) {
+      console.warn(`Rate limit exceeded for identifier: ${identifier}`);
       return false;
     }
 
@@ -25,33 +35,47 @@ export const checkRateLimit = async (identifier: string, maxAttempts = 5, window
     return true;
   } catch (err) {
     console.error('Rate limit exception:', err);
-    return true; 
+    return true;
   }
 };
 
 export const requireAuth = async () => {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error || !session) {
-    throw new Error('Unauthorized');
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session) {
+      throw new Error('Unauthorized - No active session');
+    }
+    return session;
+  } catch (error) {
+    console.error('Authentication check failed:', error);
+    throw error;
   }
-  return session;
 };
 
 export const requireAdmin = async () => {
-  const session = await requireAuth();
-  
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', session.user.id)
-    .single();
+  try {
+    const session = await requireAuth();
+    
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
 
-  // PERBAIKAN: Ubah pengecekan role ke uppercase untuk konsistensi
-  if (error || !profile || profile?.role?.toUpperCase() !== 'ADMIN') {
-    console.log('🚫 Admin access denied - profile:', profile?.role, 'error:', error);
-    throw new Error('Admin access required');
+    if (error) {
+      console.error('Error fetching admin profile:', error);
+      throw new Error('Failed to verify admin status');
+    }
+
+    if (!profile || profile?.role?.toUpperCase() !== 'ADMIN') {
+      console.log('🚫 Admin access denied - profile role:', profile?.role);
+      throw new Error('Admin access required - insufficient privileges');
+    }
+
+    console.log('✅ Admin access granted for:', session.user.email);
+    return session;
+  } catch (error) {
+    console.error('Admin verification failed:', error);
+    throw error;
   }
-
-  console.log('✅ Admin access granted for:', session.user.email);
-  return session;
 };

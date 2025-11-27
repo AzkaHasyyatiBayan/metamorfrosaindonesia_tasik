@@ -3,25 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
-
-// PERBAIKAN: Update Event type dengan registrations
-type Event = {
-  id: string
-  title: string
-  description: string
-  date_time: string
-  location: string
-  category: string[]
-  max_participants?: number
-  image_url?: string
-  is_active: boolean
-  creator_id: string
-  created_at: string
-  updated_at: string
-  participants_count?: number
-  // PERBAIKAN: Tambahkan type untuk registrations
-  registrations?: Array<{ count: number }>
-}
+import type { Event } from '../../types/supabase'
 
 type EventFormData = {
   title: string
@@ -43,7 +25,6 @@ const ACCESSIBILITY_CATEGORIES = [
   'umum'
 ]
 
-// SVG Icon untuk placeholder gambar
 const EventPlaceholderIcon = () => (
   <svg 
     className="w-12 h-12 text-gray-400" 
@@ -60,7 +41,6 @@ const EventPlaceholderIcon = () => (
   </svg>
 )
 
-// PERBAIKAN: XIcon untuk error display
 const XIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -73,7 +53,6 @@ export default function AdminEventsPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [saving, setSaving] = useState(false)
-  // PERBAIKAN: Tambahkan state error
   const [error, setError] = useState<string | null>(null)
   
   const [formData, setFormData] = useState<EventFormData>({
@@ -91,19 +70,14 @@ export default function AdminEventsPage() {
     loadEvents()
   }, [])
 
-  // PERBAIKAN LENGKAP: Ganti fungsi loadEvents
   const loadEvents = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      // PERBAIKAN: Gunakan 'registrations' bukan 'event_participants'
       const { data: events, error } = await supabase
         .from('events')
-        .select(`
-          *,
-          registrations(count)
-        `)
+        .select(`*`)
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -112,13 +86,7 @@ export default function AdminEventsPage() {
         return
       }
 
-      // Process data untuk include participants count
-      const processedEvents = events.map(event => ({
-        ...event,
-        participants_count: event.registrations?.[0]?.count || 0
-      })) as Event[]
-
-      setEvents(processedEvents)
+      setEvents(events as Event[])
     } catch (error) {
       console.error('Error:', error)
       setError('Terjadi kesalahan saat memuat events')
@@ -146,7 +114,6 @@ export default function AdminEventsPage() {
       }
 
       if (editingEvent) {
-        // Update existing event
         const { error } = await supabase
           .from('events')
           .update(eventData)
@@ -154,19 +121,17 @@ export default function AdminEventsPage() {
 
         if (error) throw error
       } else {
-        // Create new event
         const { error } = await supabase
           .from('events')
           .insert([{
             ...eventData,
-            creator_id: (await supabase.auth.getUser()).data.user?.id,
+            created_by: (await supabase.auth.getUser()).data.user?.id,
             created_at: new Date().toISOString()
           }])
 
         if (error) throw error
       }
 
-      // Reset form dan reload data
       resetForm()
       loadEvents()
       
@@ -198,7 +163,7 @@ export default function AdminEventsPage() {
     setFormData({
       title: event.title,
       description: event.description,
-      date_time: event.date_time.slice(0, 16), // Format untuk datetime-local
+      date_time: event.date_time.slice(0, 16),
       location: event.location,
       category: event.category || [],
       max_participants: event.max_participants?.toString() || '',
@@ -223,7 +188,6 @@ export default function AdminEventsPage() {
 
       if (error) throw error
 
-      // Update local state
       setEvents(events.map(event => 
         event.id === eventId 
           ? { ...event, is_active: !currentStatus }
@@ -247,7 +211,6 @@ export default function AdminEventsPage() {
 
       if (error) throw error
 
-      // Update local state
       setEvents(events.filter(event => event.id !== eventId))
     } catch (error) {
       console.error('Error deleting event:', error)
@@ -264,7 +227,6 @@ export default function AdminEventsPage() {
     }))
   }
 
-  // Komponen untuk menampilkan gambar event
   const EventImage = ({ event }: { event: Event }) => {
     if (event.image_url) {
       return (
@@ -290,7 +252,6 @@ export default function AdminEventsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Kelola Event</h1>
@@ -309,7 +270,6 @@ export default function AdminEventsPage() {
           </button>
         </div>
 
-        {/* PERBAIKAN: Error Display */}
         {error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             <div className="flex items-center">
@@ -325,7 +285,6 @@ export default function AdminEventsPage() {
           </div>
         )}
 
-        {/* Create/Edit Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -403,7 +362,7 @@ export default function AdminEventsPage() {
                     </label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {ACCESSIBILITY_CATEGORIES.map((category) => (
-                        <label key={category} className="flex items-center space-x-2">
+                        <label key={category} className="flex items-center space-x-2 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={formData.category.includes(category)}
@@ -447,7 +406,7 @@ export default function AdminEventsPage() {
                   </div>
 
                   <div>
-                    <label className="flex items-center space-x-2">
+                    <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={formData.is_active}
@@ -480,7 +439,6 @@ export default function AdminEventsPage() {
           </div>
         )}
 
-        {/* Events Table dengan Laporan */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {loading ? (
             <div className="text-center py-12">
@@ -516,7 +474,7 @@ export default function AdminEventsPage() {
                       Tanggal
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Peserta
+                      Kapasitas
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
@@ -565,9 +523,8 @@ export default function AdminEventsPage() {
                       
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="text-center">
-                          <div className="font-semibold">{event.participants_count || 0}</div>
                           <div className="text-xs text-gray-500">
-                            {event.max_participants ? `/${event.max_participants}` : '∞'}
+                            Max: {event.max_participants ? event.max_participants : '∞'}
                           </div>
                         </div>
                       </td>

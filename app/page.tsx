@@ -4,7 +4,6 @@ import EventList from './components/EventList'
 import HomeCTA from './components/HomeCTA'
 import { getUpcomingEvents } from './lib/data'
 
-// --- Icons Components ---
 const SignLanguageIcon = () => (
   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
@@ -57,12 +56,9 @@ const VisionIcon = () => (
   </svg>
 )
 
-// Cache homepage for 30 minutes for better performance
-// Data will be revalidated automatically after 1800 seconds
-export const revalidate = 1800
+export const revalidate = 60
 
 export default async function HomePage() {
-  // Fetching data langsung di server
   const upcomingEvents = await getUpcomingEvents()
   const displayedEvents = upcomingEvents.slice(0, 3)
 
@@ -141,8 +137,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-4">Visi Kami</h3>
               <p className="text-gray-600 leading-relaxed">
-                Menjadi wadah utama bagi masyarakat untuk belajar dan berinteraksi menggunakan 
-                bahasa isyarat dalam lingkungan yang ramah dan mendukung.
+                Mewujudkan Kota Tasikmalaya yang ramah disabilitas dan setara.
               </p>
             </div>
           </div>
@@ -232,7 +227,6 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* HomeCTA menangani logika rendering kondisional (tombol Daftar) */}
             <HomeCTA />
           </div>
         </div>

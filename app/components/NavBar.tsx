@@ -1,367 +1,218 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, usePathname } from 'next/navigation'
-import { supabase } from '../lib/supabase'
-import { UserRole } from '../types/database.types'
-import { Icons } from './Icons'
+import { usePathname } from 'next/navigation'
+import { useAuth } from './AuthProvider'
+import Button from './Button'
 
-interface AppUser {
-  id: string
-  name: string
-  email: string
-  role: UserRole
-  avatar_url?: string
-}
-
-export default function Navbar() {
-  const [user, setUser] = useState<AppUser | null>(null)
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+export default function NavBar() {
+  const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [logoError, setLogoError] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+  
   const pathname = usePathname()
+  const { user, signOut } = useAuth()
 
-  const fetchUserProfile = useCallback(async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error && error.code === 'PGRST116') {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        
-        if (authUser) {
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: authUser.id,
-                email: authUser.email,
-                name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
-                role: 'USER'
-              }
-            ])
-            .select()
-            .single()
-
-          if (!createError && newProfile) {
-            setUser({
-              id: newProfile.id,
-              name: newProfile.name,
-              email: newProfile.email,
-              role: newProfile.role,
-              avatar_url: newProfile.avatar_url,
-            })
-            return
-          }
-        }
-      } else if (error) {
-        setUser(null)
-        return
-      }
-
-      if (profile) {
-        setUser({
-          id: profile.id,
-          name: profile.name || profile.email?.split('@')[0] || 'User',
-          email: profile.email,
-          role: profile.role,
-          avatar_url: profile.avatar_url,
-        })
-      }
-    } catch {
-      setUser(null)
-    }
-  }, [])
-
-  const checkUser = useCallback(async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (session?.user) {
-        await fetchUserProfile(session.user.id)
-      } else {
-        setUser(null)
-      }
-    } catch {
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [fetchUserProfile])
+  // Cek halaman aktif untuk menentukan warna tombol
+  const isRegisterPage = pathname === '/auth/register'
+  // const isLoginPage = pathname === '/auth/login' // Opsional jika butuh logika spesifik login
 
   useEffect(() => {
-    checkUser()
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          await fetchUserProfile(session.user.id)
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [checkUser, fetchUserProfile])
-
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
-      setUser(null)
-      setIsDropdownOpen(false)
-      router.push('/')
-      router.refresh()
-    } catch {
-      console.error('Error logging out')
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10)
     }
-  }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
-  const isActive = (path: string) => pathname === path
+  const navLinks = [
+    { href: '/', label: 'Beranda' },
+    { href: '/events', label: 'Event' },
+    { href: '/user/about', label: 'Tentang Kami' },
+  ]
 
-  if (pathname.startsWith('/admin')) {
-    return null
-  }
-
-  if (loading) {
-    return (
-      <nav className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">M</span>
-              </div>
-              <span className="text-3xl font-disney tracking-wide text-gray-900">
-                Metamorfosa
-              </span>
-            </div>
-            <div className="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
-          </div>
-        </div>
-      </nav>
-    )
-  }
+  // Style Tombol Solid (Background Merah, Teks Putih)
+  const solidBtnClass = "py-2! px-6! text-sm font-semibold bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 border-2 border-transparent"
+  
+  // Style Tombol Outline (Background Putih, Teks Merah, Border Merah)
+  // Perbaikan: Tidak ada lagi teks putih di sini, selalu merah agar terlihat di bg putih
+  const outlineBtnClass = "py-2! px-6! text-sm font-semibold bg-white text-red-600 border-2 border-red-600 hover:bg-red-50 transition-all transform hover:-translate-y-0.5"
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-40">
+    <nav
+      // Background SELALU PUTIH, shadow muncul saat discroll
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white ${
+        isScrolled || isMobileMenuOpen ? 'shadow-sm py-3' : 'py-4'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-3">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center group-hover:bg-red-700 transition-colors duration-200 overflow-hidden">
-                {!logoError ? (
-                  <Image 
-                    src="/logo.jpg" 
-                    alt="Metamorfosa Logo" 
-                    width={40} 
-                    height={40} 
-                    className="w-full h-full object-cover"
-                    onError={() => setLogoError(true)}
-                    priority
-                  />
-                ) : (
-                  <span className="text-white font-bold text-lg">M</span>
-                )}
-              </div>
-              <span className="text-3xl font-disney tracking-wide text-gray-900">
+        <div className="flex items-center justify-between">
+          
+          {/* --- BAGIAN LOGO --- */}
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="relative w-12 h-12 overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100 transition-transform duration-300 group-hover:scale-105">
+              {!logoError ? (
+                <Image
+                  src="/logo.jpg"
+                  alt="Metamorfosa Logo"
+                  fill
+                  className="object-cover transform scale-110"
+                  sizes="48px"
+                  priority
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <div className="w-full h-full bg-linear-to-br from-red-600 to-orange-600 flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">MI</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex flex-col">
+              {/* Teks selalu hitam/merah karena background putih */}
+              <span className="text-base font-bold leading-none text-gray-900">
                 Metamorfosa
               </span>
-            </Link>
-          </div>
+              <span className="text-[10px] font-medium tracking-wider text-red-600">
+                INDONESIA
+              </span>
+            </div>
+          </Link>
 
-          <div className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="/" 
-              className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                isActive('/') 
-                  ? 'text-red-600 border-b-2 border-red-600' 
-                  : 'text-gray-700 hover:text-red-600'
-              }`}
-            >
-              Beranda
-            </Link>
-            <Link 
-              href="/events" 
-              className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                isActive('/events') 
-                  ? 'text-red-600 border-b-2 border-red-600' 
-                  : 'text-gray-700 hover:text-red-600'
-              }`}
-            >
-              Event
-            </Link>
-            <Link 
-              href="/user/about" 
-              className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                isActive('/about') 
-                  ? 'text-red-600 border-b-2 border-red-600' 
-                  : 'text-gray-700 hover:text-red-600'
-              }`}
-            >
-              Tentang Kami
-            </Link>
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-6">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors hover:text-red-600 ${
+                  pathname === link.href
+                    ? 'text-red-600 font-semibold'
+                    : 'text-gray-600'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
 
+            {/* Auth Buttons */}
             {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 px-3 py-2"
+              <div className="flex items-center space-x-3">
+                <Link 
+                  href="/user/profile"
+                  className="text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center border border-red-200">
-                    <span className="text-red-600 text-sm font-semibold">
-                      {user.name?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="max-w-32 truncate">{user.name}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                    </div>
-                    
-                    <Link 
-                      href="/user/profile" 
-                      className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      <Icons.User />
-                      <span>Profil Saya</span>
-                    </Link>
-                    
-                    <div className="border-t border-gray-100 mt-2 pt-2">
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center space-x-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
-                      >
-                        <Icons.Logout />
-                        <span>Keluar</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
+                  Halo, {user.user_metadata?.name?.split(' ')[0] || 'User'}
+                </Link>
+                <Button 
+                  onClick={() => signOut()}
+                  variant="outline"
+                  className="py-1.5! px-4! text-xs font-medium border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                >
+                  Keluar
+                </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link 
-                  href="/auth/login" 
-                  className="text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 px-3 py-2"
-                >
-                  Masuk
+              <div className="flex items-center space-x-3">
+                {/* Tombol Masuk: 
+                    - Jika di halaman Register: Outline (Putih/Merah)
+                    - Jika BUKAN di halaman Register (Home/Login): Solid (Merah) 
+                */}
+                <Link href="/auth/login">
+                  <Button className={!isRegisterPage ? solidBtnClass : outlineBtnClass}>
+                    Masuk
+                  </Button>
                 </Link>
-                <Link 
-                  href="/auth/register" 
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200 shadow-sm"
-                >
-                  Daftar
+
+                {/* Tombol Daftar: 
+                    - Jika di halaman Register: Solid (Merah)
+                    - Jika BUKAN di halaman Register (Home/Login): Outline (Putih/Merah)
+                */}
+                <Link href="/auth/register">
+                  <Button className={isRegisterPage ? solidBtnClass : outlineBtnClass}>
+                    Daftar
+                  </Button>
                 </Link>
               </div>
             )}
           </div>
 
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-700 hover:text-red-600 transition-colors duration-200 p-2"
-            >
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            {isMobileMenuOpen ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-            </button>
-          </div>
+            )}
+          </button>
         </div>
-
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 py-4">
-            <div className="flex flex-col space-y-3">
-              <Link 
-                href="/" 
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Beranda
-              </Link>
-              <Link 
-                href="/events" 
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Event
-              </Link>
-              <Link 
-                href="/user/about" 
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Tentang Kami
-              </Link>
-              
-              {user ? (
-                <>
-                  <div className="px-4 py-2 border-t border-gray-200 mt-2 pt-4">
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
-                  
-                  <Link 
-                    href="/user/profile" 
-                    className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Icons.User />
-                    <span>Profil Saya</span>
-                  </Link>
-                  
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded text-left"
-                  >
-                    <Icons.Logout />
-                    <span>Keluar</span>
-                  </button>
-                </>
-              ) : (
-                <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
-                  <Link 
-                    href="/auth/login" 
-                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded text-center"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Masuk
-                  </Link>
-                  <Link 
-                    href="/auth/register" 
-                    className="bg-red-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-red-700 transition-colors duration-200 text-center"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Daftar
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
-      {isDropdownOpen && (
-        <div 
-          className="fixed inset-0 z-30" 
-          onClick={() => setIsDropdownOpen(false)}
-        ></div>
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-xl py-4 px-4 flex flex-col space-y-3 animate-fade-in">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`block text-sm font-medium px-4 py-3 rounded-lg transition-colors ${
+                pathname === link.href
+                  ? 'bg-red-50 text-red-600'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <div className="border-t border-gray-100 pt-4 mt-2 grid gap-3">
+            {user ? (
+              <>
+                <Link
+                  href="/user/profile"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center space-x-3 text-gray-700 font-medium px-2"
+                >
+                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-sm">
+                    {user.email?.charAt(0).toUpperCase()}
+                  </div>
+                  <span>Profile Saya</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    signOut()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="w-full text-center py-2 text-red-600 font-medium text-sm hover:bg-red-50 rounded-lg"
+                >
+                  Keluar Akun
+                </button>
+              </>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button className={`w-full justify-center ${!isRegisterPage ? 'bg-red-600 text-white' : 'bg-white text-red-600 border-2 border-red-600'}`}>
+                    Masuk
+                  </Button>
+                </Link>
+                <Link href="/auth/register" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button className={`w-full justify-center ${isRegisterPage ? 'bg-red-600 text-white' : 'bg-white text-red-600 border-2 border-red-600'}`}>
+                    Daftar
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </nav>
   )

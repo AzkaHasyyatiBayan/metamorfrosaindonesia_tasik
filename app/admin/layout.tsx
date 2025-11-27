@@ -51,7 +51,7 @@ export default function AdminLayout({
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Akses Ditolak</h2>
           <p className="text-gray-600 mb-6">Anda tidak memiliki akses ke halaman admin.</p>
-          <button 
+          <button
             onClick={() => router.push('/')}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
@@ -62,7 +62,6 @@ export default function AdminLayout({
     )
   }
 
-  // Render layout admin yang lengkap (tanpa navbar/footer dari root)
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">

@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import EventCard, { Event } from '../components/EventCard'
+import EventCard from '../components/EventCard'
 import EventFilter from '../components/EventFilter'
 import NoEventsHero from '../components/NoEventsHero'
+import type { Event } from '../types/supabase'
 
 type FilterState = {
   category: string[]

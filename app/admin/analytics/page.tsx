@@ -52,7 +52,7 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       const { data, error } = await supabase
-        .from('admin_dashboard_stats') // PERBAIKAN: view yang sudah dibuat
+        .from('admin_dashboard_stats')
         .select('*')
         .single()
 
@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
   const fetchEventStatistics = async () => {
     try {
       const { data, error } = await supabase
-        .from('event_statistics') // PERBAIKAN: view yang sudah dibuat
+        .from('event_statistics')
         .select('*')
         .order('date_time', { ascending: false })
 
@@ -123,7 +123,6 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Analitik & Statistik</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -131,11 +130,10 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        {/* Main Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard 
-            title="Total Pengguna" 
-            value={stats?.total_users || 0} 
+          <StatCard
+            title="Total Pengguna"
+            value={stats?.total_users || 0}
             color="blue"
             icon={
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,9 +141,9 @@ export default function AnalyticsPage() {
               </svg>
             }
           />
-          <StatCard 
-            title="Event Aktif" 
-            value={stats?.active_events || 0} 
+          <StatCard
+            title="Event Aktif"
+            value={stats?.active_events || 0}
             color="green"
             icon={
               <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,9 +151,9 @@ export default function AnalyticsPage() {
               </svg>
             }
           />
-          <StatCard 
-            title="Total Pendaftaran" 
-            value={stats?.total_registrations || 0} 
+          <StatCard
+            title="Total Pendaftaran"
+            value={stats?.total_registrations || 0}
             color="purple"
             icon={
               <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,9 +161,9 @@ export default function AnalyticsPage() {
               </svg>
             }
           />
-          <StatCard 
-            title="Relawan" 
-            value={stats?.total_volunteers || 0} 
+          <StatCard
+            title="Relawan"
+            value={stats?.total_volunteers || 0}
             color="orange"
             icon={
               <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,11 +173,10 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        {/* Secondary Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard 
-            title="Event Mendatang" 
-            value={stats?.upcoming_events || 0} 
+          <StatCard
+            title="Event Mendatang"
+            value={stats?.upcoming_events || 0}
             color="indigo"
             icon={
               <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,9 +184,9 @@ export default function AnalyticsPage() {
               </svg>
             }
           />
-          <StatCard 
-            title="Pendaftaran Bulan Ini" 
-            value={stats?.monthly_registrations || 0} 
+          <StatCard
+            title="Pendaftaran Bulan Ini"
+            value={stats?.monthly_registrations || 0}
             color="teal"
             icon={
               <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,9 +194,9 @@ export default function AnalyticsPage() {
               </svg>
             }
           />
-          <StatCard 
-            title="Dokumentasi" 
-            value={stats?.total_galleries || 0} 
+          <StatCard
+            title="Dokumentasi"
+            value={stats?.total_galleries || 0}
             color="pink"
             icon={
               <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,9 +204,9 @@ export default function AnalyticsPage() {
               </svg>
             }
           />
-          <StatCard 
-            title="Pending Review" 
-            value={stats?.pending_registrations || 0} 
+          <StatCard
+            title="Pending Review"
+            value={stats?.pending_registrations || 0}
             color="yellow"
             icon={
               <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,7 +216,6 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        {/* Event Statistics Table */}
         <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Statistik Event</h2>
@@ -227,7 +223,7 @@ export default function AnalyticsPage() {
               {eventStats.length} Event
             </span>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -285,7 +281,7 @@ export default function AnalyticsPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
                         <div className="w-16 bg-gray-200 rounded-full h-2">
-                          <div 
+                          <div
                             className="bg-red-600 h-2 rounded-full transition-all duration-500"
                             style={{ width: `${Math.min(event.participation_rate, 100)}%` }}
                           ></div>
