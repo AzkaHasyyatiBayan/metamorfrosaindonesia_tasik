@@ -453,7 +453,6 @@ export default function UserProfile() {
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeftIcon />
-              <span>Kembali</span>
             </button>
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900">Profil Saya</h1>

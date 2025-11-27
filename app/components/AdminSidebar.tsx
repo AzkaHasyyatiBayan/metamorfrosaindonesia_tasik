@@ -53,21 +53,20 @@ export default function AdminSidebar() {
   const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [logoError, setLogoError] = useState(false)
-  const [avatarError, setAvatarError] = useState(false)
-  const { userProfile, isAdmin, loading } = useAuth()
+  
+  // PERBAIKAN: Hilangkan 'any' dan manual check
+  const { userProfile, loading } = useAuth()
+  // Manual check untuk admin role
+  const isAdmin = (userProfile as { role?: string })?.role === 'admin'
 
-  // PERBAIKAN: Fungsi isActive yang lebih akurat
   const isActive = (path: string) => {
     if (path === '/admin') {
-      // Untuk dashboard, hanya aktif jika pathname tepat '/admin'
       return pathname === '/admin'
     } else {
-      // Untuk menu lain, aktif jika pathname dimulai dengan path menu
       return pathname.startsWith(path)
     }
   }
 
-  // PERBAIKAN: Menu items dengan path yang tepat
   const menuItems = [
     { path: '/admin', label: 'Dashboard', icon: <DashboardIcon /> },
     { path: '/admin/galleries', label: 'Dokumentasi', icon: <DocumentsIcon /> },
@@ -84,7 +83,6 @@ export default function AdminSidebar() {
     }
   }
 
-  // Tampilkan loading jika masih checking auth
   if (loading) {
     return (
       <div className="bg-red-600 text-white min-h-screen w-64 flex flex-col items-center justify-center">
@@ -94,7 +92,6 @@ export default function AdminSidebar() {
     )
   }
 
-  // Jangan render sidebar jika bukan admin
   if (!isAdmin) {
     return null
   }
@@ -102,11 +99,10 @@ export default function AdminSidebar() {
   return (
     <div className={`bg-red-600 text-white min-h-screen transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} flex flex-col sticky top-0 h-screen`}>
       {/* Header Sidebar */}
-      <div className="p-4 border-b border-red-500 flex-shrink-0">
+      <div className="p-4 border-b border-red-500 shrink-0">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              {/* PERBAIKAN: Ganti icon M dengan Image component dari next/image */}
               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden">
                 {!logoError ? (
                   <Image 
@@ -158,22 +154,12 @@ export default function AdminSidebar() {
         <div className="p-4 border-b border-red-500">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden">
-              {userProfile.avatar_url && userProfile.avatar_url.startsWith('/') && !avatarError ? (
-                <Image 
-                  src={userProfile.avatar_url} 
-                  alt={userProfile.name}
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-cover"
-                  onError={() => setAvatarError(true)}
-                />
-              ) : (
-                <div className="w-full h-full rounded-full flex items-center justify-center">
-                  <span className="text-red-600 font-semibold text-sm">
-                    {userProfile.name?.charAt(0).toUpperCase() || 'U'}
-                  </span>
-                </div>
-              )}
+              {/* PERBAIKAN: Simple avatar dengan initial */}
+              <div className="w-full h-full rounded-full flex items-center justify-center">
+                <span className="text-red-600 font-semibold text-sm">
+                  {userProfile.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{userProfile.name}</p>
@@ -208,7 +194,7 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Footer Sidebar */}
-      <div className="p-4 border-t border-red-500 flex-shrink-0">
+      <div className="p-4 border-t border-red-500 shrink-0">
         {!isCollapsed ? (
           <button
             onClick={handleLogout}

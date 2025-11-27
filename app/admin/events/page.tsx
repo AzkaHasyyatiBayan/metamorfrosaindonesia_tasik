@@ -268,7 +268,7 @@ export default function AdminEventsPage() {
   const EventImage = ({ event }: { event: Event }) => {
     if (event.image_url) {
       return (
-        <div className="h-12 w-12 flex-shrink-0 relative">
+        <div className="h-12 w-12 shrink-0 relative">
           <Image
             src={event.image_url}
             alt={event.title}
@@ -281,7 +281,7 @@ export default function AdminEventsPage() {
     }
     
     return (
-      <div className="h-12 w-12 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+      <div className="h-12 w-12 shrink-0 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
         <EventPlaceholderIcon />
       </div>
     )

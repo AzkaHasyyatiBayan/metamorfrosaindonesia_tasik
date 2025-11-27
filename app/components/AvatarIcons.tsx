@@ -1,139 +1,197 @@
+'use client';
+
+import React from 'react';
+
 // Beautiful Flower Icon
 export const FlowerIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,10.5A1.5,1.5 0 0,1 13.5,12A1.5,1.5 0 0,1 12,13.5A1.5,1.5 0 0,1 10.5,12A1.5,1.5 0 0,1 12,10.5M12,5A7,7 0 0,1 19,12C19,12.5 18.95,13 18.86,13.5C17.84,12.5 16.5,12 15,12C13.8,12 12.68,12.34 11.75,12.93C10.25,12.43 8.86,11.67 7.64,10.71C7.09,11.15 6.56,11.64 6.06,12.13C5.29,11.38 4.74,10.47 4.42,9.5C4.26,10.0 4.12,10.5 4.06,11H4V13H4.06C4.12,13.5 4.26,14 4.42,14.5C4.74,13.53 5.29,12.62 6.06,11.87C6.56,12.36 7.09,12.85 7.64,13.29C8.86,12.33 10.25,11.57 11.75,11.07C12.68,11.66 13.8,12 15,12C16.5,12 17.84,11.5 18.86,10.5C18.95,11 19,11.5 19,12A7,7 0 0,1 12,19Z"/>
+    <g className="origin-center animate-pulse">
+      <circle cx="12" cy="12" r="2" fill="currentColor"/>
+      <path d="M12 2C10 2 9 4 9 6C9 7 9.5 8 10.5 8.5C9.5 9 9 10 9 11C9 13 10 14 12 14C14 14 15 13 15 11C15 10 14.5 9 13.5 8.5C14.5 8 15 7 15 6C15 4 14 2 12 2Z" opacity="0.9"/>
+      <path d="M6 9C4 9 2 10 2 12C2 14 4 15 6 15C7 15 8 14.5 8.5 13.5C9 14.5 10 15 11 15C13 15 14 14 14 12C14 10 13 9 11 9C10 9 9 9.5 8.5 10.5C8 9.5 7 9 6 9Z" opacity="0.8"/>
+      <path d="M18 9C20 9 22 10 22 12C22 14 20 15 18 15C17 15 16 14.5 15.5 13.5C15 14.5 14 15 13 15C11 15 10 14 10 12C10 10 11 9 13 9C14 9 15 9.5 15.5 10.5C16 9.5 17 9 18 9Z" opacity="0.8"/>
+      <path d="M12 22C14 22 15 20 15 18C15 17 14.5 16 13.5 15.5C14.5 15 15 14 15 13C15 11 14 10 12 10C10 10 9 11 9 13C9 14 9.5 15 10.5 15.5C9.5 16 9 17 9 18C9 20 10 22 12 22Z" opacity="0.9"/>
+    </g>
   </svg>
-)
+);
 
-// Beautiful Leaf Icon
-export const LeafIcon = () => (
+// Enhanced Leaf Icon with gradient effect
+const LeafIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M17,8C8,10 5.9,16.17 5.9,16.17C5.9,16.17 4,14 4,12C4,9 6,7 9,7C10.7,7 12.4,7.8 13.5,9.1C14.6,8.4 15.7,8 17,8M17,8C19,8 20,9 20,12C20,15 17,17 17,17C17,17 13,15 12,15C11,15 9,17 9,17C9,17 5,15 5,12C5,10 6,8 9,8C10.7,8 12.4,8.8 13.5,10.1C14.6,9.4 15.7,9 17,9Z"/>
+    <path d="M17 8C8 10 5.9 16.17 5.9 16.17C5.9 16.17 10 20 12 20C15 20 20 17 20 12C20 9 19 8 17 8M12 14C11 14 10 13 10 12C10 11 11 10 12 10C13 10 14 11 14 12C14 13 13 14 12 14Z" opacity="0.9"/>
+    <path d="M9 7C10.7 7 12.4 7.8 13.5 9.1C14.6 8.4 15.7 8 17 8C15.7 8 14.6 8.4 13.5 9.1C12.4 7.8 10.7 7 9 7Z" opacity="0.6"/>
   </svg>
-)
+);
 
-// Beautiful Tree Icon
-export const TreeIcon = () => (
+// Enhanced Tree Icon with layered branches
+const TreeIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M11,21V16.74C10.53,16.91 10.03,17 9.5,17C7,17 5,15 5,12.5C5,11.23 5.5,10.09 6.36,9.27C6.13,8.73 6,8.13 6,7.5C6,5 8,3 10.5,3C12.06,3 13.44,3.8 14.25,5C14.33,5 14.41,5 14.5,5C16.71,5 18.5,6.79 18.5,9C18.5,9.91 18.21,10.75 17.74,11.43C18.44,12.13 19,13.11 19,14.5C19,16.26 17.7,17.72 16,17.93V21H11Z"/>
+    <path d="M11 21V16H13V21H11Z" opacity="0.7"/>
+    <circle cx="12" cy="8" r="6" opacity="0.3"/>
+    <circle cx="12" cy="9" r="5" opacity="0.5"/>
+    <circle cx="12" cy="10" r="4" opacity="0.7"/>
+    <circle cx="12" cy="11" r="3" opacity="0.9"/>
   </svg>
-)
+);
 
-// Circle Icon
-export const CircleIcon = () => (
+// Enhanced Star Icon with sparkle effect
+const StarIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="10"/>
+    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+    <path d="M12 6L13.5 10L17.5 10.5L14.75 13.25L15.5 17.5L12 15.5L8.5 17.5L9.25 13.25L6.5 10.5L10.5 10L12 6Z" opacity="0.4"/>
   </svg>
-)
+);
 
-// Star Icon
-export const StarIcon = () => (
+// Enhanced Heart Icon with pulse
+const HeartIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
+    <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z"/>
+    <path d="M12 18L10.8 16.95C6.85 13.35 4 10.72 4 8.5C4 6.5 5.5 5 7.5 5C8.76 5 10 5.62 10.74 6.59H13.26C14 5.62 15.24 5 16.5 5C18.5 5 20 6.5 20 8.5C20 10.72 17.15 13.35 13.2 16.95L12 18Z" opacity="0.3"/>
   </svg>
-)
+);
 
-// Heart Icon
-export const HeartIcon = () => (
+// Enhanced Butterfly Icon with symmetrical wings
+const ButterflyIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.28 2,8.5C2,5.42 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.09C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.42 22,8.5C22,12.28 18.6,15.36 13.45,20.04L12,21.35Z"/>
+    <ellipse cx="12" cy="12" rx="1" ry="4" opacity="0.8"/>
+    <path d="M8 8C6 8 4 9 4 11C4 13 6 14 8 14C9 14 10 13.5 10.5 12.5C10.5 11.5 10 10 8 8Z" opacity="0.9"/>
+    <path d="M16 8C18 8 20 9 20 11C20 13 18 14 16 14C15 14 14 13.5 13.5 12.5C13.5 11.5 14 10 16 8Z" opacity="0.9"/>
+    <path d="M8 16C6 16 4 15 4 13C4 11 6 10 8 10C9 10 10 10.5 10.5 11.5C10.5 12.5 10 14 8 16Z" opacity="0.7"/>
+    <path d="M16 16C18 16 20 15 20 13C20 11 18 10 16 10C15 10 14 10.5 13.5 11.5C13.5 12.5 14 14 16 16Z" opacity="0.7"/>
+    <circle cx="7" cy="10" r="1" opacity="0.5"/>
+    <circle cx="17" cy="10" r="1" opacity="0.5"/>
   </svg>
-)
+);
 
-// Butterfly Icon
-export const ButterflyIcon = () => (
+// Enhanced Sun Icon with rays
+const SunIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M22,12C22,12 19.2,11.1 16.9,9.3C15.8,8.4 14.7,7.3 14,6C13.5,5.2 13.3,4.3 13.6,3.4C14.3,2 16.1,2.3 16.9,3.5C17.2,4 17.4,4.5 17.4,5.1C17.4,5.7 17.2,6.3 16.8,6.8C16.4,7.3 15.8,7.7 15.2,7.8C14.6,7.9 13.9,7.8 13.4,7.4C12.8,7 12.5,6.3 12.5,5.6C12.5,5 12.7,4.4 13,3.9C13.7,2.9 15,2.4 16.1,2.9C16.8,3.2 17.3,3.8 17.5,4.5C17.8,4.1 18.1,3.7 18.5,3.5C19.5,3 20.7,3.4 21.3,4.3C21.9,5.2 21.8,6.4 21.1,7.2C20.4,8 19.3,8.3 18.3,8.1C17.8,8 17.3,7.8 16.9,7.5C18.5,8.8 20.3,10.2 21.5,11.6C21.8,12 22,12.4 22,12.9C22,13.4 21.8,13.8 21.5,14.2C20.3,15.6 18.5,17 16.9,18.3C17.3,18 17.8,17.8 18.3,17.7C19.3,17.5 20.4,17.8 21.1,18.6C21.8,19.4 21.9,20.6 21.3,21.5C20.7,22.4 19.5,22.8 18.5,22.3C18.1,22.1 17.8,21.7 17.5,21.3C17.3,22 16.8,22.6 16.1,22.9C15,23.4 13.7,22.9 13,21.9C12.7,21.4 12.5,20.8 12.5,20.2C12.5,19.5 12.8,18.8 13.4,18.4C13.9,18 14.6,17.9 15.2,18C15.8,18.1 16.4,18.5 16.8,19C17.2,19.5 17.4,20.1 17.4,20.7C17.4,21.3 17.2,21.8 16.9,22.3C16.1,23.5 14.3,23.8 13.6,22.4C13.3,21.5 13.5,20.6 14,19.8C14.7,18.5 15.8,17.4 16.9,16.5C19.2,14.7 22,13.8 22,13.8C22,13.4 22,12.7 22,12Z"/>
+    <circle cx="12" cy="12" r="5"/>
+    <g opacity="0.6">
+      <rect x="11" y="1" width="2" height="3" rx="1"/>
+      <rect x="11" y="20" width="2" height="3" rx="1"/>
+      <rect x="1" y="11" width="3" height="2" ry="1"/>
+      <rect x="20" y="11" width="3" height="2" ry="1"/>
+      <rect x="4.2" y="4.2" width="2" height="3" rx="1" transform="rotate(-45 5.2 5.7)"/>
+      <rect x="17.8" y="17.8" width="2" height="3" rx="1" transform="rotate(-45 18.8 19.3)"/>
+      <rect x="4.2" y="17.8" width="2" height="3" rx="1" transform="rotate(45 5.2 19.3)"/>
+      <rect x="17.8" y="4.2" width="2" height="3" rx="1" transform="rotate(45 18.8 5.7)"/>
+    </g>
+    <circle cx="12" cy="12" r="3" opacity="0.3"/>
   </svg>
-)
+);
 
-// Mountain Icon
-export const MountainIcon = () => (
+// Enhanced Moon Icon with crescent
+const MoonIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L5,8.09V15.91L12,19.85L19,15.91V8.09L12,4.15Z"/>
+    <path d="M12 3C7.03 3 3 7.03 3 12C3 16.97 7.03 21 12 21C16.97 21 21 16.97 21 12C21 11.54 20.96 11.08 20.9 10.64C20.3 11.5 19.4 12.14 18.36 12.42C16.93 12.8 15.4 12.35 14.42 11.37C13.44 10.39 12.99 8.86 13.37 7.43C13.65 6.39 14.29 5.49 15.15 4.89C14.13 3.71 12.65 3 11 3C10.87 3 10.74 3.01 10.61 3.02C11 3.68 11.22 4.45 11.22 5.28C11.22 7.66 9.28 9.6 6.9 9.6C6.07 9.6 5.3 9.38 4.64 8.99C4.22 9.88 4 10.88 4 11.92C4 16.39 7.61 20 12.08 20C16.55 20 20.16 16.39 20.16 11.92C20.16 7.45 16.55 3.84 12.08 3.84C12.05 3.84 12.03 3.84 12 3.84V3Z"/>
+    <circle cx="10" cy="8" r="1" opacity="0.5"/>
+    <circle cx="8" cy="11" r="0.5" opacity="0.5"/>
+    <circle cx="11" cy="13" r="0.7" opacity="0.5"/>
   </svg>
-)
+);
 
-// Sun Icon
-export const SunIcon = () => (
+// Enhanced Cloud Icon with fluffy layers
+const CloudIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2L14.39,5.42C13.65,5.15 12.84,5 12,5C11.16,5 10.35,5.15 9.61,5.42L12,2M3.34,7L7.5,6.65C6.9,7.16 6.36,7.78 5.94,8.5C5.5,9.24 5.25,10 5.11,10.79L3.34,7M3.36,17L5.12,13.23C5.26,14 5.53,14.78 5.95,15.5C6.37,16.24 6.91,16.86 7.5,17.37L3.36,17M20.65,7L18.88,10.79C18.74,10 18.47,9.25 18.05,8.5C17.63,7.78 17.1,7.15 16.5,6.64L20.65,7M20.64,17L16.5,17.36C17.09,16.85 17.62,16.22 18.04,15.5C18.46,14.76 18.73,14 18.87,13.21L20.64,17M12,22L9.59,18.56C10.33,18.83 11.14,19 12,19C12.82,19 13.63,18.83 14.37,18.56L12,22Z"/>
+    <ellipse cx="12" cy="14" rx="8" ry="4" opacity="0.3"/>
+    <path d="M6.5 20C4.22 20 2.61 18.43 2.61 16.16C2.61 14.21 3.78 12.68 5.68 12.26C6.31 9.96 8.18 8.54 10.55 8.54C12.92 8.54 14.79 9.96 15.42 12.26C17.32 12.68 18.49 14.21 18.49 16.16C18.49 18.43 16.88 20 14.6 20Z"/>
+    <circle cx="9" cy="13" r="2.5" opacity="0.2"/>
+    <circle cx="14" cy="13" r="2" opacity="0.2"/>
   </svg>
-)
+);
 
-// Moon Icon
-export const MoonIcon = () => (
+// Enhanced Fish Icon with scales pattern
+const FishIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z"/>
+    <path d="M12 20L12.76 17.64C9.5 17.5 7 16 7.5 12.5C8 9 9.73 7.5 12.76 7.36L12 5L15 2L16 3.5L17 2L20 5L19 9.36C19.25 9.37 20.46 9.44 22 10.28C22 11.5 22 12.5 22 14.72C20.46 15.56 19.25 15.63 19 15.64L20 20L17 23L16 21.5L15 23L12 20Z"/>
+    <circle cx="16" cy="9" r="1.5" opacity="0.8"/>
+    <g opacity="0.3">
+      <circle cx="13" cy="10" r="0.8"/>
+      <circle cx="14" cy="12" r="0.8"/>
+      <circle cx="13" cy="14" r="0.8"/>
+      <circle cx="15" cy="13" r="0.8"/>
+    </g>
   </svg>
-)
+);
 
-// Cloud Icon
-export const CloudIcon = () => (
+// Enhanced Bird Icon with wing details
+const BirdIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M6.5 20Q4.22 20 2.61 18.43 1 16.85 1 14.58 1 12.63 2.17 11.1 3.35 9.57 5.25 9.15 5.88 6.85 7.75 5.43 9.63 4 12 4 14.93 4 16.96 6.04 19 8.07 19 11 20.73 11.2 21.86 12.5 23 13.78 23 15.5 23 17.38 21.69 18.69 20.38 20 18.5 20Z"/>
+    <path d="M23 11.5L20 10.5C19.5 9 18.5 8.5 18.5 8.5C17 7.5 15 7.5 13.5 8.5C13.2 7.5 12.4 6.5 11 6.5C10.4 6.5 9.8 6.9 9.4 7.5H8.6C8.2 6.9 7.6 6.5 7 6.5C5.6 6.5 4.8 7.5 4.5 8.5C3 7.5 1 7.5 -0.5 8.5C-0.5 8.5 -1.5 9 -2 10.5L-5 11.5L-2 12.5C-1.5 14 -0.5 14.5 -0.5 14.5C1 15.5 3 15.5 4.5 14.5C4.8 15.5 5.6 16.5 7 16.5C7.6 16.5 8.2 16.1 8.6 15.5H9.4C9.8 16.1 10.4 16.5 11 16.5C12.4 16.5 13.2 15.5 13.5 14.5C15 15.5 17 15.5 18.5 14.5C18.5 14.5 19.5 14 20 12.5L23 11.5Z"/>
+    <ellipse cx="8" cy="11" rx="2" ry="3" opacity="0.3"/>
+    <ellipse cx="16" cy="11" rx="2" ry="3" opacity="0.3"/>
+    <circle cx="12" cy="11" r="1.5"/>
+    <circle cx="12" cy="10" r="0.5" fill="white" opacity="0.8"/>
   </svg>
-)
+);
 
-// Fish Icon
-export const FishIcon = () => (
+// Enhanced Cat Icon with whiskers
+const CatIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12,20L12.76,17.64C12.5,17.63 11.29,17.56 9.73,16.72C7.04,15.33 4,15.53 2,15.53C4,15.53 6,14 7.5,12.5C7.5,12.5 5,11.47 2,11.47C4,11.47 7.04,11.67 9.73,10.28C11.29,9.44 12.5,9.37 12.76,9.36L12,7L15,4L16,5.5L17,4L20,7L19,9.36C19.25,9.37 20.46,9.44 22,10.28C22,10.28 23,11.47 23,12.5C23,13.53 22,14.72 22,14.72C20.46,15.56 19.25,15.63 19,15.64L20,20L17,23L16,21.5L15,23L12,20Z"/>
+    <path d="M12 8L10.67 8.09C9.81 7.07 8.54 6.5 7 6.5C4.46 6.5 2.45 8.2 2.07 10.5H2C1.45 10.5 1 10.95 1 11.5V12.5C1 13.05 1.45 13.5 2 13.5H2.05C2.5 15.5 4 17 6 17.5V19.5C6 20.05 6.45 20.5 7 20.5H8C8.55 20.5 9 20.05 9 19.5V17.5C11 17 12.5 15.5 12.95 13.5H13C13.55 13.5 14 13.05 14 12.5V11.5C14 10.95 13.55 10.5 13 10.5H12.93C12.55 8.2 10.54 6.5 8 6.5C6.46 6.5 5.19 7.07 4.33 8.09L4 8L3 7.5L2 8.5L3 9.5L4 9L4.33 9.91C5.19 10.93 6.46 11.5 8 11.5C9.54 11.5 10.81 10.93 11.67 9.91L12 9L13 9.5L14 8.5L13 7.5L12 8Z"/>
+    <circle cx="6.5" cy="12" r="0.8"/>
+    <circle cx="8.5" cy="12" r="0.8"/>
+    <path d="M5 12L3 11M10 12L12 11" stroke="currentColor" strokeWidth="0.5" opacity="0.5"/>
+    <path d="M4 7L2 5M11 7L13 5" stroke="currentColor" strokeWidth="0.8" opacity="0.6"/>
   </svg>
-)
-
-// Bird Icon
-export const BirdIcon = () => (
-  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M23,11.5L19.95,10.37C19.69,9.22 19.04,8.56 19.04,8.56C17.44,7.33 14.81,7.47 13.5,8.55C13.22,7.67 12.41,6.56 11,6.5C10.36,6.5 9.75,6.86 9.33,7.5H8.67C8.25,6.86 7.64,6.5 7,6.5C5.59,6.56 4.78,7.67 4.5,8.55C3.19,7.47 0.56,7.33 -1.04,8.56C-1.04,8.56 -1.69,9.22 -1.95,10.37L-5,11.5L-1.95,12.63C-1.69,13.78 -1.04,14.44 -1.04,14.44C0.56,15.67 3.19,15.53 4.5,14.45C4.78,15.33 5.59,16.44 7,16.5C7.64,16.5 8.25,16.14 8.67,15.5H9.33C9.75,16.14 10.36,16.5 11,16.5C12.41,16.44 13.22,15.33 13.5,14.45C14.81,15.53 17.44,15.67 19.04,14.44C19.04,14.44 19.69,13.78 19.95,12.63L23,11.5Z"/>
-  </svg>
-)
-
-// Cat Icon
-export const CatIcon = () => (
-  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12,8L10.67,8.09C9.81,7.07 8.54,6.5 7,6.5C4.46,6.5 2.45,8.2 2.07,10.5H2C1.45,10.5 1,10.95 1,11.5V12.5C1,13.05 1.45,13.5 2,13.5H2.05C2.28,14.42 2.84,15.22 3.6,15.84L2,19.5L3.5,20.5L5,17.5C5.47,17.81 6,18 6.5,18.18L6.5,19.5C6.5,20.05 6.95,20.5 7.5,20.5H8.5C9.05,20.5 9.5,20.05 9.5,19.5V18.18C10,18 10.53,17.81 11,17.5L12.5,20.5L14,19.5L12.4,15.84C13.16,15.22 13.72,14.42 13.95,13.5H14C14.55,13.5 15,13.05 15,12.5V11.5C15,10.95 14.55,10.5 14,10.5H13.93C13.55,8.2 11.54,6.5 9,6.5C7.46,6.5 6.19,7.07 5.33,8.09L5,8L4,7.5L3,8.5L4,9.5L5,9L5.33,9.91C6.19,10.93 7.46,11.5 9,11.5C10.54,11.5 11.81,10.93 12.67,9.91L13,9L14,9.5L15,8.5L14,7.5L13,8L12,8M7.5,13.5A1,1 0 0,0 6.5,14.5A1,1 0 0,0 7.5,15.5A1,1 0 0,0 8.5,14.5A1,1 0 0,0 7.5,13.5M16.5,13.5A1,1 0 0,0 15.5,14.5A1,1 0 0,0 16.5,15.5A1,1 0 0,0 17.5,14.5A1,1 0 0,0 16.5,13.5Z"/>
-  </svg>
-)
+);
 
 // Dog Icon
 export const DogIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M18,4C16.29,4 15.25,4.33 14.65,4.61C13.88,4.23 13,4 12,4C11,4 10.12,4.23 9.35,4.61C8.75,4.33 7.71,4 6,4C3,4 1,12 1,14C1,14.83 2.32,15.59 4.14,15.9C4.78,18.14 7.8,19.85 11.5,20V15.72C10.91,15.35 10,14.68 10,14C10,13 12,13 12,13C12,13 14,13 14,14C14,14.68 13.09,15.35 12.5,15.72V20C16.2,19.85 19.22,18.14 19.86,15.9C21.68,15.59 23,14.83 23,14C23,12 21,4 18,4M4.15,13.87C3.65,13.75 3.26,13.61 3,13.5C3.25,10.73 5.2,6.4 6.05,6C6.59,6 7,6.33 7,6.87C7,7.47 6.62,7.92 6.05,7.92C5.3,7.92 4.75,7.5 4.75,6.8C4.75,6.5 4.89,6.34 5.06,6.25C4.69,7.08 4.36,8 4.15,8.7C3.56,8.7 3.07,8.24 3.07,7.66C3.07,7.15 3.46,6.74 3.93,6.74C4.05,6.74 4.16,6.76 4.26,6.8C4.45,5.84 4.85,4.94 5.39,4.3C5.8,4.2 6.27,4 6.85,4C7.5,4 8.1,4.19 8.58,4.46C8.33,5.1 8.2,5.8 8.2,6.5C8.2,10.03 11.36,10 12,10C12.64,10 15.8,10.03 15.8,6.5C15.8,5.8 15.67,5.1 15.42,4.46C15.9,4.19 16.5,4 17.15,4C17.73,4 18.2,4.2 18.61,4.3C19.15,4.94 19.55,5.84 19.74,6.8C19.84,6.76 19.95,6.74 20.07,6.74C20.54,6.74 20.93,7.15 20.93,7.66C20.93,8.24 20.44,8.7 19.85,8.7C19.64,8 19.31,7.08 18.94,6.25C19.11,6.34 19.25,6.5 19.25,6.8C19.25,7.5 18.7,7.92 17.95,7.92C17.38,7.92 17,7.47 17,6.87C17,6.33 17.41,6 17.95,6C18.8,6.4 20.75,10.73 21,13.5C20.74,13.61 20.35,13.75 19.85,13.87C19.46,13.97 19.08,14.05 18.7,14.1C18.1,12.68 16.15,11.5 12,11.5C7.85,11.5 5.9,12.68 5.3,14.1C4.92,14.05 4.54,13.97 4.15,13.87Z"/>
+    <path d="M18 4C16.29 4 15.25 4.33 14.65 4.61C13.88 4.23 13 4 12 4C11 4 10.12 4.23 9.35 4.61C8.75 4.33 7.71 4 6 4C3 4 1 12 1 14C1 14.83 2.32 15.59 4.14 15.9C4.78 18.14 7.8 19.85 11.5 20V15.72C10.91 15.35 10 14.68 10 14C10 13 12 13 12 13C12 13 14 13 14 14C14 14.68 13.09 15.35 12.5 15.72V20C16.2 19.85 19.22 18.14 19.86 15.9C21.68 15.59 23 14.83 23 14C23 12 21 4 18 4Z" />
   </svg>
-)
+);
 
 // Dragon Icon
 export const DragonIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M22,14C22,12.09 20.72,10.46 19,9.5V12L15.5,9.5L12,12V9.5C10.26,10.45 9,12.09 9,14C9,16.76 11.24,19 14,19C16.76,19 19,16.76 19,14H22C22,17.87 18.87,21 15,21H14C8.48,21 4,16.52 4,11V6C4,4.89 4.89,4 6,4H8C9.66,4 11,5.34 11,7H13C14.66,7 16,5.34 16,4H18C19.11,4 20,4.89 20,6V9.5C21.72,10.46 23,12.09 23,14H22M7.5,10.5C6.67,10.5 6,11.17 6,12C6,12.83 6.67,13.5 7.5,13.5C8.33,13.5 9,12.83 9,12C9,11.17 8.33,10.5 7.5,10.5Z"/>
+    <path d="M22 14C22 12.09 20.72 10.46 19 9.5V12L15.5 9.5L12 12V9.5C10.26 10.45 9 12.09 9 14C9 16.76 11.24 19 14 19C16.76 19 19 16.76 19 14H22C22 17.87 18.87 21 15 21H14C8.48 21 4 16.52 4 11V6C4 4.89 4.89 4 6 4H8C9.66 4 11 5.34 11 7H13C14.66 7 16 5.34 16 4H18C19.11 4 20 4.89 20 6V9.5C21.72 10.46 23 12.09 23 14H22M7.5 10.5C6.67 10.5 6 11.17 6 12C6 12.83 6.67 13.5 7.5 13.5C8.33 13.5 9 12.83 9 12C9 11.17 8.33 10.5 7.5 10.5Z" />
   </svg>
-)
+);
 
 // Unicorn Icon
 export const UnicornIcon = () => (
   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M22,5.5L20.5,4.5L19.5,5.5L18,4.5L17.5,5.5L16.5,4.5L15.5,5.5L14,4.5L13.5,5.5L12.5,4.5L11.5,5.5L10,4.5L9.5,5.5L8.5,4.5L7.5,5.5L6,4.5L5.5,5.5L4.5,4.5L3.5,5.5L2,4.5V19.5L3.5,18.5L4.5,19.5L5.5,18.5L6,19.5L7.5,18.5L8.5,19.5L9.5,18.5L10,19.5L11.5,18.5L12.5,19.5L13.5,18.5L14,19.5L15.5,18.5L16.5,19.5L17.5,18.5L18,19.5L19.5,18.5L20.5,19.5L21.5,18.5L23,19.5V4.5L22,5.5M21,17.5L19.5,16.5L18.5,17.5L17.5,16.5L16.5,17.5L15.5,16.5L14.5,17.5L13.5,16.5L12.5,17.5L11.5,16.5L10.5,17.5L9.5,16.5L8.5,17.5L7.5,16.5L6.5,17.5L5.5,16.5L4.5,17.5L3.5,16.5L3,17.5V6.5L3.5,7.5L4.5,6.5L5.5,7.5L6.5,6.5L7.5,7.5L8.5,6.5L9.5,7.5L10.5,6.5L11.5,7.5L12.5,6.5L13.5,7.5L14.5,6.5L15.5,7.5L16.5,6.5L17.5,7.5L18.5,6.5L19.5,7.5L20.5,6.5L21.5,7.5L22,6.5V17.5L21,17.5Z"/>
+    <path d="M22 5.5L20.5 4.5L19.5 5.5L18 4.5L17.5 5.5L16.5 4.5L15.5 5.5L14 4.5L13.5 5.5L12.5 4.5L11.5 5.5L10 4.5L9.5 5.5L8.5 4.5L7.5 5.5L6 4.5L5.5 5.5L4.5 4.5L3.5 5.5L2 4.5V19.5L3.5 18.5L4.5 19.5L5.5 18.5L6 19.5L7.5 18.5L8.5 19.5L9.5 18.5L10 19.5L11.5 18.5L12.5 19.5L13.5 18.5L14 19.5L15.5 18.5L16.5 19.5L17.5 18.5L18 19.5L19.5 18.5L20.5 19.5L21.5 18.5L23 19.5V4.5L22 5.5M21 17.5L19.5 16.5L18.5 17.5L17.5 16.5L16.5 17.5L15.5 16.5L14.5 17.5L13.5 16.5L12.5 17.5L11.5 16.5L10.5 17.5L9.5 16.5L8.5 17.5L7.5 16.5L6.5 17.5L5.5 16.5L4.5 17.5L3.5 16.5L3 17.5V6.5L3.5 7.5L4.5 6.5L5.5 7.5L6.5 6.5L7.5 7.5L8.5 6.5L9.5 7.5L10.5 6.5L11.5 7.5L12.5 6.5L13.5 7.5L14.5 6.5L15.5 7.5L16.5 6.5L17.5 7.5L18.5 6.5L19.5 7.5L20.5 6.5L21.5 7.5L22 6.5V17.5L21 17.5Z" />
   </svg>
-)
+);
 
-// Export all icons as an array for easy mapping
+// Mountain Icon
+export const MountainIcon = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20 20H4L10 8L14 14L20 20Z" opacity="0.3" />
+    <path d="M22 20H2L8 10L12 16L18 6L22 20Z" opacity="0.6" />
+    <path d="M21 20H3L7 12L12 18L17 4L21 20Z" />
+  </svg>
+);
+
+// Circle Icon
+export const CircleIcon = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="7" opacity="0.3" />
+    <circle cx="12" cy="12" r="4" opacity="0.3" />
+    <circle cx="12" cy="12" r="2" opacity="0.5" />
+  </svg>
+);
 export const avatarOptions = [
-  { id: 'flower', icon: <FlowerIcon />, color: 'bg-pink-100 text-pink-600', name: 'Bunga' },
-  { id: 'leaf', icon: <LeafIcon />, color: 'bg-green-100 text-green-600', name: 'Daun' },
-  { id: 'tree', icon: <TreeIcon />, color: 'bg-emerald-100 text-emerald-600', name: 'Pohon' },
-  { id: 'circle', icon: <CircleIcon />, color: 'bg-blue-100 text-blue-600', name: 'Lingkaran' },
-  { id: 'star', icon: <StarIcon />, color: 'bg-yellow-100 text-yellow-600', name: 'Bintang' },
-  { id: 'heart', icon: <HeartIcon />, color: 'bg-red-100 text-red-600', name: 'Hati' },
-  { id: 'butterfly', icon: <ButterflyIcon />, color: 'bg-purple-100 text-purple-600', name: 'Kupu-kupu' },
-  { id: 'mountain', icon: <MountainIcon />, color: 'bg-gray-100 text-gray-600', name: 'Gunung' },
-  { id: 'sun', icon: <SunIcon />, color: 'bg-orange-100 text-orange-600', name: 'Matahari' },
-  { id: 'moon', icon: <MoonIcon />, color: 'bg-indigo-100 text-indigo-600', name: 'Bulan' },
-  { id: 'cloud', icon: <CloudIcon />, color: 'bg-cyan-100 text-cyan-600', name: 'Awan' },
-  { id: 'fish', icon: <FishIcon />, color: 'bg-teal-100 text-teal-600', name: 'Ikan' },
-  { id: 'bird', icon: <BirdIcon />, color: 'bg-sky-100 text-sky-600', name: 'Burung' },
-  { id: 'cat', icon: <CatIcon />, color: 'bg-amber-100 text-amber-600', name: 'Kucing' },
-  { id: 'dog', icon: <DogIcon />, color: 'bg-yellow-800 text-yellow-100', name: 'Anjing' },
-  { id: 'dragon', icon: <DragonIcon />, color: 'bg-lime-100 text-lime-600', name: 'Naga' },
-  { id: 'unicorn', icon: <UnicornIcon />, color: 'bg-fuchsia-100 text-fuchsia-600', name: 'Unicorn' },
-]
+  { id: 'flower', icon: <FlowerIcon />, color: 'bg-gradient-to-br from-pink-100 to-rose-100 text-pink-600 hover:from-pink-200 hover:to-rose-200', name: 'Bunga' },
+  { id: 'leaf', icon: <LeafIcon />, color: 'bg-gradient-to-br from-green-100 to-emerald-100 text-green-600 hover:from-green-200 hover:to-emerald-200', name: 'Daun' },
+  { id: 'tree', icon: <TreeIcon />, color: 'bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-600 hover:from-emerald-200 hover:to-teal-200', name: 'Pohon' },
+  { id: 'circle', icon: <CircleIcon />, color: 'bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600 hover:from-blue-200 hover:to-indigo-200', name: 'Lingkaran' },
+  { id: 'star', icon: <StarIcon />, color: 'bg-gradient-to-br from-yellow-100 to-amber-100 text-yellow-600 hover:from-yellow-200 hover:to-amber-200', name: 'Bintang' },
+  { id: 'heart', icon: <HeartIcon />, color: 'bg-gradient-to-br from-red-100 to-pink-100 text-red-600 hover:from-red-200 hover:to-pink-200', name: 'Hati' },
+  { id: 'butterfly', icon: <ButterflyIcon />, color: 'bg-gradient-to-br from-purple-100 to-fuchsia-100 text-purple-600 hover:from-purple-200 hover:to-fuchsia-200', name: 'Kupu-kupu' },
+  { id: 'mountain', icon: <MountainIcon />, color: 'bg-gradient-to-br from-gray-100 to-slate-100 text-gray-600 hover:from-gray-200 hover:to-slate-200', name: 'Gunung' },
+  { id: 'sun', icon: <SunIcon />, color: 'bg-gradient-to-br from-orange-100 to-yellow-100 text-orange-600 hover:from-orange-200 hover:to-yellow-200', name: 'Matahari' },
+  { id: 'moon', icon: <MoonIcon />, color: 'bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-600 hover:from-indigo-200 hover:to-purple-200', name: 'Bulan' },
+  { id: 'cloud', icon: <CloudIcon />, color: 'bg-gradient-to-br from-cyan-100 to-sky-100 text-cyan-600 hover:from-cyan-200 hover:to-sky-200', name: 'Awan' },
+  { id: 'fish', icon: <FishIcon />, color: 'bg-gradient-to-br from-teal-100 to-cyan-100 text-teal-600 hover:from-teal-200 hover:to-cyan-200', name: 'Ikan' },
+  { id: 'bird', icon: <BirdIcon />, color: 'bg-gradient-to-br from-sky-100 to-blue-100 text-sky-600 hover:from-sky-200 hover:to-blue-200', name: 'Burung' },
+  { id: 'cat', icon: <CatIcon />, color: 'bg-gradient-to-br from-amber-100 to-orange-100 text-amber-600 hover:from-amber-200 hover:to-orange-200', name: 'Kucing' },
+  { id: 'dog', icon: <DogIcon />, color: 'bg-gradient-to-br from-amber-200 to-yellow-200 text-amber-700 hover:from-amber-300 hover:to-yellow-300', name: 'Anjing' },
+  { id: 'dragon', icon: <DragonIcon />, color: 'bg-gradient-to-br from-lime-100 to-green-100 text-lime-600 hover:from-lime-200 hover:to-green-200', name: 'Naga' },
+  { id: 'unicorn', icon: <UnicornIcon />, color: 'bg-gradient-to-br from-fuchsia-100 to-pink-100 text-fuchsia-600 hover:from-fuchsia-200 hover:to-pink-200', name: 'Unicorn' },
+];

@@ -149,7 +149,7 @@ export default function AdminGalleries() {
 
   if (!user || (userProfile && userProfile.role !== 'admin')) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +165,7 @@ export default function AdminGalleries() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <p className="text-lg text-gray-600">Memuat galeri dokumentasi...</p>
@@ -175,7 +175,7 @@ export default function AdminGalleries() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -258,7 +258,7 @@ export default function AdminGalleries() {
                 </div>
               ) : gallery.video_url ? (
                 <div className="relative h-48 bg-gray-100">
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+                  <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-gray-200 to-gray-300">
                     <div className="text-center text-gray-500">
                       <VideoIcon />
                       <span className="text-sm font-medium block mt-1">Video Content</span>
@@ -272,7 +272,7 @@ export default function AdminGalleries() {
                   </div>
                 </div>
               ) : (
-                <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                <div className="h-48 bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                   <div className="text-center text-gray-400">
                     <GalleryIcon />
                     <span className="text-sm block mt-1">No Media</span>

@@ -200,7 +200,7 @@ export default function Navbar() {
               Event
             </Link>
             <Link 
-              href="/about" 
+              href="/user/about" 
               className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
                 isActive('/about') 
                   ? 'text-red-600 border-b-2 border-red-600' 
@@ -234,19 +234,8 @@ export default function Navbar() {
                       <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
                     
-                    {user.role === 'ADMIN' && (
-                      <Link 
-                        href="/admin" 
-                        className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        <Icons.Settings />
-                        <span>Dashboard Admin</span>
-                      </Link>
-                    )}
-                    
                     <Link 
-                      href="/profile" 
+                      href="/user/profile" 
                       className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
                       onClick={() => setIsDropdownOpen(false)}
                     >
@@ -314,7 +303,7 @@ export default function Navbar() {
                 Event
               </Link>
               <Link 
-                href="/about" 
+                href="/user/about" 
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -328,19 +317,8 @@ export default function Navbar() {
                     <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
                   
-                  {user.role === 'ADMIN' && (
-                    <Link 
-                      href="/admin" 
-                      className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Icons.Settings />
-                      <span>Dashboard Admin</span>
-                    </Link>
-                  )}
-                  
                   <Link 
-                    href="/profile" 
+                    href="/user/profile" 
                     className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

@@ -31,7 +31,7 @@ export default function AdminRegistrations() {
       return
     }
 
-    if (userProfile && userProfile.role !== 'admin') { // PERBAIKAN: 'admin' bukan 'ADMIN'
+    if (userProfile && userProfile.role !== 'admin') {
       router.push('/')
       return
     }
@@ -80,9 +80,9 @@ export default function AdminRegistrations() {
     return registrations.filter(r => r.status === status).length
   }
 
-  if (!user || (userProfile && userProfile.role !== 'admin')) { // PERBAIKAN: 'admin' bukan 'ADMIN'
+  if (!user || (userProfile && userProfile.role !== 'admin')) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +98,7 @@ export default function AdminRegistrations() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <p className="text-lg text-gray-600">Memuat data pendaftaran...</p>
@@ -108,7 +108,7 @@ export default function AdminRegistrations() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">

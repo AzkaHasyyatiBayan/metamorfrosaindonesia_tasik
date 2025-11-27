@@ -46,9 +46,12 @@ export const requireAdmin = async () => {
     .eq('id', session.user.id)
     .single();
 
-  if (error || profile?.role !== 'ADMIN') {
+  // PERBAIKAN: Ubah pengecekan role ke uppercase untuk konsistensi
+  if (error || !profile || profile?.role?.toUpperCase() !== 'ADMIN') {
+    console.log('🚫 Admin access denied - profile:', profile?.role, 'error:', error);
     throw new Error('Admin access required');
   }
-  
+
+  console.log('✅ Admin access granted for:', session.user.email);
   return session;
 };
