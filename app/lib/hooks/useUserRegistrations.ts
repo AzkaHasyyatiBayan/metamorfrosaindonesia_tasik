@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabase';
 import { useAuth } from '../../components/AuthProvider';
-import { RegistrationWithDetails } from '../../types/supabase';
+import { RegistrationWithDetails } from '../../types/database.types';
 
 interface RawRegistration {
   id: string;

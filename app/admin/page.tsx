@@ -185,8 +185,8 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-            <Link
-              href="/admin/registrations"
+            <Link 
+              href="/admin/registrations" 
               className="flex items-center justify-center w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
             >
               <Icons.User />
@@ -206,8 +206,8 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-            <Link
-              href="/admin/galleries"
+            <Link 
+              href="/admin/galleries" 
               className="flex items-center justify-center w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
             >
               <Icons.Gallery />
@@ -224,7 +224,7 @@ export default function AdminDashboard() {
               {loading ? '...' : stats?.monthly_registrations || 0}
             </div>
             <p className="text-red-100 text-sm">
-              {stats?.monthly_registrations && stats.monthly_registrations > 0
+              {stats?.monthly_registrations && stats.monthly_registrations > 0 
                 ? `↑ ${Math.round((stats.monthly_registrations / (stats.total_registrations || 1)) * 100)}% dari total`
                 : 'Belum ada pendaftaran bulan ini'
               }
@@ -235,26 +235,26 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link
-              href="/admin/events/create"
+            <Link 
+              href="/admin/events/create" 
               className="group bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-md text-center"
             >
               <Icons.Create />
               <h3 className="font-semibold mb-2">Buat Event Baru</h3>
               <p className="text-red-100 text-sm">Buat event baru untuk komunitas</p>
             </Link>
-
-            <Link
-              href="/admin/registrations"
+            
+            <Link 
+              href="/admin/registrations" 
               className="group bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-md text-center"
             >
               <Icons.Manage />
               <h3 className="font-semibold mb-2">Kelola Pendaftaran</h3>
               <p className="text-red-100 text-sm">Kelola pendaftaran event</p>
             </Link>
-
-            <Link
-              href="/admin/galleries"
+            
+            <Link 
+              href="/admin/galleries" 
               className="group bg-red-600 hover:bg-red-700 text-white p-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-md text-center"
             >
               <Icons.Upload />

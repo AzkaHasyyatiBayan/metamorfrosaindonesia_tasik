@@ -5,12 +5,9 @@
       true,
       {
         "ignoreAtRules": [
-          "tailwind",
           "apply",
-          "variants",
-          "responsive",
-          "screen",
           "layer",
+          "tailwind",
           "import"
         ]
       }

@@ -1,3 +1,4 @@
+// app/user/events/page.tsx
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
@@ -5,7 +6,21 @@ import { supabase } from '../../lib/supabase'
 import EventCard from '../../components/EventCard'
 import EventFilter from '../../components/EventFilter'
 import NoEventsHero from '../../components/NoEventsHero'
-import type { Event } from '../../types/supabase'
+
+type Event = {
+  id: string
+  title: string
+  description: string
+  date_time: string
+  location: string
+  category: string[]
+  max_participants?: number
+  image_url?: string
+  is_active: boolean
+  creator_id: string
+  created_at: string
+  updated_at: string
+}
 
 type FilterState = {
   category: string[]
@@ -38,12 +53,14 @@ export default function UserEventsPage() {
   const applyFilters = useCallback(() => {
     let filtered = [...events]
 
+    // Filter by category
     if (filters.category.length > 0) {
       filtered = filtered.filter(event =>
         event.category.some(cat => filters.category.includes(cat))
       )
     }
 
+    // Filter by date range
     if (filters.dateRange.start) {
       filtered = filtered.filter(event =>
         new Date(event.date_time) >= new Date(filters.dateRange.start)
@@ -56,12 +73,14 @@ export default function UserEventsPage() {
       )
     }
 
+    // Filter by location
     if (filters.location) {
       filtered = filtered.filter(event =>
         event.location.toLowerCase().includes(filters.location.toLowerCase())
       )
     }
 
+    // Filter by accessibility
     if (filters.accessibility) {
       filtered = filtered.filter(event =>
         event.category.includes(filters.accessibility)
@@ -108,6 +127,7 @@ export default function UserEventsPage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Event Kami
@@ -117,6 +137,7 @@ export default function UserEventsPage() {
           </p>
         </div>
 
+        {/* Filter Section - Always Visible */}
         <div className="mb-12">
           <EventFilter
             categories={allCategories}
@@ -127,6 +148,7 @@ export default function UserEventsPage() {
           />
         </div>
 
+        {/* Events Grid or No Events Hero */}
         {loading ? (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
@@ -134,6 +156,7 @@ export default function UserEventsPage() {
           </div>
         ) : filteredEvents.length > 0 ? (
           <>
+            {/* Events Counter */}
             <div className="flex justify-between items-center mb-8">
               <div className="text-sm text-gray-600 bg-white px-4 py-2 rounded-lg shadow-sm">
                 Menampilkan <span className="font-semibold text-red-600">{filteredEvents.length}</span> dari{' '}
@@ -141,6 +164,7 @@ export default function UserEventsPage() {
               </div>
             </div>
 
+            {/* Events Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {filteredEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
@@ -148,7 +172,7 @@ export default function UserEventsPage() {
             </div>
           </>
         ) : (
-          <NoEventsHero
+          <NoEventsHero 
             hasEvents={events.length > 0}
             searchQuery={filters.location}
             selectedCategories={filters.category}

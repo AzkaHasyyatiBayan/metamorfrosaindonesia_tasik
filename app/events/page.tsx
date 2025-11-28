@@ -1,7 +1,9 @@
 import { getAllEvents } from '../lib/data'
 import ClientEventsWrapper from './ClientEventsWrapper'
 
-export const revalidate = 60
+// Revalidate events data every 1 hour for better performance
+// This caches the page and only re-fetches every 3600 seconds
+export const revalidate = 3600
 
 export default async function EventsPage() {
   const events = await getAllEvents()

@@ -1,5 +1,5 @@
-import EventCard from './EventCard'
-import type { Event } from '../types/supabase'
+// app/components/EventList.tsx
+import EventCard, { Event } from './EventCard'
 
 interface EventListProps {
   events: Event[]
@@ -34,6 +34,7 @@ export default function EventList({
 
   return (
     <div className="space-y-8">
+      {/* Header */}
       {(title || description) && (
         <div className="text-center">
           {title && (
@@ -45,6 +46,7 @@ export default function EventList({
         </div>
       )}
 
+      {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {events.map((event) => (
           <EventCard key={event.id} event={event} />

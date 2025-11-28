@@ -6,10 +6,7 @@ import {
   AdminStats,
   TableEvent,
   RegistrationStatus
-} from '../types/supabase'
-
-// Pagination helper
-const PAGE_SIZE = 20;
+} from '../types/database.types'
 
 export async function getAllEvents(): Promise<Event[]> {
   try {
@@ -18,44 +15,21 @@ export async function getAllEvents(): Promise<Event[]> {
       .select('*')
       .eq('is_active', true)
       .order('date_time', { ascending: true })
-      .limit(100)
+      .range(0, 100)
 
     if (error) {
       console.error('Error fetching events:', error)
       return []
     }
 
-    return data || []
+    if (!data || data.length === 0) {
+      return []
+    }
+
+    return data
   } catch (error) {
     console.error('Error fetching events:', error)
     return []
-  }
-}
-
-export async function getAllEventsPaginated(page: number = 1): Promise<{ events: Event[], total: number }> {
-  try {
-    const from = (page - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    const { data, error, count } = await supabase
-      .from('events')
-      .select('*', { count: 'exact' })
-      .eq('is_active', true)
-      .order('date_time', { ascending: true })
-      .range(from, to)
-
-    if (error) {
-      console.error('Error fetching events:', error)
-      return { events: [], total: 0 }
-    }
-
-    return {
-      events: data || [],
-      total: count || 0
-    }
-  } catch (error) {
-    console.error('Error fetching events:', error)
-    return { events: [], total: 0 }
   }
 }
 
@@ -202,36 +176,6 @@ export async function getAllRegistrations(): Promise<RegistrationWithDetails[]> 
   } catch (error) {
     console.error('Error fetching registrations:', error)
     return []
-  }
-}
-
-export async function getAllRegistrationsPaginated(page: number = 1): Promise<{ registrations: RegistrationWithDetails[], total: number }> {
-  try {
-    const from = (page - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    const { data, error, count } = await supabase
-      .from('registrations')
-      .select(`
-        *,
-        events (title, date_time, location, max_participants),
-        profiles (name, email)
-      `, { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(from, to)
-
-    if (error) {
-      console.error('Error fetching registrations:', error)
-      return { registrations: [], total: 0 }
-    }
-
-    return {
-      registrations: data || [],
-      total: count || 0
-    }
-  } catch (error) {
-    console.error('Error fetching registrations:', error)
-    return { registrations: [], total: 0 }
   }
 }
 
@@ -436,42 +380,25 @@ export async function getRecommendedEvents(userId: string): Promise<Event[]> {
 
 export async function formatEventsForTable(events: Event[]): Promise<TableEvent[]> {
   try {
-    if (events.length === 0) return []
+    const eventsWithRegistrations = await Promise.all(
+      events.map(async (event) => {
+        const { count } = await supabase
+          .from('registrations')
+          .select('*', { count: 'exact', head: true })
+          .eq('event_id', event.id)
+          .eq('status', 'CONFIRMED')
 
-    const eventIds = events.map(event => event.id)
-    
-    // Optimize: Batch fetch all registrations at once with count
-    const { data: registrations, error } = await supabase
-      .from('registrations')
-      .select('event_id', { count: 'exact' })
-      .in('event_id', eventIds)
-      .eq('status', 'CONFIRMED')
+        return {
+          id: event.id,
+          title: event.title,
+          date: event.date_time,
+          location: event.location,
+          registrations: count || 0
+        }
+      })
+    )
 
-    if (error) {
-      console.error('Error fetching registrations:', error)
-      return events.map(event => ({
-        id: event.id,
-        title: event.title,
-        date: event.date_time,
-        location: event.location,
-        registrations: 0
-      }))
-    }
-
-    // Build map of event_id -> count
-    const registrationCountMap = new Map<string, number>()
-    registrations?.forEach(reg => {
-      const count = registrationCountMap.get(reg.event_id) || 0
-      registrationCountMap.set(reg.event_id, count + 1)
-    })
-
-    return events.map(event => ({
-      id: event.id,
-      title: event.title,
-      date: event.date_time,
-      location: event.location,
-      registrations: registrationCountMap.get(event.id) || 0
-    }))
+    return eventsWithRegistrations
   } catch (error) {
     console.error('Error formatting events for table:', error)
     return events.map(event => ({

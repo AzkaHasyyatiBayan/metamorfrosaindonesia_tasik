@@ -48,22 +48,16 @@ const ExpandIcon = () => (
   </svg>
 )
 
-interface UserProfile {
-  name: string
-  email: string
-  role: string
-}
-
 export default function AdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [logoError, setLogoError] = useState(false)
   
+  // PERBAIKAN: Hilangkan 'any' dan manual check
   const { userProfile, loading } = useAuth()
-  // Type assertion here to satisfy TS since AuthProvider might return a broader type
-  const profile = userProfile as unknown as UserProfile | null
-  const isAdmin = profile?.role === 'admin'
+  // Manual check untuk admin role
+  const isAdmin = (userProfile as { role?: string })?.role === 'admin'
 
   const isActive = (path: string) => {
     if (path === '/admin') {
@@ -104,6 +98,7 @@ export default function AdminSidebar() {
 
   return (
     <div className={`bg-red-600 text-white min-h-screen transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} flex flex-col sticky top-0 h-screen`}>
+      {/* Header Sidebar */}
       <div className="p-4 border-b border-red-500 shrink-0">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
@@ -112,7 +107,7 @@ export default function AdminSidebar() {
                 {!logoError ? (
                   <Image 
                     src="/logo.jpg" 
-                    alt="Metamorfosa Indonesia"
+                    alt="Metamorfrosa Indonesia"
                     width={32}
                     height={32}
                     className="w-full h-full object-cover"
@@ -132,7 +127,7 @@ export default function AdminSidebar() {
               {!logoError ? (
                 <Image 
                   src="/logo.jpg" 
-                  alt="Metamorfosa Indonesia"
+                  alt="Metamorfrosa Indonesia"
                   width={32}
                   height={32}
                   className="w-full h-full object-cover"
@@ -154,24 +149,27 @@ export default function AdminSidebar() {
         </div>
       </div>
 
-      {!isCollapsed && profile && (
+      {/* User Info */}
+      {!isCollapsed && userProfile && (
         <div className="p-4 border-b border-red-500">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden">
+              {/* PERBAIKAN: Simple avatar dengan initial */}
               <div className="w-full h-full rounded-full flex items-center justify-center">
                 <span className="text-red-600 font-semibold text-sm">
-                  {profile.name?.charAt(0).toUpperCase() || 'U'}
+                  {userProfile.name?.charAt(0).toUpperCase() || 'U'}
                 </span>
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{profile.name}</p>
-              <p className="text-xs text-red-200 truncate">{profile.email}</p>
+              <p className="text-sm font-medium truncate">{userProfile.name}</p>
+              <p className="text-xs text-red-200 truncate">{userProfile.email}</p>
             </div>
           </div>
         </div>
       )}
 
+      {/* Menu Items */}
       <nav className="p-4 space-y-1 flex-1">
         {menuItems.map((item) => {
           const active = isActive(item.path)
@@ -195,6 +193,7 @@ export default function AdminSidebar() {
         })}
       </nav>
 
+      {/* Footer Sidebar */}
       <div className="p-4 border-t border-red-500 shrink-0">
         {!isCollapsed ? (
           <button

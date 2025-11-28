@@ -20,6 +20,7 @@ export default function ContentEditor() {
       setLoading(true)
       setMessage({ type: null, text: '' })
       
+      // Simulate API call - replace with actual API when backend is ready
       await new Promise(resolve => setTimeout(resolve, 500))
       
       setMessage({ 
@@ -27,6 +28,7 @@ export default function ContentEditor() {
         text: 'Konten berhasil disimpan!' 
       })
       
+      // Clear message after 4 seconds
       setTimeout(() => setMessage({ type: null, text: '' }), 4000)
     } catch (error) {
       setMessage({ 

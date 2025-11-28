@@ -56,6 +56,7 @@ const EventImageIcon = () => (
   </svg>
 )
 
+// Component untuk preview image dengan fallback
 const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string }) => {
   if (!imageUrl) {
     return (
@@ -73,6 +74,7 @@ const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string })
         fill
         className="object-cover"
         onError={(e) => {
+          // Fallback ke gradient jika image error
           const target = e.target as HTMLImageElement
           target.style.display = 'none'
           const parent = target.parentElement
@@ -98,7 +100,7 @@ export default function CreateEvent() {
   const [imageUrl, setImageUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-
+  
   const { user, userProfile } = useAuth()
   const router = useRouter()
 
@@ -136,7 +138,7 @@ export default function CreateEvent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    
     if (!user || userProfile?.role !== 'ADMIN') {
       setMessage('Unauthorized access')
       return
@@ -171,7 +173,7 @@ export default function CreateEvent() {
       setTimeout(() => {
         router.push('/admin/events')
       }, 2000)
-
+      
     } catch (error) {
       setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
@@ -201,7 +203,7 @@ export default function CreateEvent() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Akses Ditolak</h2>
           <p className="text-gray-600 mb-6">Anda tidak memiliki akses ke halaman admin.</p>
-          <button
+          <button 
             onClick={() => router.push('/')}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
@@ -214,6 +216,7 @@ export default function CreateEvent() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center space-x-4">
@@ -233,10 +236,13 @@ export default function CreateEvent() {
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Form Section */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 space-y-6">
+              {/* Title */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-900">
                   Judul Event *
@@ -251,6 +257,7 @@ export default function CreateEvent() {
                 />
               </div>
 
+              {/* Description */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-900">
                   Deskripsi Event *
@@ -270,6 +277,7 @@ export default function CreateEvent() {
                 </div>
               </div>
 
+              {/* Date & Location */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-900">
@@ -310,6 +318,7 @@ export default function CreateEvent() {
                 </div>
               </div>
 
+              {/* Accessibility Categories */}
               <div className="space-y-3">
                 <label className="block text-sm font-semibold text-gray-900">
                   <div className="flex items-center space-x-2">
@@ -322,8 +331,8 @@ export default function CreateEvent() {
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {(['SIGN_LANGUAGE', 'WHEELCHAIR_ACCESS', 'BRAILLE', 'AUDIO_DESCRIPTION', 'TACTILE'] as AccessibilityCategory[]).map((category) => (
-                    <label
-                      key={category}
+                    <label 
+                      key={category} 
                       className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
                         categories.includes(category)
                           ? 'border-red-500 bg-red-50'
@@ -345,6 +354,7 @@ export default function CreateEvent() {
                 </div>
               </div>
 
+              {/* Max Participants & Image URL */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-900">
@@ -384,6 +394,7 @@ export default function CreateEvent() {
                 </div>
               </div>
 
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -399,10 +410,11 @@ export default function CreateEvent() {
                 )}
               </button>
 
+              {/* Message */}
               {message && (
                 <div className={`p-4 rounded-xl text-center font-medium ${
-                  message.includes('berhasil')
-                    ? 'bg-green-100 text-green-700 border border-green-200'
+                  message.includes('berhasil') 
+                    ? 'bg-green-100 text-green-700 border border-green-200' 
                     : 'bg-red-100 text-red-700 border border-red-200'
                 }`}>
                   {message}
@@ -411,13 +423,14 @@ export default function CreateEvent() {
             </form>
           </div>
 
+          {/* Preview Section */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-6">
               <h3 className="font-bold text-gray-900 text-lg mb-4">Preview Event</h3>
-
+              
               <div className="space-y-4">
                 <PreviewImage imageUrl={imageUrl} title={title} />
-
+                
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">
                     {title || 'Judul Event'}
@@ -443,7 +456,7 @@ export default function CreateEvent() {
                       </span>
                     </div>
                   )}
-
+                  
                   {location && (
                     <div className="flex items-center text-gray-600">
                       <LocationIcon />
@@ -464,7 +477,7 @@ export default function CreateEvent() {
                     <h5 className="font-medium text-gray-900 text-sm mb-2">Fitur Aksesibilitas:</h5>
                     <div className="flex flex-wrap gap-1">
                       {categories.map((cat) => (
-                        <span
+                        <span 
                           key={cat}
                           className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs"
                         >

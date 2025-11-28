@@ -59,6 +59,7 @@ const DocumentIcon = () => (
   </svg>
 )
 
+// Type definitions
 type Gallery = {
   id: string
   title: string
@@ -176,6 +177,7 @@ export default function AdminGalleries() {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Galeri Dokumentasi</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -183,6 +185,7 @@ export default function AdminGalleries() {
           </p>
         </div>
 
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
@@ -225,6 +228,7 @@ export default function AdminGalleries() {
           </div>
         </div>
 
+        {/* Gallery Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {galleries.map((gallery) => (
             <div key={gallery.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -275,17 +279,17 @@ export default function AdminGalleries() {
                   </div>
                 </div>
               )}
-
+              
               <div className="p-6">
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="font-bold text-lg text-gray-900 line-clamp-2">{gallery.title}</h3>
                 </div>
-
+                
                 <p className="text-sm text-red-600 font-medium mb-2 flex items-center">
                   <EventIcon />
                   <span className="ml-1">{gallery.event_title}</span>
                 </p>
-
+                
                 {gallery.caption && (
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">{gallery.caption}</p>
                 )}
@@ -293,7 +297,7 @@ export default function AdminGalleries() {
                 {gallery.description && (
                   <p className="text-gray-500 text-sm mb-4 line-clamp-3">{gallery.description}</p>
                 )}
-
+                
                 <div className="flex flex-wrap gap-2 mb-4">
                   {gallery.has_sign_language && (
                     <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
@@ -309,8 +313,8 @@ export default function AdminGalleries() {
                   )}
                   {gallery.file_type && (
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                      gallery.file_type === 'video'
-                        ? 'bg-purple-100 text-purple-800'
+                      gallery.file_type === 'video' 
+                        ? 'bg-purple-100 text-purple-800' 
                         : 'bg-gray-100 text-gray-800'
                     }`}>
                       {gallery.file_type === 'video' ? (
@@ -327,7 +331,7 @@ export default function AdminGalleries() {
                     </span>
                   )}
                 </div>
-
+                
                 <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                   <div className="flex flex-col">
                     <span className="text-sm text-gray-500">
