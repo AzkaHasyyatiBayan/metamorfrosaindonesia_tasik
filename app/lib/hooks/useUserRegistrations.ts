@@ -1,14 +1,38 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabase';
 import { useAuth } from '../../components/AuthProvider';
-import { RegistrationWithDetails } from '../../types/database.types';
+
+export interface RegistrationWithDetails {
+  id: string;
+  event_id: string;
+  user_id: string;
+  role: 'peserta' | 'volunteer';
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  volunteer_type?: string;
+  full_name: string;
+  email: string;
+  phone?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  events: {
+    title: string;
+    date_time: string;
+    location: string;
+    max_participants: number | null;
+  };
+}
 
 interface RawRegistration {
   id: string;
   event_id: string;
   user_id: string;
-  type: string;
-  status: string;
+  role: 'peserta' | 'volunteer';
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  volunteer_type?: string;
+  full_name: string;
+  email: string;
+  phone?: string;
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -41,6 +65,7 @@ export const useUserRegistrations = () => {
     try {
       setLoading(true);
       setError('');
+      
       const { data, error } = await supabase
         .from('registrations')
         .select(`
@@ -57,16 +82,34 @@ export const useUserRegistrations = () => {
 
       if (error) throw error;
       
-      if (data) {
-        const typedData: RegistrationWithDetails[] = (data as unknown as RawRegistration[]).map(item => ({
-          ...item,
-          type: item.type as 'PARTICIPANT' | 'VOLUNTEER',
-          status: item.status as 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'CANCELLED',
-          events: Array.isArray(item.events) ? item.events[0] : item.events
-        }));
-        setRegistrations(typedData);
-      }
+      const formattedData: RegistrationWithDetails[] = (data || []).map((item: RawRegistration) => {
+        const eventData = Array.isArray(item.events) ? item.events[0] : item.events;
+        
+        return {
+          id: item.id,
+          event_id: item.event_id,
+          user_id: item.user_id,
+          role: item.role,
+          status: item.status,
+          volunteer_type: item.volunteer_type,
+          full_name: item.full_name,
+          email: item.email,
+          phone: item.phone,
+          notes: item.notes,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          events: eventData || {
+            title: 'Event tidak ditemukan',
+            date_time: new Date().toISOString(),
+            location: 'Unknown',
+            max_participants: null
+          }
+        };
+      });
+
+      setRegistrations(formattedData);
     } catch (err) {
+      console.error('Error fetching registrations:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch registrations');
     } finally {
       setLoading(false);

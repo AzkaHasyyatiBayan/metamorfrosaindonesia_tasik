@@ -1,21 +1,20 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../components/AuthProvider'
 import { requireAdmin } from '../lib/auth'
+import { getAdminStats } from '../lib/data'
 import { Icons } from '../components/Icons'
 
 type DashboardStats = {
-  total_users: number
-  total_volunteers: number
-  active_events: number
-  upcoming_events: number
-  total_registrations: number
-  monthly_registrations: number
-  total_galleries: number
-  pending_registrations: number
+  totalEvents: number
+  upcomingEvents: number
+  totalRegistrations: number
+  totalVolunteers: number
+  participationRate: number
+  pendingRegistrations: number
+  confirmedRegistrations: number
 }
 
 export default function AdminDashboard() {
@@ -45,13 +44,8 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
-        .from('admin_dashboard_stats')
-        .select('*')
-        .single()
-
-      if (error) throw error
-      setStats(data)
+      const data = await getAdminStats()
+      setStats(data as unknown as DashboardStats)
     } catch (error) {
       console.error('Error fetching stats:', error)
     } finally {
@@ -114,7 +108,7 @@ export default function AdminDashboard() {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-red-600">
-                  {loading ? '...' : stats?.total_users || 0}
+                  {loading ? '...' : stats?.totalEvents || 0}
                 </div>
                 <div className="text-sm text-gray-500">Total</div>
               </div>
@@ -130,7 +124,7 @@ export default function AdminDashboard() {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-red-600">
-                  {loading ? '...' : stats?.active_events || 0}
+                  {loading ? '...' : stats?.upcomingEvents || 0}
                 </div>
                 <div className="text-sm text-gray-500">Aktif</div>
               </div>
@@ -146,7 +140,7 @@ export default function AdminDashboard() {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-red-600">
-                  {loading ? '...' : stats?.total_registrations || 0}
+                  {loading ? '...' : stats?.totalRegistrations || 0}
                 </div>
                 <div className="text-sm text-gray-500">Total</div>
               </div>
@@ -162,7 +156,7 @@ export default function AdminDashboard() {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-red-600">
-                  {loading ? '...' : stats?.total_volunteers || 0}
+                  {loading ? '...' : stats?.totalVolunteers || 0}
                 </div>
                 <div className="text-sm text-gray-500">Relawan</div>
               </div>
@@ -181,7 +175,7 @@ export default function AdminDashboard() {
               <div>
                 <h3 className="font-semibold text-gray-900">Pendaftaran Tertunda</h3>
                 <div className="text-3xl font-bold text-red-600 mt-2">
-                  {loading ? '...' : stats?.pending_registrations || 0}
+                  {loading ? '...' : stats?.pendingRegistrations || 0}
                 </div>
               </div>
             </div>
@@ -202,7 +196,7 @@ export default function AdminDashboard() {
               <div>
                 <h3 className="font-semibold text-gray-900">Dokumentasi</h3>
                 <div className="text-3xl font-bold text-red-600 mt-2">
-                  {loading ? '...' : stats?.total_galleries || 0}
+                  {loading ? '...' : stats?.confirmedRegistrations || 0}
                 </div>
               </div>
             </div>
@@ -221,12 +215,12 @@ export default function AdminDashboard() {
               <h3 className="font-semibold ml-2">Pendaftaran Bulan Ini</h3>
             </div>
             <div className="text-3xl font-bold mb-4">
-              {loading ? '...' : stats?.monthly_registrations || 0}
+              {loading ? '...' : stats?.participationRate || 0}%
             </div>
             <p className="text-red-100 text-sm">
-              {stats?.monthly_registrations && stats.monthly_registrations > 0 
-                ? `↑ ${Math.round((stats.monthly_registrations / (stats.total_registrations || 1)) * 100)}% dari total`
-                : 'Belum ada pendaftaran bulan ini'
+              {stats?.participationRate && stats.participationRate > 0 
+                ? `Tingkat partisipasi event`
+                : 'Belum ada pendaftaran'
               }
             </p>
           </div>

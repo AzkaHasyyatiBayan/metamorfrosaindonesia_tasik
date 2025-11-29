@@ -1,601 +1,522 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../components/AuthProvider'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
-type Event = {
-  id: string
-  title: string
-  description: string
-  date_time: string
-  location: string
-  category: string[]
-  max_participants?: number
-  image_url?: string
-  is_active: boolean
-  creator_id: string
-  created_at: string
-  updated_at: string
-  participants_count?: number
-  registrations?: Array<{ count: number }>
-}
+type AccessibilityCategory = 'SIGN_LANGUAGE' | 'WHEELCHAIR_ACCESS' | 'BRAILLE' | 'AUDIO_DESCRIPTION' | 'TACTILE'
 
-type EventFormData = {
-  title: string
-  description: string
-  date_time: string
-  location: string
-  category: string[]
-  max_participants: string
-  image_url: string
-  is_active: boolean
-}
-
-const ACCESSIBILITY_CATEGORIES = [
-  'tuna_rungu',
-  'tuna_wicara', 
-  'tuna_netra',
-  'disabilitas_fisik',
-  'ramah_disabilitas',
-  'umum'
-]
-
-const EventPlaceholderIcon = () => (
-  <svg 
-    className="w-12 h-12 text-gray-400" 
-    fill="none" 
-    stroke="currentColor" 
-    viewBox="0 0 24 24"
-  >
-    <path 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      strokeWidth={1.5} 
-      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" 
-    />
-  </svg>
-)
-
-const XIcon = () => (
+const CalendarIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
 )
 
-export default function AdminEventsPage() {
-  const [events, setEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  
-  const [formData, setFormData] = useState<EventFormData>({
-    title: '',
-    description: '',
-    date_time: '',
-    location: '',
-    category: [],
-    max_participants: '',
-    image_url: '',
-    is_active: true
-  })
+const LocationIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+)
 
-  useEffect(() => {
-    loadEvents()
-  }, [])
+const UsersIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+  </svg>
+)
 
-  const loadEvents = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const { data: events, error } = await supabase
-        .from('events')
-        .select(`
-          *,
-          registrations(count)
-        `)
-        .order('created_at', { ascending: false })
+const ImageIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+)
 
-      if (error) {
-        console.error('Error fetching events:', error)
-        setError('Gagal memuat data events: ' + error.message)
-        return
-      }
+const AccessibilityIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+  </svg>
+)
 
-      const processedEvents = events.map(event => ({
-        ...event,
-        participants_count: event.registrations?.[0]?.count || 0
-      })) as Event[]
+const DescriptionIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+)
 
-      setEvents(processedEvents)
-    } catch (error) {
-      console.error('Error:', error)
-      setError('Terjadi kesalahan saat memuat events')
-    } finally {
-      setLoading(false)
-    }
-  }
+const ArrowLeftIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+  </svg>
+)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      setSaving(true)
-      setError(null)
+const EventImageIcon = () => (
+  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+)
 
-      const eventData = {
-        title: formData.title,
-        description: formData.description,
-        date_time: formData.date_time,
-        location: formData.location,
-        category: formData.category,
-        max_participants: formData.max_participants ? parseInt(formData.max_participants) : null,
-        image_url: formData.image_url || null,
-        is_active: formData.is_active,
-        updated_at: new Date().toISOString()
-      }
-
-      if (editingEvent) {
-        const { error } = await supabase
-          .from('events')
-          .update(eventData)
-          .eq('id', editingEvent.id)
-
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('events')
-          .insert([{
-            ...eventData,
-            creator_id: (await supabase.auth.getUser()).data.user?.id,
-            created_at: new Date().toISOString()
-          }])
-
-        if (error) throw error
-      }
-
-      resetForm()
-      loadEvents()
-      
-    } catch (error) {
-      console.error('Error saving event:', error)
-      setError('Error menyimpan event: ' + (error instanceof Error ? error.message : 'Unknown error'))
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      date_time: '',
-      location: '',
-      category: [],
-      max_participants: '',
-      image_url: '',
-      is_active: true
-    })
-    setEditingEvent(null)
-    setShowForm(false)
-    setError(null)
-  }
-
-  const editEvent = (event: Event) => {
-    setFormData({
-      title: event.title,
-      description: event.description,
-      date_time: event.date_time.slice(0, 16),
-      location: event.location,
-      category: event.category || [],
-      max_participants: event.max_participants?.toString() || '',
-      image_url: event.image_url || '',
-      is_active: event.is_active
-    })
-    setEditingEvent(event)
-    setShowForm(true)
-    setError(null)
-  }
-
-  const toggleEventStatus = async (eventId: string, currentStatus: boolean) => {
-    try {
-      setError(null)
-      const { error } = await supabase
-        .from('events')
-        .update({ 
-          is_active: !currentStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', eventId)
-
-      if (error) throw error
-
-      setEvents(events.map(event => 
-        event.id === eventId 
-          ? { ...event, is_active: !currentStatus }
-          : event
-      ))
-    } catch (error) {
-      console.error('Error updating event status:', error)
-      setError('Error mengubah status event')
-    }
-  }
-
-  const deleteEvent = async (eventId: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus event ini?')) return
-
-    try {
-      setError(null)
-      const { error } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', eventId)
-
-      if (error) throw error
-
-      setEvents(events.filter(event => event.id !== eventId))
-    } catch (error) {
-      console.error('Error deleting event:', error)
-      setError('Error menghapus event')
-    }
-  }
-
-  const handleCategoryChange = (category: string) => {
-    setFormData(prev => ({
-      ...prev,
-      category: prev.category.includes(category)
-        ? prev.category.filter(c => c !== category)
-        : [...prev.category, category]
-    }))
-  }
-
-  const EventImage = ({ event }: { event: Event }) => {
-    if (event.image_url) {
-      return (
-        <div className="h-12 w-12 shrink-0 relative">
-          <Image
-            src={event.image_url}
-            alt={event.title}
-            fill
-            className="rounded-lg object-cover"
-            sizes="48px"
-          />
-        </div>
-      )
-    }
-    
+const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string }) => {
+  if (!imageUrl) {
     return (
-      <div className="h-12 w-12 shrink-0 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
-        <EventPlaceholderIcon />
+      <div 
+        className="aspect-video rounded-xl flex items-center justify-center text-white"
+        style={{
+          background: 'linear-gradient(135deg, #EF4444, #DC2626)'
+        }}
+      >
+        <EventImageIcon />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Kelola Event</h1>
-            <p className="text-gray-600 mt-2">
-              Kelola semua event - {events.length} event ditemukan
-            </p>
+    <div className="aspect-video relative rounded-xl overflow-hidden bg-gray-100">
+      <Image
+        src={imageUrl}
+        alt={`Preview: ${title}`}
+        fill
+        className="object-cover"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement
+          target.style.display = 'none'
+          const parent = target.parentElement
+          if (parent) {
+            const fallback = document.createElement('div')
+            fallback.className = "flex items-center justify-center text-white w-full h-full"
+            fallback.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)'
+            fallback.innerHTML = `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`
+            parent.appendChild(fallback)
+          }
+        }}
+      />
+    </div>
+  )
+}
+
+interface SupabaseError {
+  message?: string;
+  code?: string;
+  details?: string;
+  hint?: string;
+}
+
+export default function CreateEvent() {
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [dateTime, setDateTime] = useState('')
+  const [location, setLocation] = useState('')
+  const [categories, setCategories] = useState<AccessibilityCategory[]>([])
+  const [maxParticipants, setMaxParticipants] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  
+  const { user, userProfile } = useAuth()
+  const router = useRouter()
+
+  const toggleCategory = (category: AccessibilityCategory) => {
+    setCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    )
+  }
+
+  const validateForm = () => {
+    if (!title.trim()) {
+      setMessage('Judul event harus diisi')
+      return false
+    }
+    if (!description.trim()) {
+      setMessage('Deskripsi event harus diisi')
+      return false
+    }
+    if (!dateTime) {
+      setMessage('Tanggal dan waktu harus diisi')
+      return false
+    }
+    if (!location.trim()) {
+      setMessage('Lokasi event harus diisi')
+      return false
+    }
+    if (new Date(dateTime) <= new Date()) {
+      setMessage('Tanggal event harus di masa depan')
+      return false
+    }
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!user || userProfile?.role !== 'admin') {
+      setMessage('Unauthorized access - Hanya admin yang dapat membuat event')
+      return
+    }
+
+    if (!validateForm()) {
+      return
+    }
+
+    setLoading(true)
+    setMessage('')
+
+    try {
+      console.log('Creating event with data:', {
+        title: title.trim(),
+        description: description.trim(),
+        date_time: new Date(dateTime).toISOString(),
+        location: location.trim(),
+        category: categories,
+        max_participants: maxParticipants ? parseInt(maxParticipants) : null,
+        image_url: imageUrl || null,
+        creator_id: user.id
+      })
+
+      const { data, error } = await supabase
+        .from('events')
+        .insert([
+          {
+            title: title.trim(),
+            description: description.trim(),
+            date_time: new Date(dateTime).toISOString(),
+            location: location.trim(),
+            category: categories,
+            max_participants: maxParticipants ? parseInt(maxParticipants) : null,
+            image_url: imageUrl || null,
+            creator_id: user.id
+          }
+        ])
+        .select()
+
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      console.log('Event created successfully:', data)
+
+      setMessage('Event berhasil dibuat!')
+      setTimeout(() => {
+        router.push('/admin/events')
+      }, 2000)
+      
+    } catch (error: unknown) {
+      console.error('Error creating event:', error)
+      
+      let errorMessage = 'Unknown error occurred'
+      if (error && typeof error === 'object' && 'message' in error) {
+        const supabaseError = error as SupabaseError
+        errorMessage = supabaseError.message || 'Unknown error occurred'
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      
+      setMessage(`Error: ${errorMessage}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getCategoryIcon = (category: AccessibilityCategory) => {
+    const icons = {
+      'SIGN_LANGUAGE': '👐',
+      'WHEELCHAIR_ACCESS': '♿',
+      'BRAILLE': '🔤',
+      'AUDIO_DESCRIPTION': '🎧',
+      'TACTILE': '✋'
+    }
+    return icons[category]
+  }
+
+  if (!user || userProfile?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center bg-white rounded-2xl shadow-lg p-8 max-w-md mx-4 border border-gray-200">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
           </div>
-          <button
-            onClick={() => {
-              resetForm()
-              setShowForm(true)
-            }}
-            className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Akses Ditolak</h2>
+          <p className="text-gray-600 mb-6">Anda tidak memiliki akses ke halaman admin. Role Anda: {userProfile?.role}</p>
+          <button 
+            onClick={() => router.push('/')}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
-            + Buat Event Baru
+            Kembali ke Beranda
           </button>
         </div>
+      </div>
+    )
+  }
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-            <div className="flex items-center">
-              <XIcon />
-              <span className="ml-2">{error}</span>
-            </div>
-            <button 
-              onClick={loadEvents}
-              className="mt-2 text-red-600 hover:text-red-800 text-sm font-medium"
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
             >
-              Coba Lagi
+              <ArrowLeftIcon />
             </button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Buat Event Baru</h1>
+              <p className="text-gray-600 mt-1">
+                Buat event baru untuk komunitas Anda
+              </p>
+            </div>
           </div>
-        )}
+        </div>
+      </div>
 
-        {showForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {editingEvent ? 'Edit Event' : 'Buat Event Baru'}
-                  </h2>
-                  <button
-                    onClick={resetForm}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    ✕
-                  </button>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 space-y-6">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Judul Event *
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                  placeholder="Masukkan judul event yang menarik"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Deskripsi Event *
+                </label>
+                <div className="relative">
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                    rows={5}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
+                    placeholder="Jelaskan detail event, agenda, dan manfaat yang akan didapat peserta..."
+                  />
+                  <div className="absolute top-3 left-3 text-gray-400">
+                    <DescriptionIcon />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900">
+                    Tanggal & Waktu *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="datetime-local"
+                      value={dateTime}
+                      onChange={(e) => setDateTime(e.target.value)}
+                      required
+                      min={new Date().toISOString().slice(0, 16)}
+                      className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                    />
+                    <div className="absolute top-3 left-3 text-gray-400">
+                      <CalendarIcon />
+                    </div>
+                  </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Judul Event *
-                    </label>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900">
+                    Lokasi *
+                  </label>
+                  <div className="relative">
                     <input
                       type="text"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
                       required
-                      value={formData.title}
-                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                      className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                      placeholder="Tempat pelaksanaan event"
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Deskripsi *
-                    </label>
-                    <textarea
-                      required
-                      rows={4}
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tanggal & Waktu *
-                      </label>
-                      <input
-                        type="datetime-local"
-                        required
-                        value={formData.date_time}
-                        onChange={(e) => setFormData(prev => ({ ...prev, date_time: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Lokasi *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.location}
-                        onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                      />
+                    <div className="absolute top-3 left-3 text-gray-400">
+                      <LocationIcon />
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Kategori Aksesibilitas *
+              <div className="space-y-3">
+                <label className="block text-sm font-semibold text-gray-900">
+                  <div className="flex items-center space-x-2">
+                    <AccessibilityIcon />
+                    <span>Fitur Aksesibilitas</span>
+                  </div>
+                </label>
+                <p className="text-sm text-gray-600">
+                  Pilih fitur aksesibilitas yang tersedia untuk event ini
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {(['SIGN_LANGUAGE', 'WHEELCHAIR_ACCESS', 'BRAILLE', 'AUDIO_DESCRIPTION', 'TACTILE'] as AccessibilityCategory[]).map((category) => (
+                    <label 
+                      key={category} 
+                      className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                        categories.includes(category)
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={categories.includes(category)}
+                        onChange={() => toggleCategory(category)}
+                        className="mr-3 text-red-600 focus:ring-red-500"
+                      />
+                      <span className="text-lg mr-2">{getCategoryIcon(category)}</span>
+                      <span className="font-medium text-gray-900">
+                        {category.replace('_', ' ')}
+                      </span>
                     </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {ACCESSIBILITY_CATEGORIES.map((category) => (
-                        <label key={category} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={formData.category.includes(category)}
-                            onChange={() => handleCategoryChange(category)}
-                            className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                          />
-                          <span className="text-sm text-gray-700 capitalize">
-                            {category.replace('_', ' ')}
-                          </span>
-                        </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900">
+                    Maksimal Peserta
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={maxParticipants}
+                      onChange={(e) => setMaxParticipants(e.target.value)}
+                      min="1"
+                      className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                      placeholder="Kosongkan untuk tidak terbatas"
+                    />
+                    <div className="absolute top-3 left-3 text-gray-400">
+                      <UsersIcon />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900">
+                    URL Gambar
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="url"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    <div className="absolute top-3 left-3 text-gray-400">
+                      <ImageIcon />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                    Membuat Event...
+                  </div>
+                ) : (
+                  'Buat Event Sekarang'
+                )}
+              </button>
+
+              {message && (
+                <div className={`p-4 rounded-xl text-center font-medium ${
+                  message.includes('berhasil') 
+                    ? 'bg-green-100 text-green-700 border border-green-200' 
+                    : 'bg-red-100 text-red-700 border border-red-200'
+                }`}>
+                  {message}
+                </div>
+              )}
+            </form>
+          </div>
+
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-6">
+              <h3 className="font-bold text-gray-900 text-lg mb-4">Preview Event</h3>
+              
+              <div className="space-y-4">
+                <PreviewImage imageUrl={imageUrl} title={title} />
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {title || 'Judul Event'}
+                  </h4>
+                  <p className="text-sm text-gray-600 line-clamp-3">
+                    {description || 'Deskripsi event akan muncul di sini...'}
+                  </p>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  {dateTime && (
+                    <div className="flex items-center text-gray-600">
+                      <CalendarIcon />
+                      <span className="ml-2">
+                        {new Date(dateTime).toLocaleDateString('id-ID', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {location && (
+                    <div className="flex items-center text-gray-600">
+                      <LocationIcon />
+                      <span className="ml-2">{location}</span>
+                    </div>
+                  )}
+
+                  {maxParticipants && (
+                    <div className="flex items-center text-gray-600">
+                      <UsersIcon />
+                      <span className="ml-2">Maks. {maxParticipants} peserta</span>
+                    </div>
+                  )}
+                </div>
+
+                {categories.length > 0 && (
+                  <div>
+                    <h5 className="font-medium text-gray-900 text-sm mb-2">Fitur Aksesibilitas:</h5>
+                    <div className="flex flex-wrap gap-1">
+                      {categories.map((cat) => (
+                        <span 
+                          key={cat}
+                          className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs"
+                        >
+                          {cat.replace('_', ' ')}
+                        </span>
                       ))}
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Maksimal Peserta
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.max_participants}
-                        onChange={(e) => setFormData(prev => ({ ...prev, max_participants: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        placeholder="Kosongkan untuk tidak terbatas"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        URL Gambar
-                      </label>
-                      <input
-                        type="url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.is_active}
-                        onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-                        className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                      />
-                      <span className="text-sm text-gray-700">Event Aktif</span>
-                    </label>
-                  </div>
-
-                  <div className="flex justify-end space-x-3 pt-4 border-t">
-                    <button
-                      type="button"
-                      onClick={resetForm}
-                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
-                    >
-                      {saving ? 'Menyimpan...' : editingEvent ? 'Update Event' : 'Buat Event'}
-                    </button>
-                  </div>
-                </form>
+                )}
               </div>
             </div>
           </div>
-        )}
-
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
-              <p className="text-gray-600 mt-4">Memuat event...</p>
-            </div>
-          ) : events.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <EventPlaceholderIcon />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada event</h3>
-              <p className="text-gray-500 mb-4">Mulai dengan membuat event pertama Anda</p>
-              <button
-                onClick={() => {
-                  resetForm()
-                  setShowForm(true)
-                }}
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-              >
-                Buat Event Pertama
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Event
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tanggal
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Peserta
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Aksi
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {events.map((event) => (
-                    <tr key={event.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <EventImage event={event} />
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {event.title}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {event.location}
-                            </div>
-                            <div className="text-xs text-gray-400 mt-1">
-                              {event.category.join(', ')}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div>
-                          {new Date(event.date_time).toLocaleDateString('id-ID', {
-                            weekday: 'short',
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </div>
-                        <div className="text-gray-500 text-xs">
-                          {new Date(event.date_time).toLocaleTimeString('id-ID', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                      </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="text-center">
-                          <div className="font-semibold">{event.participants_count || 0}</div>
-                          <div className="text-xs text-gray-500">
-                            {event.max_participants ? `/${event.max_participants}` : '∞'}
-                          </div>
-                        </div>
-                      </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            event.is_active
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {event.is_active ? 'Aktif' : 'Nonaktif'}
-                        </span>
-                      </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => editEvent(event)}
-                          className="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-blue-50"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => toggleEventStatus(event.id, event.is_active)}
-                          className={`px-2 py-1 rounded ${
-                            event.is_active
-                              ? 'text-orange-600 hover:text-orange-900 hover:bg-orange-50'
-                              : 'text-green-600 hover:text-green-900 hover:bg-green-50'
-                          }`}
-                        >
-                          {event.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-                        </button>
-                        <button
-                          onClick={() => deleteEvent(event.id)}
-                          className="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50"
-                        >
-                          Hapus
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       </div>
     </div>

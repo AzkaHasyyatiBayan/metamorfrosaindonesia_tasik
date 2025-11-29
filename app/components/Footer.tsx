@@ -28,7 +28,7 @@ export default function Footer() {
               </div>
               <div>
                 <h3 className="text-2xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  Metamorfosa
+                  Metamorfrosa
                 </h3>
                 <p className="text-red-400 text-sm font-medium">Community</p>
               </div>
@@ -111,8 +111,8 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-gray-300 text-sm">Email</p>
-                  <a href="mailto:hello@metamorfosa.com" className="text-white hover:text-red-300 transition-colors">
-                    hello@metamorfosa.com
+                  <a href="mailto:metamorfrosa.tasik@gmail.com" className="text-white hover:text-red-300 transition-colors">
+                    metamorfrosa.tasik@gmail.com
                   </a>
                 </div>
               </li>
@@ -143,7 +143,7 @@ export default function Footer() {
         <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-6 mb-4 md:mb-0">
             <p className="text-gray-400 text-sm">
-              © {currentYear} Metamorfosa Community. All rights reserved.
+              © {currentYear} Metamorfrosa Community. All rights reserved.
             </p>
           </div>
           <div className="flex space-x-6">

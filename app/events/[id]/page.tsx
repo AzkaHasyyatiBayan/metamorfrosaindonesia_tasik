@@ -1,8 +1,11 @@
+'use client'
+
 import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import RegistrationForm from '../../components/RegistrationForm'
 import FileUpload from '../../components/FileUpload'
+import { useEffect, useState, use } from 'react'
 
 type Event = {
   id: string
@@ -77,7 +80,7 @@ async function getEventGalleries(eventId: string): Promise<Gallery[]> {
 }
 
 interface PageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 const CalendarIcon = () => (
@@ -111,16 +114,59 @@ const DescriptionIcon = () => (
   </svg>
 )
 
-export default async function EventDetail({ params }: PageProps) {
-  if (!params.id) {
-    notFound()
+export default function EventDetail({ params }: PageProps) {
+  const [event, setEvent] = useState<Event | null>(null)
+  const [galleries, setGalleries] = useState<Gallery[]>([])
+  const [loading, setLoading] = useState(true)
+  const [notFoundFlag, setNotFoundFlag] = useState(false)
+  
+  const resolvedParams = use(params)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!resolvedParams.id) {
+          setNotFoundFlag(true)
+          return
+        }
+
+        const eventData = await getEvent(resolvedParams.id)
+        if (!eventData) {
+          setNotFoundFlag(true)
+          return
+        }
+
+        setEvent(eventData)
+        const galleriesData = await getEventGalleries(resolvedParams.id)
+        setGalleries(galleriesData)
+      } catch (error) {
+        console.error('Error fetching event data:', error)
+        setNotFoundFlag(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [resolvedParams.id])
+
+  if (notFoundFlag) {
+    return notFound()
   }
 
-  const event = await getEvent(params.id)
-  const galleries = await getEventGalleries(params.id)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat event...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!event) {
-    notFound()
+    return notFound()
   }
 
   return (
@@ -259,8 +305,8 @@ export default async function EventDetail({ params }: PageProps) {
             <RegistrationForm eventId={event.id} />
             <FileUpload 
               eventId={event.id}
-              onUploadComplete={() => {
-                console.log('Upload completed for event:', event.id)
+              onUploadComplete={(url) => {
+                // Handle upload completion
               }}
             />
           </div>
