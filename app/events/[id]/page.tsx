@@ -306,7 +306,6 @@ export default function EventDetail({ params }: PageProps) {
             <FileUpload 
               eventId={event.id}
               onUploadComplete={(url) => {
-                // Handle upload completion
               }}
             />
           </div>

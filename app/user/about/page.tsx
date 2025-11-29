@@ -78,11 +78,7 @@ export default function AboutPage() {
               <h2 className="text-2xl font-semibold mb-4">{section.title}</h2>
               
               <div className="prose max-w-none">
-                {/* Fungsi split('\n') akan memecah teks berdasarkan baris baru (enter).
-                  Setiap baris akan menjadi paragraf <p> terpisah.
-                */}
                 {section.content.split('\n').map((paragraph: string, index: number) => {
-                  // Hanya tampilkan jika paragraf tidak kosong (menghindari margin berlebih)
                   if (paragraph.trim() === '') return null;
                   
                   return (
