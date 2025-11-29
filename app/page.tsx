@@ -4,7 +4,6 @@ import EventList from './components/EventList'
 import HomeCTA from './components/HomeCTA'
 import { getUpcomingEvents } from './lib/data'
 
-// --- Icons Components ---
 const SignLanguageIcon = () => (
   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
@@ -57,12 +56,9 @@ const VisionIcon = () => (
   </svg>
 )
 
-// Cache homepage for 30 minutes for better performance
-// Data will be revalidated automatically after 1800 seconds
 export const revalidate = 1800
 
 export default async function HomePage() {
-  // Fetching data langsung di server
   const upcomingEvents = await getUpcomingEvents()
   const displayedEvents = upcomingEvents.slice(0, 3)
 
@@ -80,7 +76,7 @@ export default async function HomePage() {
         
         <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 drop-shadow-lg">
-            Metamorfosa Community
+            Metamorfrosa Community
           </h1>
           <p className="text-xl md:text-2xl mb-8 leading-relaxed drop-shadow-md">
             Wadah bagi komunitas untuk berbagi, belajar, dan tumbuh bersama 
@@ -92,7 +88,7 @@ export default async function HomePage() {
                 Jelajahi Event
               </Button>
             </Link>
-            <Link href="/about">
+            <Link href="/user/about">
               <Button variant="outline" className="border-2 border-white text-white hover:bg-white/20 px-8 py-3 text-lg font-semibold rounded-lg backdrop-blur-sm transition-all duration-300">
                 Tentang Kami
               </Button>
@@ -105,7 +101,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              Yuk Kenalan Sama Metamorfosa!
+              Yuk Kenalan Sama Metamorfrosa!
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Komunitas yang peduli dengan inklusivitas dan pemberdayaan melalui bahasa isyarat
@@ -119,7 +115,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-4">Tentang Kami</h3>
               <p className="text-gray-600 leading-relaxed">
-                Metamorfosa adalah komunitas yang berfokus pada pengembangan kemampuan bahasa isyarat 
+                Metamorfrosa adalah komunitas yang berfokus pada pengembangan kemampuan bahasa isyarat 
                 dan menciptakan lingkungan yang inklusif bagi semua anggota.
               </p>
             </div>
@@ -153,7 +149,7 @@ export default async function HomePage() {
               Jelajahi halaman tentang kami untuk mengetahui lebih dalam tentang sejarah, 
               nilai-nilai, dan tim di balik Metamorfosa Community.
             </p>
-            <Link href="/about">
+            <Link href="/user/about">
               <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg font-semibold rounded-lg transition-all duration-300 transform hover:scale-105">
                 Jelajahi Tentang Kami
               </Button>
@@ -232,7 +228,6 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* HomeCTA menangani logika rendering kondisional (tombol Daftar) */}
             <HomeCTA />
           </div>
         </div>

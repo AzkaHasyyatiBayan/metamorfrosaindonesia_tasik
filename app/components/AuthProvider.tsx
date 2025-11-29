@@ -8,7 +8,7 @@ interface UserProfile {
   id: string
   email: string
   name: string
-  role: string // Ubah menjadi string untuk fleksibilitas
+  role: string
   phone?: string
   bio?: string
   avatar_url?: string
@@ -48,7 +48,6 @@ export const useAuth = () => {
   return context
 }
 
-// List email admin sesuai schema
 const ADMIN_EMAILS = [
   '237006049@student.unsil.ac.id',
   '237006057@student.unsil.ac.id', 
@@ -68,14 +67,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const router = useRouter()
   const pathname = usePathname()
 
-  // Function untuk menentukan role berdasarkan email - GUNAKAN UPPERCASE
   const getUserRole = useCallback((email: string): string => {
     const isAdminEmail = ADMIN_EMAILS.includes(email.toLowerCase())
     console.log('🔍 Checking role for email:', email, 'isAdmin:', isAdminEmail)
-    return isAdminEmail ? 'ADMIN' : 'USER' // GUNAKAN UPPERCASE
+    return isAdminEmail ? 'ADMIN' : 'USER'
   }, [])
 
-  // Function untuk membuat profile baru
   const createUserProfile = useCallback(async (userId: string, userEmail?: string, userName?: string) => {
     try {
       console.log('📝 Creating new profile for:', userId)
@@ -99,7 +96,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       if (createError) {
         console.error('❌ Error creating profile:', createError.message, createError.code)
         
-        // Jika profile sudah ada, coba fetch lagi
         if (createError.code === '23505') {
           console.log('🔄 Profile already exists, fetching again...')
           const { data: existingProfile, error: fetchAgainError } = await supabase
@@ -127,7 +123,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     }
   }, [getUserRole])
 
-  // PERBAIKAN: Fetch profile dengan pengecekan role yang konsisten (UPPERCASE)
   const fetchUserProfile = useCallback(async (userId: string, userEmail?: string, userName?: string) => {
     try {
       console.log('🔄 Fetching user profile for:', userId)
@@ -141,12 +136,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       if (error) {
         console.error('❌ Error fetching profile:', error.message, error.code)
         
-        // Jika profile tidak ditemukan, buat profile baru
         if (error.code === 'PGRST116') {
           const newProfile = await createUserProfile(userId, userEmail, userName)
           if (newProfile) {
             setUserProfile(newProfile)
-            // PERBAIKAN: Gunakan pengecekan role UPPERCASE
             const role = newProfile.role?.toUpperCase()
             setIsAdmin(role === 'ADMIN')
             console.log('👤 Profile created, isAdmin:', role === 'ADMIN')
@@ -161,7 +154,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       if (data) {
         console.log('✅ Profile found with role:', data.role)
         setUserProfile(data)
-        // PERBAIKAN: Gunakan pengecekan role UPPERCASE
         const role = data.role?.toUpperCase()
         setIsAdmin(role === 'ADMIN')
         console.log('👤 Profile loaded, isAdmin:', role === 'ADMIN')
@@ -202,7 +194,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       if (data) {
         console.log('✅ Profile updated successfully')
         setUserProfile(data)
-        // PERBAIKAN: Update isAdmin state dengan UPPERCASE
         const role = data.role?.toUpperCase()
         setIsAdmin(role === 'ADMIN')
       }
@@ -221,7 +212,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       
-      // Reset semua state
       setUser(null)
       setSession(null)
       setUserProfile(null)
@@ -243,7 +233,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         setLoading(true)
         console.log('🔍 Initializing auth...')
         
-        // Get session sekali saja
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
         
         if (!mounted) return
@@ -265,7 +254,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             currentSession.user.user_metadata?.name
           )
 
-          // PERBAIKAN: Tambah logging lebih detail untuk redirect dengan UPPERCASE
           if (profile) {
             const role = profile.role?.toUpperCase()
             console.log('🎯 Final role check - role:', role, 'isAdmin:', role === 'ADMIN')
@@ -297,7 +285,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     initializeAuth()
 
-    // Auth state change listener yang sederhana
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         if (!mounted) return
@@ -316,7 +303,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
               currentSession.user.user_metadata?.name
             )
 
-            // PERBAIKAN: Auto-redirect admin setelah login dengan logging UPPERCASE
             if (event === 'SIGNED_IN' && profile) {
               const role = profile.role?.toUpperCase()
               console.log('🎯 Post-login role check - role:', role, 'isAdmin:', role === 'ADMIN')

@@ -42,7 +42,7 @@ export default function AdminRegistrations() {
   const fetchRegistrations = async () => {
     try {
       const { data, error } = await supabase
-        .from('event_registrations_detail') // PERBAIKAN: ganti view name
+        .from('event_registrations_detail')
         .select('*')
         .order('created_at', { ascending: false })
 
@@ -110,7 +110,6 @@ export default function AdminRegistrations() {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Kelola Pendaftaran</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -118,7 +117,6 @@ export default function AdminRegistrations() {
           </p>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
@@ -177,7 +175,6 @@ export default function AdminRegistrations() {
           </div>
         </div>
 
-        {/* Filter Buttons */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-3">
             {[
@@ -206,7 +203,6 @@ export default function AdminRegistrations() {
           </div>
         </div>
 
-        {/* Registrations Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">

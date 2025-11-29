@@ -52,7 +52,7 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       const { data, error } = await supabase
-        .from('admin_dashboard_stats') // PERBAIKAN: view yang sudah dibuat
+        .from('admin_dashboard_stats')
         .select('*')
         .single()
 
@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
   const fetchEventStatistics = async () => {
     try {
       const { data, error } = await supabase
-        .from('event_statistics') // PERBAIKAN: view yang sudah dibuat
+        .from('event_statistics')
         .select('*')
         .order('date_time', { ascending: false })
 
@@ -123,7 +123,6 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Analitik & Statistik</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -131,7 +130,6 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        {/* Main Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard 
             title="Total Pengguna" 
@@ -175,7 +173,6 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        {/* Secondary Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard 
             title="Event Mendatang" 
@@ -219,7 +216,6 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        {/* Event Statistics Table */}
         <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Statistik Event</h2>

@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-// PERBAIKAN: Menambahkan '| null' agar sesuai dengan database Supabase
 export type Event = {
   id: string
   title: string
@@ -12,8 +11,8 @@ export type Event = {
   date_time: string
   location: string
   category: string[]
-  max_participants?: number | null // Diperbolehkan null
-  image_url?: string | null        // Diperbolehkan null
+  max_participants?: number | null
+  image_url?: string | null
   is_active: boolean
   creator_id: string
   created_at: string
@@ -127,7 +126,6 @@ export default function EventCard({ event }: EventCardProps) {
             <span className="ml-2 line-clamp-1">{event.location}</span>
           </div>
 
-          {/* Logic if null/undefined is falsy works the same */}
           {event.max_participants && (
             <div className="flex items-center text-sm text-gray-700">
               <UsersIcon />

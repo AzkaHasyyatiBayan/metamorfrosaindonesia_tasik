@@ -1,8 +1,15 @@
+'use client'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Icons } from './Icons'
 
 export default function Footer() {
+  const pathname = usePathname()
   const currentYear = new Date().getFullYear()
+
+  if (pathname === '/user/profile') {
+    return null
+  }
 
   return (
     <footer className="bg-linear-to-br from-gray-900 to-gray-800 text-white relative overflow-hidden">
@@ -33,28 +40,30 @@ export default function Footer() {
             
             <div className="flex space-x-4">
               <a 
-                href="#" 
-                className="w-10 h-10 bg-gray-700 hover:bg-red-600 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group"
-                aria-label="Facebook"
+                href="https://wa.me/+628558827731" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-700 hover:bg-green-600 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group"
+                aria-label="WhatsApp"
               >
-                <Icons.Facebook />
+                <Icons.Whatsapp />
               </a>
               <a 
-                href="#" 
+                href="https://instagram.com/metamorfrosaindonesia_tasik" 
                 className="w-10 h-10 bg-gray-700 hover:bg-red-600 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group"
                 aria-label="Instagram"
               >
                 <Icons.Instagram />
               </a>
               <a 
-                href="#" 
-                className="w-10 h-10 bg-gray-700 hover:bg-red-600 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group"
-                aria-label="Twitter"
+                href="https://www.tiktok.com/@metamorfrosa_tasikmalaya" 
+                className="w-10 h-10 bg-gray-700 hover:bg-black rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group"
+                aria-label="TikTok"
               >
-                <Icons.Twitter />
+                <Icons.Tiktok />
               </a>
               <a 
-                href="#" 
+                href="https://www.youtube.com/@MetamorfrosaIndonesiaTasik" 
                 className="w-10 h-10 bg-gray-700 hover:bg-red-600 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group"
                 aria-label="YouTube"
               >
@@ -72,7 +81,7 @@ export default function Footer() {
               {[
                 { href: '/', label: 'Beranda' },
                 { href: '/events', label: 'Semua Event' },
-                { href: '/about', label: 'Tentang Kami' },
+                { href: '/user/about', label: 'Tentang Kami' },
                 { href: '/contact', label: 'Kontak' },
               ].map((link) => (
                 <li key={link.href}>
@@ -113,8 +122,8 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-gray-300 text-sm">Telepon</p>
-                  <a href="tel:+6281234567890" className="text-white hover:text-red-300 transition-colors">
-                    +62 812-3456-7890
+                  <a href="tel:+628558827731" className="text-white hover:text-red-300 transition-colors">
+                    +62 855-8827-731
                   </a>
                 </div>
               </li>
@@ -128,29 +137,6 @@ export default function Footer() {
                 </div>
               </li>
             </ul>
-          </div>
-        </div>
-
-        <div className="bg-linear-to-r from-red-600/20 to-red-700/20 rounded-2xl p-8 mb-12 border border-red-500/30">
-          <div className="flex flex-col lg:flex-row items-center justify-between">
-            <div className="lg:flex-1 mb-6 lg:mb-0">
-              <h4 className="text-xl font-bold text-white mb-2">
-                Tetap Terhubung dengan Kami
-              </h4>
-              <p className="text-gray-300">
-                Dapatkan update terbaru tentang event dan kegiatan komunitas Metamorfosa
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 w-full lg:w-auto">
-              <input 
-                type="email" 
-                placeholder="Masukkan email Anda"
-                className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent flex-1 min-w-0"
-              />
-              <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900">
-                Berlangganan
-              </button>
-            </div>
           </div>
         </div>
 

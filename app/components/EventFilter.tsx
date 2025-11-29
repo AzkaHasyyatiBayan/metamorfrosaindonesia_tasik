@@ -38,7 +38,6 @@ const CalendarIcon = () => (
   </svg>
 )
 
-// AccessibilityIcon sekarang digunakan di select dropdown
 const AccessibilityIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
@@ -106,7 +105,6 @@ export default function EventFilter({
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <div className="p-2 bg-red-100 rounded-lg">
@@ -146,9 +144,7 @@ export default function EventFilter({
         </div>
       </div>
 
-      {/* Quick Search & Basic Filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Location Search */}
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <SearchIcon />
@@ -162,7 +158,6 @@ export default function EventFilter({
           />
         </div>
 
-        {/* Accessibility Filter - SEKARANG DENGAN ICON */}
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <AccessibilityIcon />
@@ -178,7 +173,6 @@ export default function EventFilter({
             <option value="subtitles">Dengan Subtitle</option>
             <option value="audio_description">Deskripsi Audio</option>
           </select>
-          {/* Custom dropdown arrow */}
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -186,7 +180,6 @@ export default function EventFilter({
           </div>
         </div>
 
-        {/* Date Quick Filter - SEKARANG DENGAN ICON */}
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <CalendarIcon />
@@ -220,7 +213,6 @@ export default function EventFilter({
             <option value="week">Minggu Ini</option>
             <option value="month">Bulan Ini</option>
           </select>
-          {/* Custom dropdown arrow */}
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -229,10 +221,8 @@ export default function EventFilter({
         </div>
       </div>
 
-      {/* Expanded Filters */}
       {isExpanded && (
         <div className="space-y-6 border-t pt-6">
-          {/* Categories */}
           <div>
             <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
               <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
@@ -255,7 +245,6 @@ export default function EventFilter({
             </div>
           </div>
 
-          {/* Date Range */}
           <div>
             <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
               <CalendarIcon />

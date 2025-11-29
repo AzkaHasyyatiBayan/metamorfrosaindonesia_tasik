@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 
-// PERBAIKAN: Update Event type dengan registrations
 type Event = {
   id: string
   title: string
@@ -19,7 +18,6 @@ type Event = {
   created_at: string
   updated_at: string
   participants_count?: number
-  // PERBAIKAN: Tambahkan type untuk registrations
   registrations?: Array<{ count: number }>
 }
 
@@ -43,7 +41,6 @@ const ACCESSIBILITY_CATEGORIES = [
   'umum'
 ]
 
-// SVG Icon untuk placeholder gambar
 const EventPlaceholderIcon = () => (
   <svg 
     className="w-12 h-12 text-gray-400" 
@@ -60,7 +57,6 @@ const EventPlaceholderIcon = () => (
   </svg>
 )
 
-// PERBAIKAN: XIcon untuk error display
 const XIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -73,7 +69,6 @@ export default function AdminEventsPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [saving, setSaving] = useState(false)
-  // PERBAIKAN: Tambahkan state error
   const [error, setError] = useState<string | null>(null)
   
   const [formData, setFormData] = useState<EventFormData>({
@@ -91,13 +86,11 @@ export default function AdminEventsPage() {
     loadEvents()
   }, [])
 
-  // PERBAIKAN LENGKAP: Ganti fungsi loadEvents
   const loadEvents = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      // PERBAIKAN: Gunakan 'registrations' bukan 'event_participants'
       const { data: events, error } = await supabase
         .from('events')
         .select(`
@@ -112,7 +105,6 @@ export default function AdminEventsPage() {
         return
       }
 
-      // Process data untuk include participants count
       const processedEvents = events.map(event => ({
         ...event,
         participants_count: event.registrations?.[0]?.count || 0
@@ -146,7 +138,6 @@ export default function AdminEventsPage() {
       }
 
       if (editingEvent) {
-        // Update existing event
         const { error } = await supabase
           .from('events')
           .update(eventData)
@@ -154,7 +145,6 @@ export default function AdminEventsPage() {
 
         if (error) throw error
       } else {
-        // Create new event
         const { error } = await supabase
           .from('events')
           .insert([{
@@ -166,7 +156,6 @@ export default function AdminEventsPage() {
         if (error) throw error
       }
 
-      // Reset form dan reload data
       resetForm()
       loadEvents()
       
@@ -198,7 +187,7 @@ export default function AdminEventsPage() {
     setFormData({
       title: event.title,
       description: event.description,
-      date_time: event.date_time.slice(0, 16), // Format untuk datetime-local
+      date_time: event.date_time.slice(0, 16),
       location: event.location,
       category: event.category || [],
       max_participants: event.max_participants?.toString() || '',
@@ -223,7 +212,6 @@ export default function AdminEventsPage() {
 
       if (error) throw error
 
-      // Update local state
       setEvents(events.map(event => 
         event.id === eventId 
           ? { ...event, is_active: !currentStatus }
@@ -247,7 +235,6 @@ export default function AdminEventsPage() {
 
       if (error) throw error
 
-      // Update local state
       setEvents(events.filter(event => event.id !== eventId))
     } catch (error) {
       console.error('Error deleting event:', error)
@@ -264,7 +251,6 @@ export default function AdminEventsPage() {
     }))
   }
 
-  // Komponen untuk menampilkan gambar event
   const EventImage = ({ event }: { event: Event }) => {
     if (event.image_url) {
       return (
@@ -290,7 +276,6 @@ export default function AdminEventsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Kelola Event</h1>
@@ -309,7 +294,6 @@ export default function AdminEventsPage() {
           </button>
         </div>
 
-        {/* PERBAIKAN: Error Display */}
         {error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             <div className="flex items-center">
@@ -325,7 +309,6 @@ export default function AdminEventsPage() {
           </div>
         )}
 
-        {/* Create/Edit Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -480,7 +463,6 @@ export default function AdminEventsPage() {
           </div>
         )}
 
-        {/* Events Table dengan Laporan */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {loading ? (
             <div className="text-center py-12">

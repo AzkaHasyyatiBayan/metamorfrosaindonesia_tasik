@@ -54,9 +54,7 @@ export default function AdminSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [logoError, setLogoError] = useState(false)
   
-  // PERBAIKAN: Hilangkan 'any' dan manual check
   const { userProfile, loading } = useAuth()
-  // Manual check untuk admin role
   const isAdmin = (userProfile as { role?: string })?.role === 'admin'
 
   const isActive = (path: string) => {
@@ -98,7 +96,6 @@ export default function AdminSidebar() {
 
   return (
     <div className={`bg-red-600 text-white min-h-screen transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} flex flex-col sticky top-0 h-screen`}>
-      {/* Header Sidebar */}
       <div className="p-4 border-b border-red-500 shrink-0">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
@@ -149,12 +146,10 @@ export default function AdminSidebar() {
         </div>
       </div>
 
-      {/* User Info */}
       {!isCollapsed && userProfile && (
         <div className="p-4 border-b border-red-500">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden">
-              {/* PERBAIKAN: Simple avatar dengan initial */}
               <div className="w-full h-full rounded-full flex items-center justify-center">
                 <span className="text-red-600 font-semibold text-sm">
                   {userProfile.name?.charAt(0).toUpperCase() || 'U'}
@@ -169,7 +164,6 @@ export default function AdminSidebar() {
         </div>
       )}
 
-      {/* Menu Items */}
       <nav className="p-4 space-y-1 flex-1">
         {menuItems.map((item) => {
           const active = isActive(item.path)
@@ -193,7 +187,6 @@ export default function AdminSidebar() {
         })}
       </nav>
 
-      {/* Footer Sidebar */}
       <div className="p-4 border-t border-red-500 shrink-0">
         {!isCollapsed ? (
           <button

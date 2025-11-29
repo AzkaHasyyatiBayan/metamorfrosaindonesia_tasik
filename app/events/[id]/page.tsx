@@ -80,7 +80,6 @@ interface PageProps {
   params: { id: string }
 }
 
-// SVG Icons
 const CalendarIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -113,7 +112,6 @@ const DescriptionIcon = () => (
 )
 
 export default async function EventDetail({ params }: PageProps) {
-  // Pastikan params.id ada
   if (!params.id) {
     notFound()
   }
@@ -121,22 +119,17 @@ export default async function EventDetail({ params }: PageProps) {
   const event = await getEvent(params.id)
   const galleries = await getEventGalleries(params.id)
 
-  // Jika event tidak ditemukan, tampilkan 404
   if (!event) {
     notFound()
   }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
-      {/* HAPUS Navigation karena sudah ada di layout */}
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-2">
-            {/* Event Header Card */}
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-              {/* Event Image */}
               {event.image_url && (
                 <div className="relative h-80 md:h-96">
                   <Image 
@@ -146,16 +139,13 @@ export default async function EventDetail({ params }: PageProps) {
                     className="object-cover"
                     priority
                   />
-                  {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent"></div>
                 </div>
               )}
               
-              {/* Event Details */}
               <div className="p-8">
                 <h1 className="text-4xl font-bold text-gray-900 mb-6">{event.title}</h1>
                 
-                {/* Date & Location Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                     <h3 className="font-semibold text-gray-700 mb-2 flex items-center">
@@ -183,7 +173,6 @@ export default async function EventDetail({ params }: PageProps) {
                   </div>
                 </div>
 
-                {/* Categories */}
                 <div className="mb-8">
                   <h3 className="font-semibold text-gray-700 mb-3 flex items-center text-lg">
                     <CategoryIcon />
@@ -201,7 +190,6 @@ export default async function EventDetail({ params }: PageProps) {
                   </div>
                 </div>
 
-                {/* Description */}
                 <div className="mb-8">
                   <h3 className="font-semibold text-gray-700 mb-3 flex items-center text-lg">
                     <DescriptionIcon />
@@ -214,7 +202,6 @@ export default async function EventDetail({ params }: PageProps) {
                   </div>
                 </div>
 
-                {/* Max Participants */}
                 {event.max_participants && (
                   <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
                     <h3 className="font-semibold text-yellow-800 mb-2 flex items-center">
@@ -227,7 +214,6 @@ export default async function EventDetail({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Galleries Section */}
             {galleries.length > 0 && (
               <div className="mt-8 bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
                 <h2 className="text-3xl font-bold mb-8 text-gray-900">Dokumentasi Event</h2>
@@ -269,13 +255,11 @@ export default async function EventDetail({ params }: PageProps) {
             )}
           </div>
 
-          {/* Sidebar - Registration & File Upload */}
           <div className="lg:col-span-1 space-y-6">
             <RegistrationForm eventId={event.id} />
             <FileUpload 
               eventId={event.id}
               onUploadComplete={() => {
-                // Handle upload complete - bisa diisi dengan refresh data atau notification
                 console.log('Upload completed for event:', event.id)
               }}
             />

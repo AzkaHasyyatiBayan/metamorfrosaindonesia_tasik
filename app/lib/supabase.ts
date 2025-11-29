@@ -14,7 +14,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Interface untuk menangani struktur error umum dari Supabase/PostgreSQL
 interface SupabaseError {
   code?: string;
   message?: string;
@@ -25,7 +24,6 @@ interface SupabaseError {
 export const handleSupabaseError = (error: unknown): string => {
   if (!error) return 'Unknown error occurred';
   
-  // Casting error ke tipe SupabaseError agar properti code/message bisa diakses
   const err = error as SupabaseError;
   
   if (err.code === '23505') return 'Data sudah ada dalam sistem';

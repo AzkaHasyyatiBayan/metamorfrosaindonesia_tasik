@@ -141,7 +141,7 @@ export default function Navbar() {
                 <span className="text-white font-bold text-lg">M</span>
               </div>
               <span className="text-3xl font-disney tracking-wide text-gray-900">
-                Metamorfosa
+                Metamorfrosa
               </span>
             </div>
             <div className="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
@@ -157,14 +157,14 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-3">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center group-hover:bg-red-700 transition-colors duration-200 overflow-hidden">
+              <div className="relative w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center group-hover:bg-red-700 transition-colors duration-200 overflow-hidden">
                 {!logoError ? (
                   <Image 
-                    src="/logo.jpg" 
+                    src="/logo.jpg"
                     alt="Metamorfosa Logo" 
-                    width={40} 
-                    height={40} 
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="40px"
+                    className="object-cover" 
                     onError={() => setLogoError(true)}
                     priority
                   />
@@ -173,7 +173,7 @@ export default function Navbar() {
                 )}
               </div>
               <span className="text-3xl font-disney tracking-wide text-gray-900">
-                Metamorfosa
+                Metamorfrosa
               </span>
             </Link>
           </div>
@@ -202,7 +202,7 @@ export default function Navbar() {
             <Link 
               href="/user/about" 
               className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                isActive('/about') 
+                isActive('/user/about') 
                   ? 'text-red-600 border-b-2 border-red-600' 
                   : 'text-gray-700 hover:text-red-600'
               }`}

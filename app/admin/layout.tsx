@@ -62,7 +62,6 @@ export default function AdminLayout({
     )
   }
 
-  // Render layout admin yang lengkap (tanpa navbar/footer dari root)
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">

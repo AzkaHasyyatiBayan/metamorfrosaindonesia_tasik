@@ -56,7 +56,6 @@ const EventImageIcon = () => (
   </svg>
 )
 
-// Component untuk preview image dengan fallback
 const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string }) => {
   if (!imageUrl) {
     return (
@@ -74,7 +73,6 @@ const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string })
         fill
         className="object-cover"
         onError={(e) => {
-          // Fallback ke gradient jika image error
           const target = e.target as HTMLImageElement
           target.style.display = 'none'
           const parent = target.parentElement
@@ -216,7 +214,6 @@ export default function CreateEvent() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center space-x-4">
@@ -236,13 +233,10 @@ export default function CreateEvent() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form Section */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 space-y-6">
-              {/* Title */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-900">
                   Judul Event *
@@ -257,7 +251,6 @@ export default function CreateEvent() {
                 />
               </div>
 
-              {/* Description */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-900">
                   Deskripsi Event *
@@ -277,7 +270,6 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              {/* Date & Location */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-900">
@@ -318,7 +310,6 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              {/* Accessibility Categories */}
               <div className="space-y-3">
                 <label className="block text-sm font-semibold text-gray-900">
                   <div className="flex items-center space-x-2">
@@ -354,7 +345,6 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              {/* Max Participants & Image URL */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-900">
@@ -394,7 +384,6 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -410,7 +399,6 @@ export default function CreateEvent() {
                 )}
               </button>
 
-              {/* Message */}
               {message && (
                 <div className={`p-4 rounded-xl text-center font-medium ${
                   message.includes('berhasil') 
@@ -423,7 +411,6 @@ export default function CreateEvent() {
             </form>
           </div>
 
-          {/* Preview Section */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-6">
               <h3 className="font-bold text-gray-900 text-lg mb-4">Preview Event</h3>

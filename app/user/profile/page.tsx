@@ -5,7 +5,6 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../components/AuthProvider'
 import { avatarOptions } from '../../components/AvatarIcons'
 
-// Import semua icon yang diperlukan
 const UserIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -73,7 +72,6 @@ const ArrowLeftIcon = () => (
   </svg>
 )
 
-// PERBAIKAN: Interfaces yang diperbarui
 interface Event {
   id: string
   title: string
@@ -138,7 +136,6 @@ export default function UserProfile() {
   })
   const [profileLoaded, setProfileLoaded] = useState(false)
 
-  // PERBAIKAN: Fetch registrations dengan query yang benar
   const fetchRegistrations = useCallback(async () => {
     try {
       if (!user?.id) return
@@ -181,11 +178,9 @@ export default function UserProfile() {
 
     console.log('✅ User found, loading profile data:', user.email)
 
-    // Set timeout untuk mencegah loading terlalu lama
     const timeoutId = setTimeout(() => {
       if (!profileLoaded) {
         console.log('⏰ Profile loading timeout, using default data')
-        // Gunakan data default jika profile gagal load
         const defaultData = {
           name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
           email: user.email || '',
@@ -213,14 +208,12 @@ export default function UserProfile() {
       setProfileLoaded(true)
       clearTimeout(timeoutId)
       
-      // Load registrations setelah profile loaded
       fetchRegistrations()
     }
 
     return () => clearTimeout(timeoutId)
   }, [user, userProfile, router, authLoading, profileLoaded, fetchRegistrations])
 
-  // PERBAIKAN: Check profile changes
   const hasProfileChanges = (): boolean => {
     return (
       formData.name !== originalData.name ||
@@ -229,7 +222,6 @@ export default function UserProfile() {
     )
   }
 
-  // PERBAIKAN: Check password changes
   const hasPasswordChanges = (): boolean => {
     return (
       formData.newPassword.trim() !== '' && 
@@ -237,7 +229,6 @@ export default function UserProfile() {
     )
   }
 
-  // PERBAIKAN LENGKAP: Update profile function
   const updateProfileOnly = async (): Promise<boolean> => {
     try {
       console.log('🔄 Updating profile data...')
@@ -249,10 +240,8 @@ export default function UserProfile() {
         updated_at: new Date().toISOString()
       }
 
-      // PERBAIKAN: Gunakan updateUserProfile dari AuthProvider
       await updateUserProfile(updateData)
       
-      // PERBAIKAN: Refresh data
       await refreshProfile()
       
       setOriginalData({
@@ -270,7 +259,6 @@ export default function UserProfile() {
     }
   }
 
-  // PERBAIKAN LENGKAP: Update password function
   const updatePasswordOnly = async (): Promise<boolean> => {
     try {
       console.log('🔑 Updating password...')
@@ -279,7 +267,6 @@ export default function UserProfile() {
         throw new Error('Harap masukkan password saat ini')
       }
 
-      // Verify current password first
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: user?.email || '',
         password: formData.currentPassword
@@ -289,7 +276,6 @@ export default function UserProfile() {
         throw new Error('Password saat ini salah')
       }
 
-      // Update password
       const { error: updateError } = await supabase.auth.updateUser({
         password: formData.newPassword
       })
@@ -300,7 +286,6 @@ export default function UserProfile() {
 
       console.log('✅ Password updated successfully')
       
-      // Clear password fields
       setFormData(prev => ({
         ...prev,
         currentPassword: '',
@@ -315,7 +300,6 @@ export default function UserProfile() {
     }
   }
 
-  // PERBAIKAN LENGKAP: Handle update profile
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -346,17 +330,14 @@ export default function UserProfile() {
       setMessage(null)
       
       if (profileChanged && passwordChanged) {
-        // Update both profile and password
         setUpdating(true)
         await updateProfileOnly()
         setUpdatingPassword(true)
         await updatePasswordOnly()
       } else if (profileChanged) {
-        // Update profile only
         setUpdating(true)
         await updateProfileOnly()
       } else if (passwordChanged) {
-        // Update password only
         setUpdatingPassword(true)
         await updatePasswordOnly()
       }
@@ -381,7 +362,6 @@ export default function UserProfile() {
     }
   }
 
-  // PERBAIKAN: Handle cancel changes
   const handleCancel = () => {
     setFormData({
       ...formData,
@@ -399,7 +379,6 @@ export default function UserProfile() {
     router.push('/')
   }
 
-  // PERBAIKAN: Filter events dengan status yang benar
   const upcomingEvents = registrations.filter(reg => 
     new Date(reg.events.date_time) > new Date() && reg.status === 'approved'
   )
@@ -444,7 +423,6 @@ export default function UserProfile() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center space-x-4">
@@ -470,13 +448,10 @@ export default function UserProfile() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-6">
-              {/* User Info */}
               <div className="text-center mb-6">
                 <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
                   avatarOptions.find(a => a.id === formData.avatar)?.color || 'bg-red-100 text-red-600'
@@ -490,7 +465,6 @@ export default function UserProfile() {
                 </span>
               </div>
 
-              {/* Navigation */}
               <nav className="space-y-2">
                 <button
                   onClick={() => setActiveTab('dashboard')}
@@ -529,9 +503,7 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Message Alert */}
             {message && (
               <div className={`mb-6 p-4 rounded-xl ${
                 message.type === 'success' 
@@ -549,13 +521,11 @@ export default function UserProfile() {
               </div>
             )}
 
-            {/* Dashboard Tab */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Dashboard Saya</h2>
                   
-                  {/* Stats Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-red-50 rounded-2xl p-6 text-center">
                       <div className="text-2xl font-bold text-red-600 mb-2">
@@ -577,7 +547,6 @@ export default function UserProfile() {
                     </div>
                   </div>
 
-                  {/* Quick Actions */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button
                       onClick={() => router.push('/events')}
@@ -594,7 +563,6 @@ export default function UserProfile() {
                   </div>
                 </div>
 
-                {/* Upcoming Events */}
                 {upcomingEvents.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Event Mendatang</h3>
@@ -627,13 +595,11 @@ export default function UserProfile() {
               </div>
             )}
 
-            {/* Profile Tab */}
             {activeTab === 'profile' && (
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Profil</h2>
                 
                 <form onSubmit={handleUpdateProfile} className="space-y-6">
-                  {/* Avatar Selection */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-900 mb-3">
                       Pilih Avatar
@@ -700,7 +666,6 @@ export default function UserProfile() {
                     />
                   </div>
 
-                  {/* Password Section */}
                   <div className="border-t border-gray-200 pt-6">
                     <div className="flex items-center space-x-2 mb-4">
                       <LockIcon />
@@ -754,7 +719,6 @@ export default function UserProfile() {
                     </div>
                   </div>
 
-                  {/* PERBAIKAN: Form buttons dengan cancel */}
                   <div className="flex space-x-4">
                     <button
                       type="submit"
@@ -789,10 +753,8 @@ export default function UserProfile() {
               </div>
             )}
 
-            {/* History Tab */}
             {activeTab === 'history' && (
               <div className="space-y-6">
-                {/* Pending Registrations */}
                 {pendingRegistrations.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Menunggu Konfirmasi</h3>
@@ -828,7 +790,6 @@ export default function UserProfile() {
                   </div>
                 )}
 
-                {/* Upcoming Events */}
                 {upcomingEvents.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Event Mendatang</h3>
@@ -864,7 +825,6 @@ export default function UserProfile() {
                   </div>
                 )}
 
-                {/* Past Events */}
                 {pastEvents.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Event Selesai</h3>
@@ -899,7 +859,6 @@ export default function UserProfile() {
                   </div>
                 )}
 
-                {/* Empty State */}
                 {registrations.length === 0 && (
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
                     <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
