@@ -38,11 +38,35 @@ const CloseIcon = () => (
 
 type Gallery = {
   id: string
-  title: string
   file_url: string
   file_name?: string
+  title?: string
   created_at: string
   event_title: string
+}
+
+// Helper types for fallback join when PostgREST relationship is missing
+interface MediaRow {
+  id: string
+  event_id: string
+  file_url: string
+  file_name?: string
+  title?: string
+  created_at: string
+}
+
+interface EventForGallery {
+  id: string
+  title: string
+}
+
+// Helper function to safely map fallback join result to Gallery type
+function mapFallbackGallery(media: MediaRow, eventsMap: Record<string, EventForGallery>): Gallery {
+  const event = eventsMap[media.event_id]
+  return {
+    ...media,
+    event_title: event?.title || ''
+  }
 }
 
 export default function AdminGalleries() {
@@ -50,7 +74,7 @@ export default function AdminGalleries() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   
-  const { user, userProfile } = useAuth()
+  const { user, userProfile, isAdmin } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -58,12 +82,12 @@ export default function AdminGalleries() {
       router.push('/auth/login')
       return
     }
-    if (userProfile && userProfile.role !== 'admin') {
+    if (userProfile && !isAdmin) {
       router.push('/')
       return
     }
     fetchGalleries()
-  }, [user, userProfile, router])
+  }, [user, userProfile, router, isAdmin])
 
 const fetchGalleries = async () => {
   try {
@@ -80,6 +104,40 @@ const fetchGalleries = async () => {
       .order('created_at', { ascending: false })
 
     if (error) {
+      // Fallback when PostgREST can't resolve relationship media->events
+      if (error.code === 'PGRST200' || (error.message && String(error.message).includes('Could not find a relationship'))) {
+        console.warn('media->events relationship missing; falling back to manual join for galleries')
+
+        const { data: mediaData, error: mediaError } = await supabase
+          .from('media')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        if (mediaError) throw mediaError
+
+        const eventIds = Array.from(new Set((mediaData || []).map((m: MediaRow) => m.event_id).filter(Boolean)))
+
+        let eventsMap: Record<string, EventForGallery> = {}
+        if (eventIds.length > 0) {
+          const { data: eventsData, error: eventsError } = await supabase
+            .from('events')
+            .select('id, title')
+            .in('id', eventIds)
+
+          if (eventsError) throw eventsError
+
+          eventsMap = (eventsData as EventForGallery[] || []).reduce((acc: Record<string, EventForGallery>, ev: EventForGallery) => {
+            acc[ev.id] = ev
+            return acc
+          }, {})
+        }
+
+        const mapped = (mediaData as MediaRow[] || []).map(m => mapFallbackGallery(m, eventsMap))
+
+        setGalleries(mapped)
+        return
+      }
+
       console.error('Supabase fetch error:', JSON.stringify(error, null, 2))
       throw error
     }
@@ -130,7 +188,7 @@ const fetchGalleries = async () => {
     setIsModalOpen(false)
   }
 
-  if (!user || (userProfile && userProfile.role !== 'admin')) {
+  if (!user || (userProfile && !isAdmin)) {
     return (
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
@@ -177,7 +235,7 @@ const fetchGalleries = async () => {
               <div className="relative h-56 bg-gray-100 group">
                 <Image
                   src={gallery.file_url}
-                  alt={gallery.title}
+                  alt={gallery.title || gallery.file_name || 'Gallery image'}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -197,8 +255,8 @@ const fetchGalleries = async () => {
                   </span>
                 </div>
                 
-                <h3 className="font-bold text-gray-900 truncate mb-4" title={gallery.title}>
-                    {gallery.title}
+                <h3 className="font-bold text-gray-900 truncate mb-4" title={gallery.title || gallery.file_name || ''}>
+                    {gallery.title || gallery.file_name || 'Untitled'}
                 </h3>
                 
                 <div className="pt-4 border-t border-gray-100 flex justify-end">

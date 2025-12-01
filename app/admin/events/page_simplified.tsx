@@ -5,7 +5,6 @@ import { useAuth } from '../../components/AuthProvider'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
-// Definisi Tipe Data Event
 type Event = {
   id: string
   title: string
@@ -20,24 +19,19 @@ type Event = {
   created_at: string
   updated_at: string
   participants_count?: number
-  registrations?: Array<{ count: number }>
 }
 
-// Definisi Tipe Error untuk menangani catch block dengan aman
 interface AppError {
   message: string
   code?: string
-  details?: string
 }
 
-// Komponen Icon Placeholder jika tidak ada gambar
 const EventPlaceholderIcon = () => (
   <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
   </svg>
 )
 
-// Komponen Icon X untuk Error Box
 const XIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -45,7 +39,6 @@ const XIcon = () => (
 )
 
 export default function AdminEventsPage() {
-  // State Management
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -53,54 +46,40 @@ export default function AdminEventsPage() {
   const { user, isAdmin } = useAuth()
   const router = useRouter()
 
-  // Effect untuk load events saat user admin terdeteksi
   useEffect(() => {
     if (user && isAdmin) {
       loadEvents()
     }
   }, [user, isAdmin])
 
-  // Fungsi Memuat Data Events dari Supabase
   const loadEvents = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      // Ambil data events urut berdasarkan waktu dibuat terbaru
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (eventsError) {
-        throw eventsError
-      }
+      if (eventsError) throw eventsError
 
-      // Hitung jumlah peserta untuk setiap event
       const eventsWithParticipants = await Promise.all(
         (eventsData || []).map(async (event) => {
-          try {
-            const { count, error } = await supabase
-              .from('registrations')
-              .select('*', { count: 'exact', head: true })
-              .eq('event_id', event.id)
-
-            if (error) {
-              console.warn('Error counting participants for event', event.id, error)
-              return { ...event, participants_count: 0 }
-            }
-
-            return { ...event, participants_count: count || 0 }
-          } catch (e) {
-            console.warn('Exception counting participants for event', event.id, e)
-            return { ...event, participants_count: 0 }
+          const { count } = await supabase
+            .from('registrations')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_id', event.id)
+          
+          return {
+            ...event,
+            participants_count: count || 0
           }
         })
       )
 
       setEvents(eventsWithParticipants as Event[])
     } catch (rawError: unknown) {
-      // PERBAIKAN: Menggunakan type assertion yang aman
       const err = rawError as AppError
       console.error('Error in loadEvents:', err)
       setError(err.message || 'Terjadi kesalahan saat memuat events')
@@ -109,17 +88,6 @@ export default function AdminEventsPage() {
     }
   }
 
-  // Fungsi Handle Submit untuk Edit Event (pindah ke create page)
-  // handleSubmit dihapus — form create sudah di halaman /admin/events/create
-
-  // Fungsi Mengisi Form Saat Tombol Edit Diklik
-  const editEvent = (event: Event) => {
-    // Redirect ke create page dengan mode edit (opsional di versi mendatang)
-    // Untuk sekarang, hanya redirect ke create page
-    router.push(`/admin/events/create?id=${event.id}`)
-  }
-
-  // Fungsi Mengubah Status Aktif/Non-aktif
   const toggleEventStatus = async (eventId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
@@ -138,7 +106,6 @@ export default function AdminEventsPage() {
     }
   }
 
-  // Fungsi Menghapus Event
   const deleteEvent = async (eventId: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus event ini? Data peserta terkait juga akan terhapus.')) return
 
@@ -156,7 +123,6 @@ export default function AdminEventsPage() {
     }
   }
 
-  // Tampilan Akses Ditolak (Jika bukan Admin)
   if (!user || !isAdmin) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -179,11 +145,9 @@ export default function AdminEventsPage() {
     )
   }
 
-  // Tampilan Utama Halaman Admin Events
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header Section */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Kelola Event</h1>
@@ -199,7 +163,6 @@ export default function AdminEventsPage() {
           </button>
         </div>
 
-        {/* Error Message Display */}
         {error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex justify-between items-center">
             <div className="flex items-center">
@@ -212,7 +175,6 @@ export default function AdminEventsPage() {
           </div>
         )}
 
-        {/* List Events Display */}
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -227,7 +189,6 @@ export default function AdminEventsPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
               <div key={event.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                {/* Event Image Card */}
                 <div className="relative h-48 w-full bg-gray-100">
                   {event.image_url ? (
                     <Image
@@ -253,7 +214,6 @@ export default function AdminEventsPage() {
                   </div>
                 </div>
                 
-                {/* Event Details */}
                 <div className="p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-2 truncate" title={event.title}>
                     {event.title}
@@ -272,7 +232,6 @@ export default function AdminEventsPage() {
                     </span>
                   </div>
                   
-                  {/* Action Buttons */}
                   <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                     <span className="text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded">
                       {event.participants_count} Peserta
@@ -288,12 +247,11 @@ export default function AdminEventsPage() {
                         title={event.is_active ? "Non-aktifkan" : "Aktifkan"}
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={event.is_active ? "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" : "M15 12a3 3 0 11-6 0 3 3 0 016 0z"} />
-                          {!event.is_active && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />}
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                         </svg>
                       </button>
                       <button
-                        onClick={() => editEvent(event)}
+                        onClick={() => router.push(`/admin/events/${event.id}/edit`)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="Edit"
                       >

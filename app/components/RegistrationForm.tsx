@@ -12,9 +12,14 @@ interface RegistrationFormProps {
 }
 
 export default function RegistrationForm({ eventId }: RegistrationFormProps) {
-  const { user } = useAuth()
+  const { user, userProfile } = useAuth()
   const [type, setType] = useState<RegistrationType>('PARTICIPANT')
   const [notes, setNotes] = useState('')
+  const [hasDisability, setHasDisability] = useState(false)
+  const [disabilityType, setDisabilityType] = useState<string | undefined>(undefined)
+  // Volunteer UI temporarily disabled: keep state but ignore linter warning
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [volunteerType, setVolunteerType] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
@@ -33,24 +38,43 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
     setIsSuccess(false)
 
     try {
+      // Map front-end registration type to DB `role` values and normalize status
+      const roleValue = type === 'VOLUNTEER' ? 'volunteer' : 'peserta'
+      const statusValue = 'pending'
+
+      // Prepare notes and volunteer_type according to selections
+      let finalNotes = notes || ''
+      if (type === 'PARTICIPANT' && hasDisability && disabilityType) {
+        finalNotes = finalNotes ? `${finalNotes} \nDisability: ${disabilityType}` : `Disability: ${disabilityType}`
+      }
+
+      const insertPayload: Record<string, unknown> = {
+        event_id: eventId,
+        user_id: user.id,
+        role: roleValue,
+        notes: finalNotes || null,
+        status: statusValue,
+        full_name: userProfile?.name || user.email || '',
+        email: user.email || '',
+        phone: userProfile?.phone || null
+      }
+
+      if (type === 'VOLUNTEER' && volunteerType) insertPayload.volunteer_type = volunteerType
+
       const { error } = await supabase
         .from('registrations')
-        .insert([
-          {
-            event_id: eventId,
-            user_id: user.id,
-            type: type,
-            notes: notes,
-            status: 'PENDING'
-          }
-        ])
+        .insert([insertPayload])
 
       if (error) throw error
 
       setIsSuccess(true)
-      setMessage(`Pendaftaran sebagai ${type === 'PARTICIPANT' ? 'Peserta' : 'Relawan'} berhasil! Tunggu konfirmasi admin.`)
+      setMessage(`Pendaftaran sebagai Peserta berhasil! Tunggu konfirmasi admin.`)
       setNotes('')
       setType('PARTICIPANT')
+      // After successful registration, navigate to user profile to show registered events
+      setTimeout(() => {
+        router.push('/user/profile')
+      }, 900)
       
     } catch (error) {
       if (error instanceof Error && error.message.includes('maximum capacity')) {
@@ -111,6 +135,7 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
               </div>
             </button>
 
+            {/* Volunteer option commented out for now — enable later when needed
             <button
               type="button"
               onClick={() => setType('VOLUNTEER')}
@@ -127,7 +152,34 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
                 <span className="text-xs text-gray-500 mt-1">Bantu jalankan event</span>
               </div>
             </button>
+            */}
           </div>
+        </div>
+        {/* Optional accessibility / volunteer type fields */}
+        <div className="mt-4">
+          {type === 'PARTICIPANT' && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Apakah Anda memiliki disabilitas atau keterbatasan?</label>
+              <div className="flex items-center space-x-3">
+                <label className="inline-flex items-center">
+                  <input type="checkbox" checked={hasDisability} onChange={(e) => setHasDisability(e.target.checked)} className="mr-2" />
+                  <span className="text-sm">Ya, saya memiliki disabilitas</span>
+                </label>
+                {!hasDisability && <span className="text-sm text-gray-500">(Opsional)</span>}
+              </div>
+              {hasDisability && (
+                <select value={disabilityType} onChange={(e) => setDisabilityType(e.target.value)} className="mt-2 w-full px-3 py-2 border rounded">
+                  <option value="">Pilih jenis disabilitas</option>
+                  <option value="tunadaksa">Tunadaksa</option>
+                  <option value="tunawicara">Tunawicara</option>
+                  <option value="tunarungu">Tunarungu</option>
+                  <option value="tunagrahita">Tunagrahita</option>
+                </select>
+              )}
+            </div>
+          )}
+
+          {/* Volunteer fields commented out for now; only participant flow enabled */}
         </div>
 
         <div>
@@ -163,7 +215,7 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
           ) : isSuccess ? (
             'Terdaftar'
           ) : (
-            `Daftar sebagai ${type === 'PARTICIPANT' ? 'Peserta' : 'Relawan'}`
+            'Daftar sebagai Peserta'
           )}
         </button>
 

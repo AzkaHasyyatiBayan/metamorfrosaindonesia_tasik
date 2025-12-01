@@ -46,44 +46,44 @@ export default function LoginPage() {
       if (error) throw error
 
       if (data.user) {
-        const { data: profile, error: profileError } = await supabase
+        // Cek Role di Profile
+        // Menghapus 'error: profileError' karena tidak digunakan
+        const { data: profile } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', data.user.id)
           .single()
 
-        if (!profileError && profile) {
-          const role = profile.role?.toUpperCase()
-          console.log('👤 User role detected:', role)
-          
-          if (role === 'ADMIN') {
-            console.log('👑 Admin detected, redirecting to admin dashboard')
-            router.push('/admin')
-          } else {
-            console.log('👤 Regular user, redirecting to home')
-            router.push('/')
-          }
-        } else {
-          const ADMIN_EMAILS = [
+        let role = profile?.role?.toUpperCase()
+
+        // Fallback: Cek hardcoded admin emails jika di database belum ada
+        if (!role) {
+           const ADMIN_EMAILS = [
             '237006049@student.unsil.ac.id',
             '237006057@student.unsil.ac.id', 
             '237006066@student.unsil.ac.id',
             '237006088@student.unsil.ac.id',
-            '237006074@student.unsil.ac.id',
-            'bazkahasyyati@gmail.com'
+            '237006074@student.unsil.ac.id'
           ]
-          
           if (ADMIN_EMAILS.includes(email.toLowerCase())) {
-            console.log('👑 Admin email detected, redirecting to admin dashboard')
-            router.push('/admin')
-          } else {
-            console.log('👤 Regular user email, redirecting to home')
-            router.push('/')
+            role = 'ADMIN'
           }
         }
-      }
 
-      router.refresh()
+        if (role === 'ADMIN') {
+          console.log('👑 Admin detected, performing hard redirect...')
+          setMessage('Login berhasil! Mengalihkan ke Admin Dashboard...')
+          
+          // Gunakan window.location.href untuk Admin agar state bersih
+          window.location.href = '/admin'
+          return 
+        } else {
+          console.log('👤 Regular user, redirecting to home')
+          setMessage('Login berhasil! Mengalihkan...')
+          router.refresh()
+          router.push('/')
+        }
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed'
       
@@ -96,7 +96,6 @@ export default function LoginPage() {
       } else {
         setMessage('Terjadi kesalahan saat login. Silakan coba lagi.')
       }
-    } finally {
       setLoading(false)
     }
   }
@@ -244,7 +243,7 @@ export default function LoginPage() {
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent"></div>
               <div className="text-center">
                 <p className="text-gray-800 font-semibold">Memproses login...</p>
-                <p className="text-gray-600 text-sm mt-1">Mengarahkan ke beranda</p>
+                <p className="text-gray-600 text-sm mt-1">Mohon tunggu sebentar</p>
               </div>
             </div>
           </div>

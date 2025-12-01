@@ -1,40 +1,16 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
-import EventCard from '../../components/EventCard'
-import EventFilter from '../../components/EventFilter'
-import NoEventsHero from '../../components/NoEventsHero'
-
-type Event = {
-  id: string
-  title: string
-  description: string
-  date_time: string
-  location: string
-  category: string[]
-  max_participants?: number
-  image_url?: string
-  is_active: boolean
-  creator_id: string
-  created_at: string
-  updated_at: string
-}
-
-type FilterState = {
-  category: string[]
-  dateRange: {
-    start: string
-    end: string
-  }
-  location: string
-  accessibility: string
-}
+import EventCard, { Event } from '../../components/EventCard'
+import EventFilter, { FilterState } from '../../components/EventFilter'
 
 export default function UserEventsPage() {
+  // State untuk data
   const [events, setEvents] = useState<Event[]>([])
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
+
+  // State untuk filter
   const [filters, setFilters] = useState<FilterState>({
     category: [],
     dateRange: {
@@ -42,57 +18,14 @@ export default function UserEventsPage() {
       end: ''
     },
     location: '',
-    accessibility: ''
+    accessibility: '' 
   })
 
-  useEffect(() => {
-    loadEvents()
-  }, [])
-
-  const applyFilters = useCallback(() => {
-    let filtered = [...events]
-
-    if (filters.category.length > 0) {
-      filtered = filtered.filter(event =>
-        event.category.some(cat => filters.category.includes(cat))
-      )
-    }
-
-    if (filters.dateRange.start) {
-      filtered = filtered.filter(event =>
-        new Date(event.date_time) >= new Date(filters.dateRange.start)
-      )
-    }
-
-    if (filters.dateRange.end) {
-      filtered = filtered.filter(event =>
-        new Date(event.date_time) <= new Date(filters.dateRange.end)
-      )
-    }
-
-    if (filters.location) {
-      filtered = filtered.filter(event =>
-        event.location.toLowerCase().includes(filters.location.toLowerCase())
-      )
-    }
-
-    if (filters.accessibility) {
-      filtered = filtered.filter(event =>
-        event.category.includes(filters.accessibility)
-      )
-    }
-
-    setFilteredEvents(filtered)
-  }, [events, filters])
-
-  useEffect(() => {
-    applyFilters()
-  }, [applyFilters])
-
+  // 1. Fetch Data dari Supabase
   const loadEvents = async () => {
     try {
       setLoading(true)
-      const { data: events, error } = await supabase
+      const { data, error } = await supabase
         .from('events')
         .select('*')
         .eq('is_active', true)
@@ -103,7 +36,7 @@ export default function UserEventsPage() {
         console.error('Error fetching events:', error)
         return
       }
-      setEvents(events as Event[])
+      setEvents(data as Event[])
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -111,17 +44,64 @@ export default function UserEventsPage() {
     }
   }
 
+  useEffect(() => {
+    loadEvents()
+  }, [])
+
+  // 2. Logika Filtering
+  const filteredEvents = useMemo(() => {
+    let filtered = [...events]
+
+    // Filter by Category (menggunakan field accessibility dari filter)
+    if (filters.accessibility) {
+      filtered = filtered.filter(event =>
+        event.category && event.category.includes(filters.accessibility)
+      )
+    }
+
+    // Filter by Date Start
+    if (filters.dateRange.start) {
+      filtered = filtered.filter(event =>
+        new Date(event.date_time) >= new Date(filters.dateRange.start)
+      )
+    }
+
+    // Filter by Date End
+    if (filters.dateRange.end) {
+      filtered = filtered.filter(event =>
+        new Date(event.date_time) <= new Date(filters.dateRange.end)
+      )
+    }
+
+    // Filter by Location
+    if (filters.location) {
+      filtered = filtered.filter(event =>
+        event.location.toLowerCase().includes(filters.location.toLowerCase())
+      )
+    }
+
+    return filtered
+  }, [events, filters])
+
+  // Get unique categories for filter dropdown
+  const allCategories = useMemo(() => {
+    return Array.from(new Set(events.flatMap(event => event.category || [])))
+  }, [events])
+
+  // PERBAIKAN: Menggunakan Generic Type <K> agar tidak error 'no-explicit-any'
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters)
   }
 
-  const allCategories = Array.from(
-    new Set(events.flatMap(event => event.category))
-  )
-
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
+    <div 
+      className="min-h-screen from-gray-50 to-blue-50"
+      style={{
+        background: 'linear-gradient(135deg, #F9FAFB, #DBEAFE)'
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Event Kami
@@ -131,42 +111,47 @@ export default function UserEventsPage() {
           </p>
         </div>
 
+        {/* Modular Event Filter Component */}
         <div className="mb-12">
-          <EventFilter
-            categories={allCategories}
+          <EventFilter 
             filters={filters}
             onFilterChange={handleFilterChange}
             totalEvents={events.length}
             filteredCount={filteredEvents.length}
+            categories={allCategories}
           />
         </div>
 
+        {/* Content Section */}
         {loading ? (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
             <p className="text-gray-600 text-lg">Memuat event...</p>
           </div>
         ) : filteredEvents.length > 0 ? (
-          <>
-            <div className="flex justify-between items-center mb-8">
-              <div className="text-sm text-gray-600 bg-white px-4 py-2 rounded-lg shadow-sm">
-                Menampilkan <span className="font-semibold text-red-600">{filteredEvents.length}</span> dari{' '}
-                <span className="font-semibold">{events.length}</span> event
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {filteredEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-          </>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {filteredEvents.map((event) => (
+              <EventCard 
+                key={event.id} 
+                event={event}
+              />
+            ))}
+          </div>
         ) : (
-          <NoEventsHero 
-            hasEvents={events.length > 0}
-            searchQuery={filters.location}
-            selectedCategories={filters.category}
-          />
+          /* No Events Found View */
+          <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <div className="text-gray-300 mx-auto mb-4">
+              <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-medium text-gray-900 mb-2">Tidak ada event ditemukan</h3>
+            <p className="text-gray-500 max-w-md mx-auto">
+              {events.length > 0 
+                ? 'Coba ubah filter pencarian Anda untuk menemukan event yang Anda cari.' 
+                : 'Belum ada event yang tersedia saat ini. Silakan kembali lagi nanti.'}
+            </p>
+          </div>
         )}
       </div>
     </div>

@@ -4,7 +4,6 @@ import './globals.css'
 import Footer from './components/Footer'
 import Navbar from './components/NavBar'
 import AuthProvider from './components/AuthProvider'
-import { EnhancedErrorBoundary } from './components/EnhancedErrorBoundary'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -28,17 +27,15 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <EnhancedErrorBoundary>
-          <AuthProvider>
-            <div className="min-h-screen flex flex-col bg-white">
-              <Navbar />
-              <main className="flex-1 w-full">
-                {children}
-              </main>
-              <Footer />
-            </div>
-          </AuthProvider>
-        </EnhancedErrorBoundary>
+        <AuthProvider>
+          <div className="min-h-screen flex flex-col bg-white">
+            <Navbar />
+            <main className="flex-1 w-full">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   )

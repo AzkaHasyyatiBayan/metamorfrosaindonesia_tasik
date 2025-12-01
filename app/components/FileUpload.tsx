@@ -9,6 +9,16 @@ interface FileUploadProps {
   maxSize?: number
 }
 
+// PERBAIKAN: Interface baru untuk menggantikan 'any' pada dbData
+interface MediaData {
+  title: string
+  file_url: string
+  file_type: string
+  file_name: string
+  uploaded_by: string
+  event_id?: string
+}
+
 export default function FileUpload({ 
   eventId, 
   onUploadComplete,
@@ -68,7 +78,8 @@ export default function FileUpload({
         .from('galleries')
         .getPublicUrl(filePath)
 
-      const dbData: any = {
+      // PERBAIKAN 1: Menggunakan tipe data spesifik (MediaData) alih-alih 'any'
+      const dbData: MediaData = {
         title: selectedFile.name,
         file_url: publicUrl,
         file_type: 'image',
@@ -92,9 +103,11 @@ export default function FileUpload({
       setProgress(100)
       onUploadComplete(publicUrl)
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      // PERBAIKAN 2: Menggunakan 'unknown' dan type checking untuk error
       console.error('Upload Failed Details:', error)
-      setError(`Upload gagal: ${error.message || 'Unknown error occurred'}`)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      setError(`Upload gagal: ${errorMessage}`)
     } finally {
       setUploading(false)
       setTimeout(() => setProgress(0), 2000)

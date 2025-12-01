@@ -190,9 +190,9 @@ export default function Navbar() {
               Beranda
             </Link>
             <Link 
-              href="/events" 
+              href="/user/events" 
               className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
-                isActive('/events') 
+                isActive('/user/events') 
                   ? 'text-red-600 border-b-2 border-red-600' 
                   : 'text-gray-700 hover:text-red-600'
               }`}
@@ -296,7 +296,7 @@ export default function Navbar() {
                 Beranda
               </Link>
               <Link 
-                href="/events" 
+                href="/user/events" 
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

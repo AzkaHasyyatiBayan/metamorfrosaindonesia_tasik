@@ -18,36 +18,179 @@ type Registration = {
   event_location: string
 }
 
+// Simple registration row from DB
+interface DBRegistrationRow {
+  id: string
+  event_id: string
+  user_id: string
+  type?: string
+  role?: string
+  status?: string
+  notes?: string | null
+  created_at: string
+}
+
+// Simple event row from DB
+interface DBEventRow {
+  id: string
+  title: string
+  date_time: string
+  location: string
+}
+
+// Simple profile row from DB
+interface DBProfileRow {
+  id: string
+  name: string
+  email: string
+  phone?: string | null
+}
+
+// Helper to safely map fetched rows to typed Registration
+const mapFallbackRegistration = (reg: DBRegistrationRow, eventsMap: Record<string, DBEventRow>, profilesMap: Record<string, DBProfileRow>): Registration => {
+  const event = eventsMap[reg.event_id] || { id: reg.event_id, title: 'Unknown', date_time: '', location: '' }
+  const profile = profilesMap[reg.user_id] || { id: reg.user_id, name: 'Unknown', email: '', phone: null }
+
+  const normalizeStatus = (s?: string) => {
+    if (!s) return 'PENDING'
+    const v = String(s).toLowerCase()
+    if (v === 'confirmed' || v === 'approved' || v === 'konfirmasi' || v === 'accept' || v === 'accepted') return 'CONFIRMED'
+    if (v === 'rejected' || v === 'reject' || v === 'tolak') return 'REJECTED'
+    return 'PENDING'
+  }
+
+  const normalizeType = (t?: string) => {
+    if (!t) return 'PARTICIPANT'
+    const v = String(t).toLowerCase()
+    if (v === 'volunteer' || v === 'relawan') return 'VOLUNTEER'
+    return 'PARTICIPANT'
+  }
+
+  return {
+    id: reg.id,
+    type: normalizeType(reg.type || reg.role),
+    status: normalizeStatus(reg.status) as 'PENDING' | 'CONFIRMED' | 'REJECTED',
+    notes: reg.notes || '',
+    created_at: reg.created_at,
+    user_name: profile.name,
+    user_email: profile.email,
+    user_phone: profile.phone || '',
+    event_title: event.title,
+    event_date: event.date_time,
+    event_location: event.location,
+  }
+}
+
 export default function AdminRegistrations() {
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
+  // Fix ESLint: Hapus setPage karena pagination belum digunakan, biarkan page default 0
+  const [page] = useState(0)
+  const pageSize = 20
+  const [totalCount, setTotalCount] = useState<number | null>(null)
+  const [countsByStatus, setCountsByStatus] = useState<Record<string, number> | null>(null)
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'CONFIRMED' | 'REJECTED'>('ALL')
-  const { user, userProfile } = useAuth()
+  
+  const { user, userProfile, isAdmin } = useAuth()
   const router = useRouter()
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/login')
-      return
+  
+  // Fix ESLint: Hapus parameter useView yang tidak terpakai
+  const fetchCounts = async () => {
+    try {
+      const mapping: Record<string, string[]> = {
+        PENDING: ['pending'],
+        CONFIRMED: ['approved', 'confirmed', 'accepted'],
+        REJECTED: ['rejected']
+      }
+      
+      const result: Record<string, number> = { PENDING: 0, CONFIRMED: 0, REJECTED: 0 }
+      
+      for (const key of Object.keys(mapping)) {
+        const dbStatuses = mapping[key]
+        let c = 0
+        
+        // Always use table for now to avoid view dependency issues
+        const { count } = await supabase
+            .from('registrations')
+            .select('id', { count: 'exact' })
+            .in('status', dbStatuses)
+        c = count ?? 0
+        
+        result[key] = c
+      }
+      setCountsByStatus(result)
+    } catch (err) {
+      console.warn('Failed to fetch status counts:', err)
     }
-
-    if (userProfile && userProfile.role !== 'admin') {
-      router.push('/')
-      return
-    }
-
-    fetchRegistrations()
-  }, [user, userProfile, router])
+  }
 
   const fetchRegistrations = async () => {
     try {
-      const { data, error } = await supabase
-        .from('event_registrations_detail')
-        .select('*')
-        .order('created_at', { ascending: false })
+      setLoading(true)
+      const from = page * pageSize
+      const to = from + pageSize - 1
 
-      if (error) throw error
-      setRegistrations(data || [])
+      // Always use manual join fallback since the view may not be created in Supabase
+      const { data: regsData, error: regsError, count: regsCount } = await supabase
+        .from('registrations')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to)
+
+      if (regsError) throw regsError
+
+      if (!regsData || regsData.length === 0) {
+        setRegistrations([])
+        setTotalCount(regsCount ?? 0)
+        await fetchCounts()
+        return
+      }
+
+      // Get all unique event IDs and user IDs (only for current page)
+      const eventIds = Array.from(new Set(regsData.map(r => r.event_id).filter(Boolean)))
+      const userIds = Array.from(new Set(regsData.map(r => r.user_id).filter(Boolean)))
+
+      // Fetch events separately
+      let eventsMap: Record<string, DBEventRow> = {}
+      if (eventIds.length > 0) {
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('events')
+          .select('id, title, date_time, location')
+          .in('id', eventIds)
+
+        if (!eventsError && eventsData) {
+          eventsMap = (eventsData || []).reduce((acc: Record<string, DBEventRow>, ev: DBEventRow) => {
+            acc[ev.id] = ev
+            return acc
+          }, {})
+        }
+      }
+
+      // Fetch profiles separately
+      let profilesMap: Record<string, DBProfileRow> = {}
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, name, email, phone')
+          .in('id', userIds)
+
+        if (!profilesError && profilesData) {
+          profilesMap = (profilesData || []).reduce((acc: Record<string, DBProfileRow>, p: DBProfileRow) => {
+            acc[p.id] = p
+            return acc
+          }, {})
+        }
+      }
+
+      // Map the registration data with the fetched relations
+      const mapped = (regsData || []).map(r => mapFallbackRegistration(r, eventsMap, profilesMap))
+      
+      setRegistrations(mapped)
+      setTotalCount(regsCount ?? null)
+      
+      // fetch counts by status for dashboard cards
+      await fetchCounts()
+      
     } catch (error) {
       console.error('Error fetching registrations:', error)
     } finally {
@@ -57,32 +200,54 @@ export default function AdminRegistrations() {
 
   const updateRegistrationStatus = async (registrationId: string, status: 'PENDING' | 'CONFIRMED' | 'REJECTED') => {
     try {
+      // Map UI status to DB-accepted values.
+      const dbStatusMap: Record<string, string> = {
+        PENDING: 'pending',
+        CONFIRMED: 'approved',
+        REJECTED: 'rejected',
+      }
+      
+      const dbStatus = dbStatusMap[status] ?? String(status).toLowerCase()
+
       const { error } = await supabase
         .from('registrations')
-        .update({ status })
+        .update({ status: dbStatus })
         .eq('id', registrationId)
 
       if (error) throw error
 
-      setRegistrations(registrations.map(reg =>
+      setRegistrations(registrations.map(reg => 
         reg.id === registrationId ? { ...reg, status } : reg
       ))
+      
+      // Refresh counts after update
+      fetchCounts()
+
     } catch (error) {
       console.error('Error updating registration:', error)
+      alert('Gagal memperbarui status pendaftaran')
     }
   }
 
-  const filteredRegistrations = registrations.filter(reg =>
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchRegistrations()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isAdmin, page])
+
+  const filteredRegistrations = registrations.filter(reg => 
     filter === 'ALL' ? true : reg.status === filter
   )
 
   const getStatusCount = (status: string) => {
+    if (countsByStatus && countsByStatus[status] !== undefined) return countsByStatus[status]
     return registrations.filter(r => r.status === status).length
   }
 
-  if (!user || (userProfile && userProfile.role !== 'admin')) {
+  if (!user || (userProfile && !isAdmin)) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,14 +256,20 @@ export default function AdminRegistrations() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Akses Ditolak</h2>
           <p className="text-gray-600">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          <button 
+             onClick={() => router.push('/')}
+             className="mt-6 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+          >
+             Kembali ke Beranda
+          </button>
         </div>
       </div>
     )
   }
 
-  if (loading) {
+  if (loading && registrations.length === 0) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <p className="text-lg text-gray-600">Memuat data pendaftaran...</p>
@@ -108,7 +279,7 @@ export default function AdminRegistrations() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Kelola Pendaftaran</h1>
@@ -117,21 +288,22 @@ export default function AdminRegistrations() {
           </p>
         </div>
 
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Pendaftaran</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{registrations.length}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{totalCount ?? registrations.length}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
             </div>
           </div>
-
+          
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -154,7 +326,7 @@ export default function AdminRegistrations() {
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
@@ -168,17 +340,18 @@ export default function AdminRegistrations() {
               </div>
               <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Filter Buttons */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-3">
             {[
-              { key: 'ALL' as const, label: 'Semua', count: registrations.length, color: 'gray' },
+              { key: 'ALL' as const, label: 'Semua', count: totalCount ?? registrations.length, color: 'gray' },
               { key: 'PENDING' as const, label: 'Pending', count: getStatusCount('PENDING'), color: 'yellow' },
               { key: 'CONFIRMED' as const, label: 'Dikonfirmasi', count: getStatusCount('CONFIRMED'), color: 'green' },
               { key: 'REJECTED' as const, label: 'Ditolak', count: getStatusCount('REJECTED'), color: 'red' }
@@ -187,8 +360,8 @@ export default function AdminRegistrations() {
                 key={key}
                 onClick={() => setFilter(key)}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  filter === key 
-                    ? `bg-${color}-600 text-white shadow-lg transform scale-105` 
+                  filter === key
+                    ? `bg-${color}-600 text-white shadow-lg transform scale-105`
                     : 'bg-white text-gray-700 shadow-md hover:shadow-lg hover:bg-gray-50'
                 }`}
               >
@@ -203,6 +376,7 @@ export default function AdminRegistrations() {
           </div>
         </div>
 
+        {/* Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -212,7 +386,7 @@ export default function AdminRegistrations() {
                     Peserta
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Event
+                    Event Info
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Tipe
@@ -244,96 +418,66 @@ export default function AdminRegistrations() {
                       <div>
                         <div className="font-medium text-gray-900">{registration.event_title}</div>
                         <div className="text-sm text-gray-500">
-                          {new Date(registration.event_date).toLocaleDateString('id-ID', {
-                            weekday: 'short',
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
+                          {new Date(registration.event_date).toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                         </div>
                         <div className="text-sm text-gray-500">{registration.event_location}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        registration.type === 'VOLUNTEER' 
-                          ? 'bg-purple-100 text-purple-800' 
-                          : 'bg-blue-100 text-blue-800'
+                        registration.type === 'VOLUNTEER' ?
+                        'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                       }`}>
                         {registration.type === 'VOLUNTEER' ? '🤝 Relawan' : '👤 Peserta'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        registration.status === 'CONFIRMED' 
-                          ? 'bg-green-100 text-green-800'
-                          : registration.status === 'REJECTED'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-yellow-100 text-yellow-800'
+                        registration.status === 'CONFIRMED' ?
+                        'bg-green-100 text-green-800' : registration.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {registration.status === 'CONFIRMED' ? '✅ Dikonfirmasi' : 
-                         registration.status === 'REJECTED' ? '❌ Ditolak' : '⏳ Pending'}
+                        {registration.status === 'CONFIRMED' ? '✅ Dikonfirmasi' : registration.status === 'REJECTED' ? '❌ Ditolak' : '⏳ Pending'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {new Date(registration.created_at).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
+                      {new Date(registration.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex space-x-2">
-                        {registration.status === 'PENDING' && (
+                        {registration.status === 'PENDING' ? (
                           <>
                             <button
                               onClick={() => updateRegistrationStatus(registration.id, 'CONFIRMED')}
-                              className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200 shadow-sm flex items-center space-x-1"
+                              className="bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-green-200 transition-colors"
                             >
-                              <span>✓</span>
-                              <span>Konfirmasi</span>
+                              Terima
                             </button>
                             <button
                               onClick={() => updateRegistrationStatus(registration.id, 'REJECTED')}
-                              className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors duration-200 shadow-sm flex items-center space-x-1"
+                              className="bg-red-100 text-red-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-red-200 transition-colors"
                             >
-                              <span>✕</span>
-                              <span>Tolak</span>
+                              Tolak
                             </button>
                           </>
-                        )}
-                        {registration.status !== 'PENDING' && (
-                          <button
-                            onClick={() => updateRegistrationStatus(registration.id, 'PENDING')}
-                            className="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition-colors duration-200 shadow-sm flex items-center space-x-1"
-                          >
-                            <span>↶</span>
-                            <span>Reset</span>
-                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">
+                             {registration.status === 'CONFIRMED' ? 'Sudah diterima' : 'Sudah ditolak'}
+                          </span>
                         )}
                       </div>
                     </td>
                   </tr>
                 ))}
+                {filteredRegistrations.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                       Tidak ada data pendaftaran yang ditemukan untuk filter ini.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
-
-          {filteredRegistrations.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada pendaftaran</h3>
-              <p className="text-gray-500 max-w-sm mx-auto">
-                {filter === 'ALL' 
-                  ? 'Belum ada pendaftaran event.' 
-                  : `Tidak ada pendaftaran dengan status ${filter.toLowerCase()}.`}
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>

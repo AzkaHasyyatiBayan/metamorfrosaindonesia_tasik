@@ -1,11 +1,12 @@
 'use client'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation' // PERBAIKAN: Hapus useRouter dari import
 import { useState } from 'react'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthProvider'
 
+// Icons (Sama seperti sebelumnya, tidak diubah)
 const DashboardIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -50,12 +51,11 @@ const ExpandIcon = () => (
 
 export default function AdminSidebar() {
   const pathname = usePathname()
-  const router = useRouter()
+  // PERBAIKAN: Menghapus const router = useRouter() karena tidak digunakan
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [logoError, setLogoError] = useState(false)
   
-  const { userProfile, loading } = useAuth()
-  const isAdmin = (userProfile as { role?: string })?.role === 'admin'
+  const { userProfile, loading, isAdmin } = useAuth()
 
   const isActive = (path: string) => {
     if (path === '/admin') {
@@ -75,21 +75,24 @@ export default function AdminSidebar() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
-      router.push('/')
+      // Gunakan window.location untuk memastikan clean state setelah logout
+      window.location.href = '/'
     } catch (error) {
       console.error('Error logging out:', error)
     }
   }
 
+  // Jika sedang loading, tampilkan spinner
   if (loading) {
     return (
-      <div className="bg-red-600 text-white min-h-screen w-64 flex flex-col items-center justify-center">
+      <div className="bg-red-600 text-white min-h-screen w-64 flex flex-col items-center justify-center fixed top-0 left-0 z-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
         <p className="mt-2 text-sm">Memuat...</p>
       </div>
     )
   }
 
+  // Jika sudah tidak loading TAPI bukan admin, jangan render apa-apa (null)
   if (!isAdmin) {
     return null
   }
@@ -109,6 +112,7 @@ export default function AdminSidebar() {
                     height={32}
                     className="w-full h-full object-cover"
                     onError={() => setLogoError(true)}
+                    priority
                   />
                 ) : (
                   <div className="w-full h-full bg-red-600 rounded-lg flex items-center justify-center">
@@ -129,6 +133,7 @@ export default function AdminSidebar() {
                   height={32}
                   className="w-full h-full object-cover"
                   onError={() => setLogoError(true)}
+                    priority
                 />
               ) : (
                 <div className="w-full h-full bg-red-600 rounded-lg flex items-center justify-center">

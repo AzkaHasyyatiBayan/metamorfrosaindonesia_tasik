@@ -111,6 +111,96 @@ interface OriginalData {
   avatar: string
 }
 
+// Helper types for fallback join when PostgREST relationship is missing
+interface RegistrationRow {
+  id: string
+  event_id: string
+  user_id: string
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
+  role: 'peserta' | 'volunteer'
+  volunteer_type?: string
+  created_at: string
+  updated_at: string
+}
+
+// Helper function to safely map fallback join result to Registration type
+function mapFallbackRegistrationForUser(reg: RegistrationRow, eventsMap: Record<string, Event>): Registration {
+  return {
+    ...reg,
+    events: eventsMap[reg.event_id] || {
+      id: reg.event_id,
+      title: 'Unknown Event',
+      date_time: '',
+      location: '',
+      category: [],
+      max_participants: undefined
+    }
+  }
+}
+
+// Normalize registration row coming from DB/server to the shape expected by this component
+function normalizeRegistrationForUser(raw: unknown): Registration {
+  const r = raw as Record<string, unknown>
+  const statusRaw: string = String(r['status'] || r['status_text'] || '')
+  const typeRaw: string = String(r['type'] || r['role'] || '')
+
+  // Map status from DB (possibly uppercase like 'PENDING'/'CONFIRMED')
+  const status = ((): Registration['status'] => {
+    const s = statusRaw.trim().toUpperCase()
+    if (!s) return 'pending'
+    if (s === 'PENDING') return 'pending'
+    if (s === 'CONFIRMED' || s === 'APPROVED') return 'approved'
+    if (s === 'REJECTED') return 'rejected'
+    if (s === 'CANCELLED' || s === 'CANCELED') return 'cancelled'
+    return s.toLowerCase() as Registration['status']
+  })()
+
+  // Map type -> role used in UI (DB may store 'PARTICIPANT'/'VOLUNTEER')
+  const role = ((): Registration['role'] => {
+    const t = typeRaw.trim().toUpperCase()
+    if (!t) return 'peserta'
+    if (t === 'PARTICIPANT') return 'peserta'
+    if (t === 'VOLUNTEER') return 'volunteer'
+    // fallback: if already in bahasa
+    if (t === 'PESERTA') return 'peserta'
+    return 'peserta'
+  })()
+
+  const volunteer_type = (r['volunteer_type'] as string) || (r['volunteerType'] as string) || undefined
+
+  // events might be nested under `events` or `event` or provided separately
+  const eventsCandidate = (r['events'] || r['event'] || r['events_detail']) as Record<string, unknown> | undefined
+  const events = eventsCandidate ? {
+    id: (eventsCandidate['id'] as string) || (r['event_id'] as string) || '',
+    title: (eventsCandidate['title'] as string) || (r['event_title'] as string) || '',
+    date_time: (eventsCandidate['date_time'] as string) || (r['event_date_time'] as string) || (r['date_time'] as string) || '',
+    location: (eventsCandidate['location'] as string) || (r['event_location'] as string) || ''
+    ,
+    category: (eventsCandidate['category'] as string[]) || [],
+    max_participants: (eventsCandidate['max_participants'] as number) || undefined
+  } : {
+    id: (r['event_id'] as string) || '',
+    title: (r['event_title'] as string) || '',
+    date_time: (r['event_date_time'] as string) || (r['date_time'] as string) || '',
+    location: (r['event_location'] as string) || ''
+    ,
+    category: [],
+    max_participants: undefined
+  }
+
+  return {
+    id: (r['id'] as string),
+    event_id: (r['event_id'] as string) || events.id,
+    user_id: (r['user_id'] as string),
+    status,
+    role,
+    volunteer_type,
+    events,
+    created_at: (r['created_at'] as string),
+    updated_at: (r['updated_at'] as string)
+  }
+}
+
 export default function UserProfile() {
   const router = useRouter()
   const { user, userProfile, loading: authLoading, updateUserProfile, refreshProfile } = useAuth()
@@ -139,7 +229,6 @@ export default function UserProfile() {
   const fetchRegistrations = useCallback(async () => {
     try {
       if (!user?.id) return
-      
       const { data, error } = await supabase
         .from('registrations')
         .select(`
@@ -150,11 +239,50 @@ export default function UserProfile() {
         .order('created_at', { ascending: false })
 
       if (error) {
+        // If PostgREST reports no relationship between registrations and events,
+        // fallback to fetching registrations and events separately and merging.
+        // PGRST200 indicates missing relationship in the schema cache.
+        if (error.code === 'PGRST200' || (error.message && String(error.message).includes('Could not find a relationship'))) {
+          console.warn('Relationship registrations->events not found; falling back to manual join')
+
+          const { data: regs, error: regsError } = await supabase
+            .from('registrations')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+
+          if (regsError) throw regsError
+
+          const eventIds = Array.from(new Set((regs || []).map((r: RegistrationRow) => r.event_id).filter(Boolean)))
+
+          let eventsMap: Record<string, Event> = {}
+          if (eventIds.length > 0) {
+            const { data: eventsData, error: eventsError } = await supabase
+              .from('events')
+              .select('*')
+              .in('id', eventIds)
+
+            if (eventsError) throw eventsError
+
+            eventsMap = (eventsData as Event[] || []).reduce((acc: Record<string, Event>, ev: Event) => {
+              acc[ev.id] = ev
+              return acc
+            }, {})
+          }
+
+          const mapped = (regs as RegistrationRow[] || []).map(r => mapFallbackRegistrationForUser(r, eventsMap))
+
+          // Normalize fields (status, role, event shape) so UI logic is consistent
+          setRegistrations(mapped.map(normalizeRegistrationForUser))
+          return
+        }
+
         console.error('Error fetching registrations:', error)
         throw error
       }
-      
-      setRegistrations(data || [])
+
+      // Normalize nested result as well
+      setRegistrations((data || []).map(normalizeRegistrationForUser))
     } catch (error) {
       console.error('Error fetching registrations:', error)
       setMessage({

@@ -1,8 +1,10 @@
 'use client'
 import { useState } from 'react'
+import { useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../components/AuthProvider'
 import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 
 type AccessibilityCategory = 'SIGN_LANGUAGE' | 'WHEELCHAIR_ACCESS' | 'BRAILLE' | 'AUDIO_DESCRIPTION' | 'TACTILE'
@@ -59,8 +61,40 @@ const EventImageIcon = () => (
 const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string }) => {
   if (!imageUrl) {
     return (
-      <div className="aspect-video bg-linear-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center text-white">
+      <div 
+        className="aspect-video rounded-xl flex items-center justify-center text-white"
+        style={{
+          background: 'linear-gradient(135deg, #EF4444, #DC2626)'
+        }}
+      >
         <EventImageIcon />
+      </div>
+    )
+  }
+  const isExternal = imageUrl.startsWith('http') || imageUrl.startsWith('//')
+
+  if (isExternal) {
+    return (
+      <div className="aspect-video relative rounded-xl overflow-hidden bg-gray-100">
+        <Image
+          src={imageUrl}
+          alt={`Preview: ${title}`}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            if (target) target.style.display = 'none'
+            const parent = (e.target as HTMLImageElement).parentElement
+            if (parent) {
+              const fallback = document.createElement('div')
+              fallback.className = "flex items-center justify-center text-white w-full h-full"
+              fallback.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)'
+              fallback.innerHTML = `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`
+              parent.appendChild(fallback)
+            }
+          }}
+        />
       </div>
     )
   }
@@ -71,6 +105,7 @@ const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string })
         src={imageUrl}
         alt={`Preview: ${title}`}
         fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         className="object-cover"
         onError={(e) => {
           const target = e.target as HTMLImageElement
@@ -78,7 +113,8 @@ const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string })
           const parent = target.parentElement
           if (parent) {
             const fallback = document.createElement('div')
-            fallback.className = `bg-linear-to-br from-red-500 to-red-600 flex items-center justify-center text-white w-full h-full`
+            fallback.className = "flex items-center justify-center text-white w-full h-full"
+            fallback.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)'
             fallback.innerHTML = `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`
             parent.appendChild(fallback)
           }
@@ -86,6 +122,14 @@ const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string })
       />
     </div>
   )
+}
+
+// Type untuk error handling
+interface SupabaseError {
+  message?: string;
+  code?: string;
+  details?: string;
+  hint?: string;
 }
 
 export default function CreateEvent() {
@@ -98,9 +142,59 @@ export default function CreateEvent() {
   const [imageUrl, setImageUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [, setLoadingEvent] = useState(false)
   
-  const { user, userProfile } = useAuth()
+  const { user, userProfile, isAdmin } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Load event to edit when `id` query param exists
+  useEffect(() => {
+    const id = searchParams?.get('id')
+    if (!id) return
+
+    let mounted = true
+    const load = async () => {
+      try {
+        setLoadingEvent(true)
+        setMessage('')
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', id)
+          .single()
+
+        if (error) {
+          console.error('Fetch event error:', error)
+          setMessage('Gagal memuat data event untuk diedit')
+          return
+        }
+
+        if (!mounted) return
+
+        // Prefill form
+        setIsEditing(true)
+        setEditingId(id)
+        setTitle(data.title || '')
+        setDescription(data.description || '')
+        setDateTime(data.date_time ? new Date(data.date_time).toISOString().slice(0, 16) : '')
+        setLocation(data.location || '')
+        setCategories(data.category || [])
+        setMaxParticipants(data.max_participants ? String(data.max_participants) : '')
+        setImageUrl(data.image_url || '')
+      } catch (err) {
+        console.error('Error loading event for edit', err)
+        setMessage('Gagal memuat data event untuk diedit (cek koneksi)')
+      } finally {
+        setLoadingEvent(false)
+      }
+    }
+
+    load()
+    return () => { mounted = false }
+  }, [searchParams])
 
   const toggleCategory = (category: AccessibilityCategory) => {
     setCategories(prev =>
@@ -137,8 +231,9 @@ export default function CreateEvent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || userProfile?.role !== 'ADMIN') {
-      setMessage('Unauthorized access')
+    // Perbaikan: cek admin case-insensitive menggunakan isAdmin
+    if (!user || !isAdmin) {
+      setMessage('Unauthorized access - Hanya admin yang dapat membuat event')
       return
     }
 
@@ -150,30 +245,83 @@ export default function CreateEvent() {
     setMessage('')
 
     try {
-      const { error } = await supabase
-        .from('events')
-        .insert([
-          {
+      console.log('Creating event with data:', {
+        title: title.trim(),
+        description: description.trim(),
+        date_time: new Date(dateTime).toISOString(),
+        location: location.trim(),
+        category: categories,
+        max_participants: maxParticipants ? parseInt(maxParticipants) : null,
+        image_url: imageUrl || null,
+        creator_id: user.id
+      })
+
+      if (isEditing && editingId) {
+        const { error } = await supabase
+          .from('events')
+          .update({
             title: title.trim(),
             description: description.trim(),
-            date_time: dateTime,
+            date_time: new Date(dateTime).toISOString(),
             location: location.trim(),
             category: categories,
             max_participants: maxParticipants ? parseInt(maxParticipants) : null,
             image_url: imageUrl || null,
-            creator_id: user.id
-          }
-        ])
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingId)
+          .select()
 
-      if (error) throw error
+        if (error) {
+          console.error('Supabase update error:', error)
+          throw error
+        }
 
-      setMessage('Event berhasil dibuat!')
-      setTimeout(() => {
-        router.push('/admin/events')
-      }, 2000)
+        setMessage('Event berhasil diperbarui!')
+        setTimeout(() => router.push('/admin/events'), 1500)
+      } else {
+        const { data, error } = await supabase
+          .from('events')
+          .insert([
+            {
+              title: title.trim(),
+              description: description.trim(),
+              date_time: new Date(dateTime).toISOString(), // Perbaikan: konversi ke ISO string
+              location: location.trim(),
+              category: categories,
+              max_participants: maxParticipants ? parseInt(maxParticipants) : null,
+              image_url: imageUrl || null,
+              creator_id: user.id
+            }
+          ])
+          .select()
+
+        if (error) {
+          console.error('Supabase error:', error)
+          throw error
+        }
+
+        console.log('Event created successfully:', data)
+
+        setMessage('Event berhasil dibuat!')
+        setTimeout(() => {
+          router.push('/admin/events')
+        }, 2000)
+      }
       
-    } catch (error) {
-      setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } catch (error: unknown) {
+      console.error('Error creating event:', error)
+      
+      // Type-safe error handling
+      let errorMessage = 'Unknown error occurred'
+      if (error && typeof error === 'object' && 'message' in error) {
+        const supabaseError = error as SupabaseError
+        errorMessage = supabaseError.message || 'Unknown error occurred'
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      
+      setMessage(`Error: ${errorMessage}`)
     } finally {
       setLoading(false)
     }
@@ -190,7 +338,8 @@ export default function CreateEvent() {
     return icons[category]
   }
 
-  if (!user || userProfile?.role !== 'ADMIN') {
+  // Perbaikan: cek admin case-insensitive menggunakan isAdmin
+  if (!user || !isAdmin) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center bg-white rounded-2xl shadow-lg p-8 max-w-md mx-4 border border-gray-200">
@@ -200,7 +349,7 @@ export default function CreateEvent() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Akses Ditolak</h2>
-          <p className="text-gray-600 mb-6">Anda tidak memiliki akses ke halaman admin.</p>
+          <p className="text-gray-600 mb-6">Anda tidak memiliki akses ke halaman admin. Role Anda: {userProfile?.role}</p>
           <button 
             onClick={() => router.push('/')}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -224,7 +373,7 @@ export default function CreateEvent() {
               <ArrowLeftIcon />
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Buat Event Baru</h1>
+                <h1 className="text-3xl font-bold text-gray-900">{isEditing ? 'Edit Event' : 'Buat Event Baru'}</h1>
               <p className="text-gray-600 mt-1">
                 Buat event baru untuk komunitas Anda
               </p>

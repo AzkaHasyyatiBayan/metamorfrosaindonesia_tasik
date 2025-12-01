@@ -67,11 +67,17 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const router = useRouter()
   const pathname = usePathname()
 
+  // PERBAIKAN: Menggunakan UPPERCASE agar sesuai dengan Enum Database PostgreSQL
   const getUserRole = useCallback((email: string): string => {
     const isAdminEmail = ADMIN_EMAILS.includes(email.toLowerCase())
     console.log('🔍 Checking role for email:', email, 'isAdmin:', isAdminEmail)
     return isAdminEmail ? 'ADMIN' : 'USER'
   }, [])
+
+  // Helper untuk mengecek role admin secara case-insensitive
+  const checkIsAdmin = (role?: string) => {
+    return (role || '').toString().trim().toUpperCase() === 'ADMIN'
+  }
 
   const createUserProfile = useCallback(async (userId: string, userEmail?: string, userName?: string) => {
     try {
@@ -87,7 +93,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             id: userId,
             email: userEmail || '',
             name: userName || userEmail?.split('@')[0] || 'User',
-            role: userRole
+            role: userRole // Kirim UPPERCASE ke DB
           }
         ])
         .select()
@@ -109,7 +115,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             return null
           }
           
-          console.log('✅ Found existing profile with role:', existingProfile?.role)
           return existingProfile
         }
         return null
@@ -140,9 +145,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
           const newProfile = await createUserProfile(userId, userEmail, userName)
           if (newProfile) {
             setUserProfile(newProfile)
-            const role = newProfile.role?.toUpperCase()
-            setIsAdmin(role === 'ADMIN')
-            console.log('👤 Profile created, isAdmin:', role === 'ADMIN')
+            setIsAdmin(checkIsAdmin(newProfile.role))
             return newProfile
           }
         }
@@ -152,12 +155,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       }
 
       if (data) {
-        console.log('✅ Profile found with role:', data.role)
-        setUserProfile(data)
-        const role = data.role?.toUpperCase()
-        setIsAdmin(role === 'ADMIN')
-        console.log('👤 Profile loaded, isAdmin:', role === 'ADMIN')
-        return data
+        // Normalize role value to avoid formatting/case issues
+        const normalizedRole = data.role ? data.role.toString().trim().toUpperCase() : 'USER'
+        const normalizedProfile = { ...data, role: normalizedRole }
+        console.log('✅ Profile found with role:', normalizedProfile.role)
+        setUserProfile(normalizedProfile)
+        // Cek admin dengan case-insensitive (role already normalized)
+        setIsAdmin(checkIsAdmin(normalizedProfile.role))
+        return normalizedProfile
       }
       
       return null
@@ -179,10 +184,16 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     try {
       console.log('📝 Updating user profile')
       
+      // Pastikan role dikirim UPPERCASE jika ada update role
+      const normalizedUpdates = {
+        ...updates,
+        ...(updates.role && { role: updates.role.toUpperCase() })
+      }
+      
       const { data, error } = await supabase
         .from('profiles')
         .update({
-          ...updates,
+          ...normalizedUpdates,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
@@ -194,8 +205,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       if (data) {
         console.log('✅ Profile updated successfully')
         setUserProfile(data)
-        const role = data.role?.toUpperCase()
-        setIsAdmin(role === 'ADMIN')
+        setIsAdmin(checkIsAdmin(data.role))
       }
     } catch (error) {
       console.error('💥 Error updating profile:', error)
@@ -231,14 +241,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     const initializeAuth = async () => {
       try {
         setLoading(true)
-        console.log('🔍 Initializing auth...')
         
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
         
         if (!mounted) return
 
         if (sessionError) {
-          console.error('❌ Session error:', sessionError)
           setError(sessionError.message)
           return
         }
@@ -246,7 +254,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         if (currentSession?.user) {
           setSession(currentSession)
           setUser(currentSession.user)
-          console.log('👤 User found:', currentSession.user.email)
           
           const profile = await fetchUserProfile(
             currentSession.user.id, 
@@ -255,30 +262,27 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
           )
 
           if (profile) {
-            const role = profile.role?.toUpperCase()
-            console.log('🎯 Final role check - role:', role, 'isAdmin:', role === 'ADMIN')
+            const isUserAdmin = checkIsAdmin(profile.role)
             
-            if (role === 'ADMIN' && !pathname.startsWith('/admin') && pathname !== '/auth/login') {
-              console.log('👑 Admin detected on non-admin page, redirecting to admin dashboard')
+            if (isUserAdmin && !pathname.startsWith('/admin') && pathname !== '/auth/login') {
+              console.log('👑 Admin detected, redirecting to admin dashboard')
+              // Timeout kecil untuk memastikan state stabil
               setTimeout(() => {
                 router.push('/admin')
               }, 100)
             }
           }
         } else {
-          console.log('🚫 No session found')
           setSession(null)
           setUser(null)
           setUserProfile(null)
           setIsAdmin(false)
         }
       } catch (error) {
-        console.error('❌ Auth initialization error:', error)
         setError(error instanceof Error ? error.message : 'Authentication error')
       } finally {
         if (mounted) {
           setLoading(false)
-          console.log('🏁 Auth initialization complete')
         }
       }
     }
@@ -288,15 +292,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         if (!mounted) return
-
-        console.log('🔄 Auth state changed:', event)
         
         if (currentSession?.user) {
           setSession(currentSession)
           setUser(currentSession.user)
           
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            console.log('👤 Processing user for event:', event)
             const profile = await fetchUserProfile(
               currentSession.user.id, 
               currentSession.user.email,
@@ -304,11 +305,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             )
 
             if (event === 'SIGNED_IN' && profile) {
-              const role = profile.role?.toUpperCase()
-              console.log('🎯 Post-login role check - role:', role, 'isAdmin:', role === 'ADMIN')
-              
-              if (role === 'ADMIN' && !pathname.startsWith('/admin')) {
-                console.log('👑 Admin signed in, redirecting to admin dashboard')
+              const isUserAdmin = checkIsAdmin(profile.role)
+              if (isUserAdmin && !pathname.startsWith('/admin')) {
                 setTimeout(() => {
                   router.push('/admin')
                 }, 100)
