@@ -76,14 +76,14 @@ export default async function HomePage() {
         
         <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 drop-shadow-lg">
-            Metamorfrosa Community
+            Metamorfosa Community
           </h1>
           <p className="text-xl md:text-2xl mb-8 leading-relaxed drop-shadow-md">
             Wadah bagi komunitas untuk berbagi, belajar, dan tumbuh bersama 
             melalui berbagai event menarik dalam bahasa isyarat
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/events">
+            <Link href="/user/events">
               <Button className="bg-red-600 text-white hover:bg-red-700 px-8 py-3 text-lg font-semibold rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105">
                 Jelajahi Event
               </Button>
@@ -101,7 +101,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              Yuk Kenalan Sama Metamorfrosa!
+              Yuk Kenalan Sama Metamorfosa!
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Komunitas yang peduli dengan inklusivitas dan pemberdayaan melalui bahasa isyarat
@@ -115,7 +115,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-4">Tentang Kami</h3>
               <p className="text-gray-600 leading-relaxed">
-                Metamorfrosa adalah komunitas yang berfokus pada pengembangan kemampuan bahasa isyarat 
+                Metamorfosa adalah komunitas yang berfokus pada pengembangan kemampuan bahasa isyarat 
                 dan menciptakan lingkungan yang inklusif bagi semua anggota.
               </p>
             </div>
@@ -246,7 +246,7 @@ export default async function HomePage() {
             <>
               <EventList events={displayedEvents} />
               <div className="text-center mt-12">
-                <Link href="/events">
+                <Link href="/user/events">
                   <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg font-semibold rounded-lg transition-colors duration-300">
                     Lihat Semua Event
                   </Button>

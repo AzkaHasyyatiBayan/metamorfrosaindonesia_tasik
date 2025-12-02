@@ -53,9 +53,7 @@ export default function EventFilter({
     return ''
   }
 
-  // PERBAIKAN: Menghapus state 'period' dan useEffect.
-  // Sekarang 'period' dihitung langsung (derived state) dari props filters.
-  // Ini menghilangkan error "setState synchronously within an effect".
+  // Derived state untuk period
   const period = getPeriodFromDateRange(filters.dateRange.start, filters.dateRange.end)
 
   const handleDateChange = (field: 'start' | 'end', value: string) => {
@@ -86,8 +84,6 @@ export default function EventFilter({
   }
 
   const handlePeriodChange = (value: string) => {
-    // Tidak perlu setPeriod(value) karena akan otomatis terupdate lewat props filters
-    
     if (value === '') {
       onFilterChange({
         ...filters,
@@ -123,7 +119,6 @@ export default function EventFilter({
       location: '',
       accessibility: ''
     })
-    // Tidak perlu setPeriod('') manual
   }
 
   const hasActiveFilters = Boolean(
@@ -134,36 +129,39 @@ export default function EventFilter({
   )
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+    // PERBAIKAN: rounded-[2rem] -> rounded-4xl
+    <div className="bg-white rounded-4xl shadow-xl border border-gray-100 p-8 transition-all hover:shadow-2xl duration-500">
       {/* Header Filter */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 space-y-4 lg:space-y-0">
         <div>
-          <h2 className="text-2xl font-light tracking-tight text-gray-900">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
+            <span className="w-1.5 h-8 bg-red-600 rounded-full inline-block"></span>
             Filter Events
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Showing <span className="font-semibold text-gray-900">{filteredCount}</span> of{' '}
-            <span className="font-semibold text-gray-900">{totalEvents}</span> events
+          <p className="text-sm text-gray-500 mt-1 ml-4">
+            Menampilkan <span className="font-bold text-red-600">{filteredCount}</span> dari{' '}
+            <span className="font-semibold text-gray-700">{totalEvents}</span> event tersedia
           </p>
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 ml-4 lg:ml-0">
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-all duration-300 hover:shadow-sm"
+              className="group flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-red-600 bg-red-50 border border-red-100 rounded-full hover:bg-red-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-red-200"
             >
-              Clear All
+              <svg className="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              Reset Filter
             </button>
           )}
           
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-300"
+            className={`p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all duration-300 border border-transparent hover:border-red-100 ${isExpanded ? 'bg-red-50 text-red-600 rotate-180' : ''}`}
             aria-label={isExpanded ? "Collapse filters" : "Expand filters"}
           >
             <svg 
-              className={`w-5 h-5 transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} 
+              className="w-5 h-5 transform transition-transform duration-300" 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -175,44 +173,44 @@ export default function EventFilter({
       </div>
 
       {/* Main Filter Inputs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-2">
         {/* Location Input */}
         <div className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-gray-600 transition-colors">
+          <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 group-hover:text-red-500 transition-colors duration-300">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
           <input
             type="text"
-            placeholder="Location"
+            placeholder="Cari Lokasi..."
             value={filters.location}
             onChange={(e) => handleLocationChange(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 placeholder:text-gray-400 hover:border-gray-300"
+            className="w-full pl-14 pr-5 py-4 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-2xl text-gray-800 placeholder:text-gray-400 focus:outline-none focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 hover:border-red-200 shadow-sm"
           />
         </div>
 
         {/* Category / Accessibility Select */}
         <div className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-gray-600 transition-colors">
+          <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 group-hover:text-red-500 transition-colors duration-300">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
           </div>
           <select 
             value={filters.accessibility}
             onChange={(e) => handleCategoryChange(e.target.value)}
-            className="w-full pl-12 pr-10 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 appearance-none hover:border-gray-300 cursor-pointer"
+            className="w-full pl-14 pr-10 py-4 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-2xl text-gray-800 focus:outline-none focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 appearance-none hover:border-red-200 cursor-pointer shadow-sm"
           >
-            <option value="" className="text-gray-400">All Categories</option>
+            <option value="" className="text-gray-400">Semua Kategori</option>
             {categories.map((cat) => (
-              <option key={cat} value={cat} className="text-gray-900">
+              <option key={cat} value={cat} className="text-gray-900 py-2">
                 {cat.replace(/_/g, ' ')}
               </option>
             ))}
           </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none text-gray-400 group-hover:text-red-500 transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
@@ -220,7 +218,7 @@ export default function EventFilter({
 
         {/* Time Period Select */}
         <div className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-gray-600 transition-colors">
+          <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 group-hover:text-red-500 transition-colors duration-300">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -228,14 +226,14 @@ export default function EventFilter({
           <select 
             value={period}
             onChange={(e) => handlePeriodChange(e.target.value)}
-            className="w-full pl-12 pr-10 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 appearance-none hover:border-gray-300 cursor-pointer"
+            className="w-full pl-14 pr-10 py-4 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-2xl text-gray-800 focus:outline-none focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 appearance-none hover:border-red-200 cursor-pointer shadow-sm"
           >
-            <option value="" className="text-gray-400">Time Period</option>
-            <option value="week" className="text-gray-900">This Week</option>
-            <option value="month" className="text-gray-900">This Month</option>
+            <option value="" className="text-gray-400">Waktu Pelaksanaan</option>
+            <option value="week" className="text-gray-900">Minggu Ini</option>
+            <option value="month" className="text-gray-900">Bulan Ini</option>
           </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none text-gray-400 group-hover:text-red-500 transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
@@ -244,36 +242,42 @@ export default function EventFilter({
 
       {/* Expanded Custom Date Range */}
       <div 
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isExpanded ? 'max-h-96 opacity-100 pt-8 border-t border-gray-100 mt-8' : 'max-h-0 opacity-0'
+        className={`overflow-hidden transition-all duration-500 ease-in-out ${
+          isExpanded ? 'max-h-96 opacity-100 mt-6' : 'max-h-0 opacity-0 mt-0'
         }`}
       >
-        <div className="max-w-2xl mx-auto">
-          <h3 className="text-lg font-medium text-gray-900 mb-6 text-center">Custom Date Range</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Start Date
+        <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
+          <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wide opacity-70 text-center flex items-center justify-center gap-2">
+            {/* PERBAIKAN: h-[1px] -> h-px */}
+            <span className="w-8 h-px bg-red-200"></span>
+            Rentang Tanggal Custom
+            {/* PERBAIKAN: h-[1px] -> h-px */}
+            <span className="w-8 h-px bg-red-200"></span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="space-y-2 group">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider group-hover:text-red-500 transition-colors">
+                Dari Tanggal
               </label>
               <div className="relative">
                 <input
                   type="date"
                   value={filters.dateRange.start}
                   onChange={(e) => handleDateChange('start', e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                  className="w-full px-5 py-3 bg-white border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 hover:border-red-200 shadow-sm cursor-pointer"
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                End Date
+            <div className="space-y-2 group">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider group-hover:text-red-500 transition-colors">
+                Sampai Tanggal
               </label>
               <div className="relative">
                 <input
                   type="date"
                   value={filters.dateRange.end}
                   onChange={(e) => handleDateChange('end', e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                  className="w-full px-5 py-3 bg-white border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all duration-300 hover:border-red-200 shadow-sm cursor-pointer"
                 />
               </div>
             </div>

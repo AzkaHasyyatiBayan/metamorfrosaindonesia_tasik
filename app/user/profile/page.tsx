@@ -677,7 +677,7 @@ export default function UserProfile() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button
-                      onClick={() => router.push('/events')}
+                      onClick={() => router.push('/user/events')}
                       className="bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-xl font-semibold transition-colors text-center"
                     >
                       Lihat Semua Event

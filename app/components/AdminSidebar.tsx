@@ -1,12 +1,12 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation' // PERBAIKAN: Hapus useRouter dari import
+import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import Image from 'next/image'
-import { supabase } from '../lib/supabase'
-import { useAuth } from './AuthProvider'
+import { supabase } from '../lib/supabase' // Sesuaikan path ini dengan projectmu
+import { useAuth } from '../components/AuthProvider' // Sesuaikan path ini dengan projectmu
 
-// Icons (Sama seperti sebelumnya, tidak diubah)
+// --- ICONS (Tetap sama) ---
 const DashboardIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -51,7 +51,6 @@ const ExpandIcon = () => (
 
 export default function AdminSidebar() {
   const pathname = usePathname()
-  // PERBAIKAN: Menghapus const router = useRouter() karena tidak digunakan
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [logoError, setLogoError] = useState(false)
   
@@ -75,14 +74,12 @@ export default function AdminSidebar() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
-      // Gunakan window.location untuk memastikan clean state setelah logout
       window.location.href = '/'
     } catch (error) {
       console.error('Error logging out:', error)
     }
   }
 
-  // Jika sedang loading, tampilkan spinner
   if (loading) {
     return (
       <div className="bg-red-600 text-white min-h-screen w-64 flex flex-col items-center justify-center fixed top-0 left-0 z-50">
@@ -92,124 +89,125 @@ export default function AdminSidebar() {
     )
   }
 
-  // Jika sudah tidak loading TAPI bukan admin, jangan render apa-apa (null)
   if (!isAdmin) {
     return null
   }
 
   return (
-    <div className={`bg-red-600 text-white min-h-screen transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} flex flex-col sticky top-0 h-screen`}>
-      <div className="p-4 border-b border-red-500 shrink-0">
-        <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden">
-                {!logoError ? (
-                  <Image 
-                    src="/logo.jpg" 
-                    alt="Metamorfrosa Indonesia"
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-cover"
-                    onError={() => setLogoError(true)}
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full bg-red-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">MI</span>
-                  </div>
-                )}
+    <div 
+      className={`bg-red-600 text-white min-h-screen transition-all duration-300 flex flex-col sticky top-0 h-screen shadow-xl z-40
+        ${isCollapsed ? 'w-20' : 'w-64'} 
+      `}
+    >
+      {/* PERBAIKAN HEADER: 
+        - Jika collapsed, gunakan flex-col agar logo dan tombol ada di atas-bawah (tidak nabrak).
+        - Tambahkan gap-4 untuk jarak.
+      */}
+      <div className={`
+        p-4 border-b border-red-500 shrink-0 flex transition-all duration-300
+        ${isCollapsed ? 'flex-col items-center gap-4 py-6' : 'items-center justify-between'}
+      `}>
+        
+        {/* LOGO WRAPPER */}
+        <div className={`flex items-center ${!isCollapsed ? 'space-x-3' : 'justify-center'}`}>
+          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+            {!logoError ? (
+              <Image 
+                src="/logo.jpg" 
+                alt="MI"
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+                onError={() => setLogoError(true)}
+                priority
+              />
+            ) : (
+              <div className="w-full h-full bg-red-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-[10px] font-bold">MI</span>
               </div>
-              <span className="text-white font-bold text-lg">Admin</span>
-            </div>
-          )}
-          {isCollapsed && (
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden mx-auto">
-              {!logoError ? (
-                <Image 
-                  src="/logo.jpg" 
-                  alt="Metamorfrosa Indonesia"
-                  width={32}
-                  height={32}
-                  className="w-full h-full object-cover"
-                  onError={() => setLogoError(true)}
-                    priority
-                />
-              ) : (
-                <div className="w-full h-full bg-red-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">MI</span>
-                </div>
-              )}
-            </div>
-          )}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-white hover:text-red-200 transition-colors duration-200 p-1 rounded hover:bg-red-500"
-          >
-            {isCollapsed ? <ExpandIcon /> : <CollapseIcon />}
-          </button>
+            )}
+          </div>
+          {/* Teks Admin hanya muncul jika tidak collapsed */}
+          {!isCollapsed && <span className="text-white font-bold text-lg whitespace-nowrap">Admin</span>}
         </div>
+
+        {/* TOGGLE BUTTON */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={`
+            text-white hover:text-red-200 hover:bg-red-500 
+            transition-all duration-200 p-1.5 rounded-lg
+            ${isCollapsed ? 'bg-red-700/50' : ''}
+          `}
+          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        >
+          {isCollapsed ? <ExpandIcon /> : <CollapseIcon />}
+        </button>
       </div>
 
+      {/* USER PROFILE - Hanya muncul saat Expanded */}
       {!isCollapsed && userProfile && (
-        <div className="p-4 border-b border-red-500">
+        <div className="p-4 border-b border-red-500 animate-fadeIn">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden">
-              <div className="w-full h-full rounded-full flex items-center justify-center">
-                <span className="text-red-600 font-semibold text-sm">
-                  {userProfile.name?.charAt(0).toUpperCase() || 'U'}
-                </span>
-              </div>
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden shrink-0 border-2 border-red-400">
+              <span className="text-red-600 font-bold text-sm">
+                {userProfile.name?.charAt(0).toUpperCase() || 'U'}
+              </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{userProfile.name}</p>
+              <p className="text-sm font-medium truncate text-white">{userProfile.name}</p>
               <p className="text-xs text-red-200 truncate">{userProfile.email}</p>
             </div>
           </div>
         </div>
       )}
 
-      <nav className="p-4 space-y-1 flex-1">
+      {/* NAVIGATION */}
+      <nav className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
         {menuItems.map((item) => {
           const active = isActive(item.path)
           return (
             <Link
               key={item.path}
               href={item.path}
-              className={`flex items-center space-x-3 p-3 rounded-lg transition-colors duration-200 ${
-                active
-                  ? 'bg-white text-red-600 font-semibold shadow-sm'
-                  : 'text-white hover:bg-red-500'
-              }`}
+              className={`
+                flex items-center p-3 rounded-lg transition-all duration-200 mb-1
+                ${isCollapsed ? 'justify-center' : 'space-x-3'} 
+                ${active 
+                  ? 'bg-white text-red-600 font-bold shadow-md transform scale-[1.02]' 
+                  : 'text-white hover:bg-red-500 hover:translate-x-1'
+                }
+              `}
               title={isCollapsed ? item.label : undefined}
             >
-              <div className={`${active ? 'text-red-600' : 'text-white'}`}>
+              <div className={`shrink-0 ${active ? 'text-red-600' : 'text-white'}`}>
                 {item.icon}
               </div>
-              {!isCollapsed && <span className="text-sm">{item.label}</span>}
+              
+              {!isCollapsed && (
+                <span className="text-sm font-medium whitespace-nowrap overflow-hidden">
+                  {item.label}
+                </span>
+              )}
             </Link>
           )
         })}
       </nav>
 
+      {/* LOGOUT SECTION */}
       <div className="p-4 border-t border-red-500 shrink-0">
-        {!isCollapsed ? (
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-3 w-full p-3 text-white hover:bg-red-500 rounded-lg transition-colors duration-200 text-sm"
-          >
-            <LogoutIcon />
-            <span>Keluar</span>
-          </button>
-        ) : (
-          <button
-            onClick={handleLogout}
-            className="w-full p-3 text-white hover:bg-red-500 rounded-lg transition-colors duration-200 flex justify-center"
-            title="Keluar"
-          >
-            <LogoutIcon />
-          </button>
-        )}
+        <button
+          onClick={handleLogout}
+          className={`
+            w-full p-3 text-white hover:bg-red-500 rounded-lg transition-colors duration-200 
+            flex items-center
+            ${isCollapsed ? 'justify-center' : 'space-x-3'}
+          `}
+          title="Keluar"
+        >
+          <LogoutIcon />
+          {!isCollapsed && <span className="text-sm font-medium">Keluar</span>}
+        </button>
       </div>
     </div>
   )

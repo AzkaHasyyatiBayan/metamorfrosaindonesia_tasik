@@ -79,20 +79,26 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
 
   const handleCloseModal = () => {
     setShowModal(false)
+    setShowRegistration(false) // Reset tampilan ke detail saat modal ditutup
   }
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-        <div className="relative h-48 bg-gray-200 overflow-hidden">
+      <div className="group relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-hidden hover:shadow-red-500/20 transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col">
+        {/* Decorative blur effect (seperti di RegistrationForm) */}
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-red-500/10 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+        {/* --- Image Section --- */}
+        <div className="relative h-52 overflow-hidden shrink-0">
           {event.image_url && !imageError ? (
             <Image
               src={event.image_url}
               alt={event.title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
               onError={() => setImageError(true)}
+              unoptimized
             />
           ) : (
             <div 
@@ -101,171 +107,227 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
                 background: 'linear-gradient(135deg, #EF4444, #DC2626)'
               }}
             >
-              <svg className="w-12 h-12 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
-              </svg>
+              <div className="text-white/50">
+                 <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                 </svg>
+              </div>
             </div>
           )}
           
-          <div className="absolute top-3 left-3 flex flex-wrap gap-1">
+          {/* Categories Floating Badge */}
+          <div className="absolute top-4 left-4 flex flex-wrap gap-2 z-10">
             {event.category.slice(0, 2).map((cat) => (
               <span 
                 key={cat} 
-                className="px-2 py-1 bg-white/90 backdrop-blur-sm text-red-600 text-xs font-medium rounded-full border border-red-200"
+                className="px-3 py-1 bg-white/95 backdrop-blur-md text-red-600 text-xs font-bold rounded-full shadow-sm border border-red-100"
               >
                 {cat.replace('_', ' ')}
               </span>
             ))}
             {event.category.length > 2 && (
-              <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-gray-600 text-xs font-medium rounded-full border border-gray-200">
+              <span className="px-3 py-1 bg-white/95 backdrop-blur-md text-gray-600 text-xs font-bold rounded-full shadow-sm border border-gray-200">
                 +{event.category.length - 2}
               </span>
             )}
           </div>
 
-          {/* PERBAIKAN: Mengganti bg-gradient-to-t dengan bg-linear-to-t */}
-          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent"></div>
+          {/* Gradient Overlay for Text Readability if needed */}
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
         </div>
 
-        <div className="p-6">
-          <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-red-600 transition-colors">
+        {/* --- Content Section --- */}
+        <div className="p-6 flex flex-col flex-1 relative z-10">
+          <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-red-600 transition-colors tracking-tight">
             {event.title}
           </h3>
 
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          <p className="text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed flex-1">
             {truncateDescription(event.description)}
           </p>
 
-          <div className="space-y-3 mb-4">
-            <div className="flex items-center text-sm text-gray-700">
-              <CalendarIcon />
-              <span className="ml-2 font-medium">
+          <div className="space-y-3 mb-6 pt-4 border-t border-gray-100/50">
+            <div className="flex items-center text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+              <div className="p-2 rounded-full bg-red-50 text-red-500 mr-3">
+                 <CalendarIcon />
+              </div>
+              <span className="font-medium">
                 {formatDate(event.date_time)} • {formatTime(event.date_time)}
               </span>
             </div>
 
-            <div className="flex items-center text-sm text-gray-700">
-              <LocationIcon />
-              <span className="ml-2 line-clamp-1">{event.location}</span>
+            <div className="flex items-center text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+              <div className="p-2 rounded-full bg-red-50 text-red-500 mr-3">
+                 <LocationIcon />
+              </div>
+              <span className="truncate">{event.location}</span>
             </div>
 
             {event.max_participants && (
-              <div className="flex items-center text-sm text-gray-700">
-                <UsersIcon />
-                <span className="ml-2">
-                  Kapasitas: {event.max_participants} orang
-                </span>
+              <div className="flex items-center text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                <div className="p-2 rounded-full bg-red-50 text-red-500 mr-3">
+                   <UsersIcon />
+                </div>
+                <span>Kapasitas: <span className="font-semibold">{event.max_participants}</span> orang</span>
               </div>
             )}
           </div>
 
           <button 
             onClick={handleShowDetail}
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center group/btn"
+            className="w-full relative overflow-hidden bg-linear-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-red-500/20 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 flex items-center justify-center group/btn"
           >
-            <span>Lihat Detail</span>
-            <svg className="w-4 h-4 ml-2 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="relative z-10">Lihat Detail</span>
+            <svg className="w-4 h-4 ml-2 relative z-10 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
+            <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-linear-to-r from-transparent to-white opacity-20 group-hover/btn:animate-shine" />
           </button>
         </div>
       </div>
 
-      {/* Modal Detail Event */}
+      {/* --- Modal Detail Event --- */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">{event.title}</h2>
-                <button
-                  onClick={handleCloseModal}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="space-y-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50 shadow-2xl relative">
+            
+            {/* Modal Header Image (Optional) */}
+            <div className="relative">
                 {event.image_url && (
-                  <div className="relative h-64 bg-gray-200 rounded-xl overflow-hidden">
-                        <Image
-                          src={event.image_url}
-                          alt={event.title}
-                          fill
-                          sizes="100vw"
-                          className="object-cover"
-                        />
-                  </div>
-                )}
-
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Deskripsi Event</h3>
-                  <p className="text-gray-600">{event.description}</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center text-gray-700">
-                    <CalendarIcon />
-                    <span className="ml-2">
-                      {formatDate(event.date_time)} • {formatTime(event.date_time)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center text-gray-700">
-                    <LocationIcon />
-                    <span className="ml-2">{event.location}</span>
-                  </div>
-
-                  {event.max_participants && (
-                    <div className="flex items-center text-gray-700">
-                      <UsersIcon />
-                      <span className="ml-2">Kapasitas: {event.max_participants} orang</span>
-                    </div>
-                  )}
-                </div>
-
-                {event.category.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Fitur Aksesibilitas</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {event.category.map((cat) => (
-                        <span 
-                          key={cat}
-                          className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm"
-                        >
-                          {cat.replace('_', ' ')}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-                <div className="mt-8 pt-6 border-t">
-                  {!showRegistration ? (
-                    <div className="flex justify-end space-x-3">
-                      <button
+                  <div className="relative h-64 md:h-72 w-full">
+                     <Image
+                        src={event.image_url}
+                        alt={event.title}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                     />
+                     <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent"></div>
+                     <button
                         onClick={handleCloseModal}
-                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="absolute top-4 right-4 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors border border-white/10"
                       >
-                        Tutup
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                       </button>
-                      <button
-                        onClick={() => {
-                          setShowRegistration(true)
-                        }}
-                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  </div>
+                )}
+                
+                {/* Fallback close button if no image */}
+                {!event.image_url && (
+                   <button
+                    onClick={handleCloseModal}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 p-2 rounded-full"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
+            </div>
+
+            <div className="p-8">
+              {!event.image_url && (
+                 <h2 className="text-3xl font-bold text-gray-900 mb-6">{event.title}</h2>
+              )}
+              
+              {/* Judul Overlap Image jika ada gambar */}
+              {event.image_url && (
+                 // PERBAIKAN: Menghapus text-gray-900 karena sudah ada text-white
+                 <h2 className="text-3xl font-bold mb-6 -mt-16 relative z-10 text-white drop-shadow-md">{event.title}</h2>
+              )}
+
+              {/* View Toggle: Description or Registration */}
+              {!showRegistration ? (
+                <>
+                  <div className="space-y-8">
+                    <div>
+                      <h3 className="text-sm font-bold text-red-600 uppercase tracking-wider mb-3">Tentang Event</h3>
+                      <p className="text-gray-600 leading-relaxed text-lg">{event.description}</p>
+                    </div>
+
+                    {/* Info Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+                      <div className="flex items-start space-x-4">
+                        <div className="p-3 bg-white rounded-xl shadow-sm text-red-500">
+                           <CalendarIcon />
+                        </div>
+                        <div>
+                           <p className="text-xs text-gray-400 uppercase font-bold">Waktu</p>
+                           <p className="text-gray-900 font-medium">{formatDate(event.date_time)}</p>
+                           <p className="text-gray-600 text-sm">{formatTime(event.date_time)}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start space-x-4">
+                        <div className="p-3 bg-white rounded-xl shadow-sm text-red-500">
+                           <LocationIcon />
+                        </div>
+                        <div>
+                           <p className="text-xs text-gray-400 uppercase font-bold">Lokasi</p>
+                           <p className="text-gray-900 font-medium">{event.location}</p>
+                        </div>
+                      </div>
+
+                      {event.max_participants && (
+                        <div className="flex items-start space-x-4 md:col-span-2">
+                          <div className="p-3 bg-white rounded-xl shadow-sm text-red-500">
+                             <UsersIcon />
+                          </div>
+                          <div>
+                             <p className="text-xs text-gray-400 uppercase font-bold">Kapasitas</p>
+                             <p className="text-gray-900 font-medium">{event.max_participants} Peserta</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Categories */}
+                    {event.category.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Kategori & Aksesibilitas</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {event.category.map((cat) => (
+                            <span 
+                              key={cat}
+                              className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100 flex items-center gap-2"
+                            >
+                              <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                              {cat.replace('_', ' ')}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col-reverse sm:flex-row justify-end gap-3">
+                    <button
+                      onClick={handleCloseModal}
+                      className="px-6 py-3.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+                    >
+                      Tutup
+                    </button>
+                    <button
+                      onClick={() => setShowRegistration(true)}
+                      className="px-8 py-3.5 bg-linear-to-r from-red-600 to-red-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-red-500/30 transition-all transform hover:-translate-y-0.5"
+                    >
+                      Daftar Event
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="animate-fadeIn">
+                   <div className="flex items-center mb-6">
+                      <button 
+                        onClick={() => setShowRegistration(false)}
+                        className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
                       >
-                        Daftar Event
+                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                       </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <RegistrationForm eventId={event.id} />
-                    </div>
-                  )}
+                      <h3 className="text-xl font-bold text-gray-900">Formulir Pendaftaran</h3>
+                   </div>
+                   {/* Form Pendaftaran */}
+                   <RegistrationForm eventId={event.id} />
                 </div>
+              )}
             </div>
           </div>
         </div>

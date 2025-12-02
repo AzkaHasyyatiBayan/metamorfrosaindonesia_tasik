@@ -1,125 +1,23 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, usePathname } from 'next/navigation'
-import { supabase } from '../lib/supabase'
-import { UserRole } from '../types/database.types'
+import { usePathname } from 'next/navigation'
+import { useAuth } from './AuthProvider'
 import { Icons } from './Icons'
 
-interface AppUser {
-  id: string
-  name: string
-  email: string
-  role: UserRole
-  avatar_url?: string
-}
-
 export default function Navbar() {
-  const [user, setUser] = useState<AppUser | null>(null)
+  const { user, userProfile, loading, signOut } = useAuth()
+  
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [logoError, setLogoError] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
   const pathname = usePathname()
-
-  const fetchUserProfile = useCallback(async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error && error.code === 'PGRST116') {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        
-        if (authUser) {
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: authUser.id,
-                email: authUser.email,
-                name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
-                role: 'USER'
-              }
-            ])
-            .select()
-            .single()
-
-          if (!createError && newProfile) {
-            setUser({
-              id: newProfile.id,
-              name: newProfile.name,
-              email: newProfile.email,
-              role: newProfile.role,
-              avatar_url: newProfile.avatar_url,
-            })
-            return
-          }
-        }
-      } else if (error) {
-        setUser(null)
-        return
-      }
-
-      if (profile) {
-        setUser({
-          id: profile.id,
-          name: profile.name || profile.email?.split('@')[0] || 'User',
-          email: profile.email,
-          role: profile.role,
-          avatar_url: profile.avatar_url,
-        })
-      }
-    } catch {
-      setUser(null)
-    }
-  }, [])
-
-  const checkUser = useCallback(async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (session?.user) {
-        await fetchUserProfile(session.user.id)
-      } else {
-        setUser(null)
-      }
-    } catch {
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [fetchUserProfile])
-
-  useEffect(() => {
-    checkUser()
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          await fetchUserProfile(session.user.id)
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [checkUser, fetchUserProfile])
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
-      setUser(null)
+      await signOut()
       setIsDropdownOpen(false)
-      router.push('/')
-      router.refresh()
     } catch {
       console.error('Error logging out')
     }
@@ -141,7 +39,7 @@ export default function Navbar() {
                 <span className="text-white font-bold text-lg">M</span>
               </div>
               <span className="text-3xl font-disney tracking-wide text-gray-900">
-                Metamorfrosa
+                Metamorfosa
               </span>
             </div>
             <div className="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
@@ -166,21 +64,23 @@ export default function Navbar() {
                     sizes="40px"
                     className="object-cover" 
                     onError={() => setLogoError(true)}
-                    priority
                   />
                 ) : (
                   <span className="text-white font-bold text-lg">M</span>
                 )}
               </div>
               <span className="text-3xl font-disney tracking-wide text-gray-900">
-                Metamorfrosa
+                Metamorfosa
               </span>
             </Link>
           </div>
 
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
+            {/* PERBAIKAN: Tambahkan prefetch={false} agar selalu load data baru */}
             <Link 
               href="/" 
+              prefetch={false}
               className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
                 isActive('/') 
                   ? 'text-red-600 border-b-2 border-red-600' 
@@ -191,6 +91,7 @@ export default function Navbar() {
             </Link>
             <Link 
               href="/user/events" 
+              prefetch={false}
               className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
                 isActive('/user/events') 
                   ? 'text-red-600 border-b-2 border-red-600' 
@@ -201,6 +102,7 @@ export default function Navbar() {
             </Link>
             <Link 
               href="/user/about" 
+              prefetch={false}
               className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
                 isActive('/user/about') 
                   ? 'text-red-600 border-b-2 border-red-600' 
@@ -210,6 +112,7 @@ export default function Navbar() {
               Tentang Kami
             </Link>
 
+            {/* User Dropdown / Login Buttons */}
             {user ? (
               <div className="relative">
                 <button
@@ -218,10 +121,10 @@ export default function Navbar() {
                 >
                   <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center border border-red-200">
                     <span className="text-red-600 text-sm font-semibold">
-                      {user.name?.charAt(0).toUpperCase()}
+                      {(userProfile?.name || user.email || 'U').charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <span className="max-w-32 truncate">{user.name}</span>
+                  <span className="max-w-32 truncate">{userProfile?.name || 'User'}</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -230,7 +133,7 @@ export default function Navbar() {
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                     <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{userProfile?.name}</p>
                       <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
                     
@@ -259,12 +162,14 @@ export default function Navbar() {
               <div className="flex items-center space-x-4">
                 <Link 
                   href="/auth/login" 
+                  prefetch={false}
                   className="text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 px-3 py-2"
                 >
                   Masuk
                 </Link>
                 <Link 
                   href="/auth/register" 
+                  prefetch={false}
                   className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200 shadow-sm"
                 >
                   Daftar
@@ -273,6 +178,7 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -285,11 +191,14 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* Mobile Menu Content */}
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-200 py-4">
             <div className="flex flex-col space-y-3">
+              {/* Tambahkan prefetch={false} juga di mobile menu */}
               <Link 
                 href="/" 
+                prefetch={false}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -297,6 +206,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/user/events" 
+                prefetch={false}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -304,6 +214,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/user/about" 
+                prefetch={false}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -313,7 +224,7 @@ export default function Navbar() {
               {user ? (
                 <>
                   <div className="px-4 py-2 border-t border-gray-200 mt-2 pt-4">
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                    <p className="text-sm font-medium text-gray-900">{userProfile?.name}</p>
                     <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
                   
@@ -338,6 +249,7 @@ export default function Navbar() {
                 <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
                   <Link 
                     href="/auth/login" 
+                    prefetch={false}
                     className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded text-center"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -345,6 +257,7 @@ export default function Navbar() {
                   </Link>
                   <Link 
                     href="/auth/register" 
+                    prefetch={false}
                     className="bg-red-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-red-700 transition-colors duration-200 text-center"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

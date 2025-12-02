@@ -80,7 +80,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {[
                 { href: '/', label: 'Beranda' },
-                { href: '/events', label: 'Semua Event' },
+                { href: '/user/events', label: 'Semua Event' },
                 { href: '/user/about', label: 'Tentang Kami' },
                 { href: '/contact', label: 'Kontak' },
               ].map((link) => (
@@ -147,12 +147,6 @@ export default function Footer() {
             </p>
           </div>
           <div className="flex space-x-6">
-            <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
-              Kebijakan Privasi
-            </Link>
-            <Link href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">
-              Syarat & Ketentuan
-            </Link>
             <Link href="/sitemap" className="text-gray-400 hover:text-white text-sm transition-colors">
               Sitemap
             </Link>

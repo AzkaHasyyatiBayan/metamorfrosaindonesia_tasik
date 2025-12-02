@@ -46,6 +46,75 @@ interface DBProfileRow {
   phone?: string | null
 }
 
+// --- ICON COMPONENTS (SVG) ---
+
+const UserIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+)
+
+const MailIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  </svg>
+)
+
+const PhoneIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+  </svg>
+)
+
+const CalendarIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+)
+
+const MapPinIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+)
+
+const CheckIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  </svg>
+)
+
+const XIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+)
+
+const ClockIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
+const ClipboardIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+  </svg>
+)
+
+const CheckCircleIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
+const XCircleIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
 // Helper to safely map fetched rows to typed Registration
 const mapFallbackRegistration = (reg: DBRegistrationRow, eventsMap: Record<string, DBEventRow>, profilesMap: Record<string, DBProfileRow>): Registration => {
   const event = eventsMap[reg.event_id] || { id: reg.event_id, title: 'Unknown', date_time: '', location: '' }
@@ -84,7 +153,6 @@ const mapFallbackRegistration = (reg: DBRegistrationRow, eventsMap: Record<strin
 export default function AdminRegistrations() {
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
-  // Fix ESLint: Hapus setPage karena pagination belum digunakan, biarkan page default 0
   const [page] = useState(0)
   const pageSize = 20
   const [totalCount, setTotalCount] = useState<number | null>(null)
@@ -94,7 +162,6 @@ export default function AdminRegistrations() {
   const { user, userProfile, isAdmin } = useAuth()
   const router = useRouter()
   
-  // Fix ESLint: Hapus parameter useView yang tidak terpakai
   const fetchCounts = async () => {
     try {
       const mapping: Record<string, string[]> = {
@@ -109,7 +176,6 @@ export default function AdminRegistrations() {
         const dbStatuses = mapping[key]
         let c = 0
         
-        // Always use table for now to avoid view dependency issues
         const { count } = await supabase
             .from('registrations')
             .select('id', { count: 'exact' })
@@ -130,7 +196,6 @@ export default function AdminRegistrations() {
       const from = page * pageSize
       const to = from + pageSize - 1
 
-      // Always use manual join fallback since the view may not be created in Supabase
       const { data: regsData, error: regsError, count: regsCount } = await supabase
         .from('registrations')
         .select('*', { count: 'exact' })
@@ -146,11 +211,9 @@ export default function AdminRegistrations() {
         return
       }
 
-      // Get all unique event IDs and user IDs (only for current page)
       const eventIds = Array.from(new Set(regsData.map(r => r.event_id).filter(Boolean)))
       const userIds = Array.from(new Set(regsData.map(r => r.user_id).filter(Boolean)))
 
-      // Fetch events separately
       let eventsMap: Record<string, DBEventRow> = {}
       if (eventIds.length > 0) {
         const { data: eventsData, error: eventsError } = await supabase
@@ -166,7 +229,6 @@ export default function AdminRegistrations() {
         }
       }
 
-      // Fetch profiles separately
       let profilesMap: Record<string, DBProfileRow> = {}
       if (userIds.length > 0) {
         const { data: profilesData, error: profilesError } = await supabase
@@ -182,13 +244,11 @@ export default function AdminRegistrations() {
         }
       }
 
-      // Map the registration data with the fetched relations
       const mapped = (regsData || []).map(r => mapFallbackRegistration(r, eventsMap, profilesMap))
       
       setRegistrations(mapped)
       setTotalCount(regsCount ?? null)
       
-      // fetch counts by status for dashboard cards
       await fetchCounts()
       
     } catch (error) {
@@ -200,7 +260,6 @@ export default function AdminRegistrations() {
 
   const updateRegistrationStatus = async (registrationId: string, status: 'PENDING' | 'CONFIRMED' | 'REJECTED') => {
     try {
-      // Map UI status to DB-accepted values.
       const dbStatusMap: Record<string, string> = {
         PENDING: 'pending',
         CONFIRMED: 'approved',
@@ -220,7 +279,6 @@ export default function AdminRegistrations() {
         reg.id === registrationId ? { ...reg, status } : reg
       ))
       
-      // Refresh counts after update
       fetchCounts()
 
     } catch (error) {
@@ -248,17 +306,17 @@ export default function AdminRegistrations() {
   if (!user || (userProfile && !isAdmin)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center bg-white rounded-2xl shadow-xl p-10 max-w-md mx-4 border border-gray-100">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Akses Ditolak</h2>
-          <p className="text-gray-600">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          <p className="text-gray-500 mb-8 leading-relaxed">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
           <button 
              onClick={() => router.push('/')}
-             className="mt-6 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+             className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-red-200"
           >
              Kembali ke Beranda
           </button>
@@ -269,209 +327,269 @@ export default function AdminRegistrations() {
 
   if (loading && registrations.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-lg text-gray-600">Memuat data pendaftaran...</p>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+        <div className="relative w-16 h-16 mb-4">
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-red-100 rounded-full opacity-50"></div>
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-red-600 rounded-full border-t-transparent animate-spin"></div>
         </div>
+        <p className="text-gray-500 font-medium animate-pulse">Memuat data pendaftaran...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Kelola Pendaftaran</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Kelola dan verifikasi pendaftaran event dari peserta dan relawan
+    <div className="min-h-screen bg-gray-50/50">
+      
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Kelola Pendaftaran</h1>
+          <p className="text-gray-500 mt-1 text-sm">
+            Verifikasi data peserta dan relawan untuk setiap event
           </p>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Pendaftaran</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{totalCount ?? registrations.length}</p>
+                <p className="text-sm font-medium text-gray-500">Total Pendaftaran</p>
+                <p className="text-3xl font-bold text-blue-600 mt-1">{totalCount ?? registrations.length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                <ClipboardIcon />
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Menunggu</p>
-                <p className="text-3xl font-bold text-yellow-600 mt-2">{getStatusCount('PENDING')}</p>
+                <p className="text-sm font-medium text-gray-500">Menunggu</p>
+                <p className="text-3xl font-bold text-yellow-600 mt-1">{getStatusCount('PENDING')}</p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
+                <ClockIcon />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Dikonfirmasi</p>
-                <p className="text-3xl font-bold text-green-600 mt-2">{getStatusCount('CONFIRMED')}</p>
+                <p className="text-sm font-medium text-gray-500">Dikonfirmasi</p>
+                <p className="text-3xl font-bold text-green-600 mt-1">{getStatusCount('CONFIRMED')}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="p-3 bg-green-50 text-green-600 rounded-xl">
+                <CheckCircleIcon />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Ditolak</p>
-                <p className="text-3xl font-bold text-red-600 mt-2">{getStatusCount('REJECTED')}</p>
+                <p className="text-sm font-medium text-gray-500">Ditolak</p>
+                <p className="text-3xl font-bold text-red-600 mt-1">{getStatusCount('REJECTED')}</p>
               </div>
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <div className="p-3 bg-red-50 text-red-600 rounded-xl">
+                <XCircleIcon />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-3">
+        {/* Filter Tabs */}
+        <div className="mb-8 overflow-x-auto pb-2">
+          <div className="flex gap-2">
             {[
-              { key: 'ALL' as const, label: 'Semua', count: totalCount ?? registrations.length, color: 'gray' },
+              { key: 'ALL' as const, label: 'Semua', count: totalCount ?? registrations.length, color: 'black' },
               { key: 'PENDING' as const, label: 'Pending', count: getStatusCount('PENDING'), color: 'yellow' },
               { key: 'CONFIRMED' as const, label: 'Dikonfirmasi', count: getStatusCount('CONFIRMED'), color: 'green' },
               { key: 'REJECTED' as const, label: 'Ditolak', count: getStatusCount('REJECTED'), color: 'red' }
-            ].map(({ key, label, count, color }) => (
-              <button
-                key={key}
-                onClick={() => setFilter(key)}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  filter === key
-                    ? `bg-${color}-600 text-white shadow-lg transform scale-105`
-                    : 'bg-white text-gray-700 shadow-md hover:shadow-lg hover:bg-gray-50'
-                }`}
-              >
-                <span>{label}</span>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  filter === key ? 'bg-white bg-opacity-20' : `bg-${color}-100 text-${color}-800`
-                }`}>
-                  {count}
-                </span>
-              </button>
-            ))}
+            ].map(({ key, label, count, color }) => {
+              const isActive = filter === key
+              return (
+                <button
+                  key={key}
+                  onClick={() => setFilter(key)}
+                  className={`
+                    flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap
+                    ${isActive 
+                      ? `bg-${color === 'black' ? 'black-900' : color + '500'} text-white shadow-md transform scale-[1.02]` 
+                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                    }
+                  `}
+                >
+                  {label}
+                  <span className={`
+                    px-2 py-0.5 rounded-md text-xs font-bold
+                    ${isActive 
+                      ? 'bg-white/20 text-white' 
+                      : `bg-${color}-50 text-${color}-600`
+                    }
+                  `}>
+                    {count}
+                  </span>
+                </button>
+              )
+            })}
           </div>
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+        {/* Table Section */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead>
+                <tr className="bg-gray-50/50">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Peserta
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Event Info
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Tipe
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Tanggal Daftar
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Aksi
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-100 bg-white">
                 {filteredRegistrations.map((registration) => (
-                  <tr key={registration.id} className="hover:bg-gray-50 transition-colors duration-200">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-semibold text-gray-900">{registration.user_name}</div>
-                        <div className="text-sm text-gray-500">{registration.user_email}</div>
-                        {registration.user_phone && (
-                          <div className="text-sm text-gray-500">{registration.user_phone}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-medium text-gray-900">{registration.event_title}</div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(registration.event_date).toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                  <tr key={registration.id} className="hover:bg-gray-50/80 transition-colors">
+                    
+                    {/* User Info */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-gray-100 rounded-lg text-gray-500">
+                          <UserIcon />
                         </div>
-                        <div className="text-sm text-gray-500">{registration.event_location}</div>
+                        <div>
+                          <div className="font-semibold text-gray-900">{registration.user_name}</div>
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+                            <MailIcon />
+                            <span className="truncate max-w-[150px]">{registration.user_email}</span>
+                          </div>
+                          {registration.user_phone && (
+                            <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+                              <PhoneIcon />
+                              <span>{registration.user_phone}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        registration.type === 'VOLUNTEER' ?
-                        'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {registration.type === 'VOLUNTEER' ? '🤝 Relawan' : '👤 Peserta'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        registration.status === 'CONFIRMED' ?
-                        'bg-green-100 text-green-800' : registration.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {registration.status === 'CONFIRMED' ? '✅ Dikonfirmasi' : registration.status === 'REJECTED' ? '❌ Ditolak' : '⏳ Pending'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {new Date(registration.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex space-x-2">
-                        {registration.status === 'PENDING' ? (
-                          <>
-                            <button
-                              onClick={() => updateRegistrationStatus(registration.id, 'CONFIRMED')}
-                              className="bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-green-200 transition-colors"
-                            >
-                              Terima
-                            </button>
-                            <button
-                              onClick={() => updateRegistrationStatus(registration.id, 'REJECTED')}
-                              className="bg-red-100 text-red-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-red-200 transition-colors"
-                            >
-                              Tolak
-                            </button>
-                          </>
-                        ) : (
-                          <span className="text-xs text-gray-400 italic">
-                             {registration.status === 'CONFIRMED' ? 'Sudah diterima' : 'Sudah ditolak'}
-                          </span>
-                        )}
+
+                    {/* Event Info */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-gray-100 rounded-lg text-gray-500 mt-0.5">
+                          <CalendarIcon />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 truncate max-w-[200px]" title={registration.event_title}>
+                            {registration.event_title}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {new Date(registration.event_date).toLocaleDateString('id-ID', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                            <MapPinIcon />
+                            <span className="truncate max-w-[150px]">{registration.event_location}</span>
+                          </div>
+                        </div>
                       </div>
+                    </td>
+
+                    {/* Type Badge */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`
+                        inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border
+                        ${registration.type === 'VOLUNTEER' 
+                          ? 'bg-purple-50 text-purple-700 border-purple-100' 
+                          : 'bg-blue-50 text-blue-700 border-blue-100'
+                        }
+                      `}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${registration.type === 'VOLUNTEER' ? 'bg-purple-500' : 'bg-blue-500'}`}></span>
+                        {registration.type === 'VOLUNTEER' ? 'Relawan' : 'Peserta'}
+                      </span>
+                    </td>
+
+                    {/* Status Badge */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`
+                        inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border
+                        ${registration.status === 'CONFIRMED'
+                          ? 'bg-green-50 text-green-700 border-green-100'
+                          : registration.status === 'REJECTED'
+                            ? 'bg-red-50 text-red-700 border-red-100'
+                            : 'bg-yellow-50 text-yellow-700 border-yellow-100'
+                        }
+                      `}>
+                        {registration.status === 'CONFIRMED' && <CheckIcon />}
+                        {registration.status === 'REJECTED' && <XIcon />}
+                        {registration.status === 'PENDING' && <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>}
+                        
+                        {registration.status === 'CONFIRMED' ? 'Dikonfirmasi' : registration.status === 'REJECTED' ? 'Ditolak' : 'Menunggu'}
+                      </span>
+                    </td>
+
+                    {/* Date */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(registration.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {registration.status === 'PENDING' ? (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => updateRegistrationStatus(registration.id, 'CONFIRMED')}
+                            className="p-2 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 rounded-lg transition-colors"
+                            title="Terima"
+                          >
+                            <CheckIcon />
+                          </button>
+                          <button
+                            onClick={() => updateRegistrationStatus(registration.id, 'REJECTED')}
+                            className="p-2 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-lg transition-colors"
+                            title="Tolak"
+                          >
+                            <XIcon />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-medium text-gray-400 italic">
+                           Selesai
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
+                
                 {filteredRegistrations.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                       Tidak ada data pendaftaran yang ditemukan untuk filter ini.
+                    <td colSpan={6} className="px-6 py-16 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="p-4 bg-gray-50 rounded-full mb-3">
+                          <ClipboardIcon />
+                        </div>
+                        <p className="text-gray-900 font-medium">Tidak ada data ditemukan</p>
+                        <p className="text-gray-500 text-sm mt-1">Coba ubah filter status di atas</p>
+                      </div>
                     </td>
                   </tr>
                 )}

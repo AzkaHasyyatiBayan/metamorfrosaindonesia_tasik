@@ -233,10 +233,6 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <div className="text-center text-sm text-gray-500 bg-white/50 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-          <p>Dengan masuk, Anda menyetujui <span className="text-red-600 font-medium">Kebijakan Privasi</span> kami</p>
-        </div>
-
         {loading && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
             <div className="bg-white rounded-2xl p-8 flex flex-col items-center space-y-4 transform transition-all duration-300 scale-105">

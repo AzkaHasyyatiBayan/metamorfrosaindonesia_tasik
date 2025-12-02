@@ -6,21 +6,23 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import FileUpload from '../../components/FileUpload'
 
-const EventIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+// --- ICON COMPONENTS ---
+
+const ImageIcon = () => (
+  <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
 )
 
-const DeleteIcon = () => (
+const EventTagIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3v5m8-5v5m-1-1h2a2 2 0 012 2v4a2 2 0 01-2 2h-2m-4 0h-2a2 2 0 01-2-2v-4a2 2 0 012-2h2m2 4h.01M17 16l-2-2" />
+  </svg>
+)
+
+const TrashIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-  </svg>
-)
-
-const GalleryIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
 )
 
@@ -30,11 +32,25 @@ const PlusIcon = () => (
   </svg>
 )
 
-const CloseIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+const XIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </svg>
 )
+
+const UploadIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+  </svg>
+)
+
+const ClockIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
+// --- TYPES ---
 
 type Gallery = {
   id: string
@@ -45,7 +61,7 @@ type Gallery = {
   event_title: string
 }
 
-// Helper types for fallback join when PostgREST relationship is missing
+// Helper types for fallback join
 interface MediaRow {
   id: string
   event_id: string
@@ -65,7 +81,7 @@ function mapFallbackGallery(media: MediaRow, eventsMap: Record<string, EventForG
   const event = eventsMap[media.event_id]
   return {
     ...media,
-    event_title: event?.title || ''
+    event_title: event?.title || 'Umum' // Default ke Umum jika tidak ada event
   }
 }
 
@@ -89,68 +105,77 @@ export default function AdminGalleries() {
     fetchGalleries()
   }, [user, userProfile, router, isAdmin])
 
-const fetchGalleries = async () => {
-  try {
-    setLoading(true)
-    
-    const { data, error } = await supabase
-      .from('media')
-      .select(`
-        *,
-        events (
-          title
-        )
-      `)
-      .order('created_at', { ascending: false })
+  const fetchGalleries = async () => {
+    try {
+      setLoading(true)
+      
+      const { data, error } = await supabase
+        .from('media')
+        .select(`
+          *,
+          events (
+            title
+          )
+        `)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      // Fallback when PostgREST can't resolve relationship media->events
-      if (error.code === 'PGRST200' || (error.message && String(error.message).includes('Could not find a relationship'))) {
-        console.warn('media->events relationship missing; falling back to manual join for galleries')
+      if (error) {
+        // Fallback when PostgREST can't resolve relationship media->events
+        if (error.code === 'PGRST200' || (error.message && String(error.message).includes('Could not find a relationship'))) {
+          console.warn('media->events relationship missing; falling back to manual join for galleries')
 
-        const { data: mediaData, error: mediaError } = await supabase
-          .from('media')
-          .select('*')
-          .order('created_at', { ascending: false })
+          const { data: mediaData, error: mediaError } = await supabase
+            .from('media')
+            .select('*')
+            .order('created_at', { ascending: false })
 
-        if (mediaError) throw mediaError
+          if (mediaError) throw mediaError
 
-        const eventIds = Array.from(new Set((mediaData || []).map((m: MediaRow) => m.event_id).filter(Boolean)))
+          const eventIds = Array.from(new Set((mediaData || []).map((m: MediaRow) => m.event_id).filter(Boolean)))
 
-        let eventsMap: Record<string, EventForGallery> = {}
-        if (eventIds.length > 0) {
-          const { data: eventsData, error: eventsError } = await supabase
-            .from('events')
-            .select('id, title')
-            .in('id', eventIds)
+          let eventsMap: Record<string, EventForGallery> = {}
+          if (eventIds.length > 0) {
+            const { data: eventsData, error: eventsError } = await supabase
+              .from('events')
+              .select('id, title')
+              .in('id', eventIds)
 
-          if (eventsError) throw eventsError
+            if (eventsError) throw eventsError
 
-          eventsMap = (eventsData as EventForGallery[] || []).reduce((acc: Record<string, EventForGallery>, ev: EventForGallery) => {
-            acc[ev.id] = ev
-            return acc
-          }, {})
+            eventsMap = (eventsData as EventForGallery[] || []).reduce((acc: Record<string, EventForGallery>, ev: EventForGallery) => {
+              acc[ev.id] = ev
+              return acc
+            }, {})
+          }
+
+          const mapped = (mediaData as MediaRow[] || []).map(m => mapFallbackGallery(m, eventsMap))
+
+          setGalleries(mapped)
+          return
         }
 
-        const mapped = (mediaData as MediaRow[] || []).map(m => mapFallbackGallery(m, eventsMap))
-
-        setGalleries(mapped)
-        return
+        console.error('Supabase fetch error:', JSON.stringify(error, null, 2))
+        throw error
       }
 
-      console.error('Supabase fetch error:', JSON.stringify(error, null, 2))
-      throw error
+      if (data) {
+        // Fix: Menggunakan type assertion yang spesifik untuk menghindari 'any'
+        const formattedData = data.map((item) => {
+          // Cast item ke tipe yang diharapkan dari query join
+          const joinedItem = item as MediaRow & { events: { title: string } | null };
+          return {
+            ...joinedItem,
+            event_title: joinedItem.events?.title || 'Umum'
+          }
+        })
+        setGalleries(formattedData)
+      }
+    } catch (error) {
+      console.error('Error in fetchGalleries flow:', error)
+    } finally {
+      setLoading(false)
     }
-
-    if (data) {
-      setGalleries(data)
-    }
-  } catch (error) {
-    console.error('Error in fetchGalleries flow:', error)
-  } finally {
-    setLoading(false)
   }
-}
 
   const deleteGallery = async (gallery: Gallery) => {
     if (!confirm('Apakah Anda yakin ingin menghapus foto ini?')) return
@@ -190,128 +215,162 @@ const fetchGalleries = async () => {
 
   if (!user || (userProfile && !isAdmin)) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center bg-white rounded-2xl shadow-xl p-10 max-w-md mx-4 border border-gray-100">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Akses Ditolak</h2>
-          <p className="text-gray-600">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-lg text-gray-600">Memuat galeri foto...</p>
+          <p className="text-gray-500 mb-8 leading-relaxed">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          <button 
+             onClick={() => router.push('/')}
+             className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-red-200"
+          >
+             Kembali ke Beranda
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-12">
-          <div className="text-center md:text-left mb-4 md:mb-0">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Galeri Foto</h1>
-            <p className="text-gray-600">
-              Kelola dokumentasi foto kegiatan komunitas
-            </p>
+    <div className="min-h-screen bg-gray-50/50">
+      
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Galeri Foto</h1>
+              <p className="text-gray-500 mt-1 text-sm">
+                Kelola dokumentasi foto kegiatan komunitas — <span className="font-semibold text-gray-900">{galleries.length}</span> item
+              </p>
+            </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-red-200 group gap-2"
+            >
+              <PlusIcon />
+              Upload Foto
+            </button>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center space-x-2 bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-          >
-            <PlusIcon />
-            <span className="font-semibold">Upload Foto</span>
-          </button>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {galleries.map((gallery) => (
-            <div key={gallery.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="relative h-56 bg-gray-100 group">
-                <Image
-                  src={gallery.file_url}
-                  alt={gallery.title || gallery.file_name || 'Gallery image'}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
-              
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <p className="text-sm text-red-600 font-medium flex items-center bg-red-50 px-2 py-1 rounded-md">
-                    <EventIcon />
-                    <span className="ml-1 truncate max-w-[150px]">{gallery.event_title}</span>
-                  </p>
-                  <span className="text-xs text-gray-400">
-                    {new Date(gallery.created_at).toLocaleDateString('id-ID', {
-                      day: 'numeric', month: 'short', year: 'numeric'
-                    })}
-                  </span>
-                </div>
-                
-                <h3 className="font-bold text-gray-900 truncate mb-4" title={gallery.title || gallery.file_name || ''}>
-                    {gallery.title || gallery.file_name || 'Untitled'}
-                </h3>
-                
-                <div className="pt-4 border-t border-gray-100 flex justify-end">
-                  <button
-                    onClick={() => deleteGallery(gallery)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center space-x-1"
-                  >
-                    <DeleteIcon />
-                    <span>Hapus</span>
-                  </button>
-                </div>
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="relative w-16 h-16">
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-red-100 rounded-full opacity-50"></div>
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-red-600 rounded-full border-t-transparent animate-spin"></div>
             </div>
-          ))}
-        </div>
-
-        {galleries.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-2xl shadow-lg border border-gray-200">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <GalleryIcon />
+            <p className="mt-4 text-gray-400 font-medium animate-pulse">Memuat galeri...</p>
+          </div>
+        ) : galleries.length === 0 ? (
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
+            <div className="p-6 bg-gray-50 rounded-full mb-4">
+              <ImageIcon />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada foto</h3>
-            <p className="text-gray-500 max-w-sm mx-auto mb-6">
-              Mulai bangun galeri dengan mengunggah foto pertama Anda.
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Belum ada foto</h3>
+            <p className="text-gray-500 mb-8 text-center max-w-sm leading-relaxed">
+              Mulai bangun galeri dengan mengunggah foto dokumentasi kegiatan pertama Anda.
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              className="inline-flex items-center text-red-600 font-medium hover:text-red-700 bg-red-50 hover:bg-red-100 px-6 py-3 rounded-xl transition-colors gap-2"
             >
               <PlusIcon />
-              <span className="ml-2">Upload Sekarang</span>
+              Upload Sekarang
             </button>
           </div>
-        )}
-
-        {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-              <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                <h3 className="text-xl font-bold text-gray-900">Upload Foto</h3>
-                <button 
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <CloseIcon />
-                </button>
+        ) : (
+          /* Gallery Grid */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {galleries.map((gallery) => (
+              <div key={gallery.id} className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:border-red-100 transition-all duration-300 flex flex-col overflow-hidden transform hover:-translate-y-1">
+                
+                {/* Image Area */}
+                <div className="relative h-48 w-full bg-gray-100 overflow-hidden">
+                  <Image
+                    src={gallery.file_url}
+                    alt={gallery.title || gallery.file_name || 'Gallery image'}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                  
+                  {/* Overlay Gradient on Hover (Fix: bg-linear-to-t) */}
+                  <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  {/* Top Right Action (Delete) - Visible on Hover */}
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button
+                      onClick={() => deleteGallery(gallery)}
+                      className="bg-white/90 hover:bg-red-600 hover:text-white text-red-600 p-2 rounded-lg shadow-sm backdrop-blur-sm transition-colors"
+                      title="Hapus Foto"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Content Area */}
+                <div className="p-4 flex-1 flex flex-col">
+                  {/* Tags & Date */}
+                  <div className="flex items-center justify-between mb-3 text-xs">
+                    <div className="flex items-center text-blue-600 bg-blue-50 px-2 py-1 rounded-md max-w-[65%]">
+                      <EventTagIcon />
+                      <span className="ml-1 truncate font-medium">{gallery.event_title}</span>
+                    </div>
+                    <div className="flex items-center text-gray-400">
+                      <ClockIcon />
+                      <span className="ml-1">
+                        {new Date(gallery.created_at).toLocaleDateString('id-ID', {
+                          day: 'numeric', month: 'short'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <h3 className="font-bold text-gray-900 text-sm line-clamp-2 mb-1" title={gallery.title || gallery.file_name || ''}>
+                    {gallery.title || gallery.file_name || 'Untitled'}
+                  </h3>
+                </div>
               </div>
-              
-              <div className="p-6">
-                <FileUpload onUploadComplete={handleUploadComplete} maxSize={5} />
-              </div>
-            </div>
+            ))}
           </div>
         )}
       </div>
+
+      {/* Upload Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">
+            <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 text-red-600 rounded-lg">
+                  <UploadIcon />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Upload Foto</h3>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors"
+              >
+                <XIcon />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <FileUpload onUploadComplete={handleUploadComplete} maxSize={5} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

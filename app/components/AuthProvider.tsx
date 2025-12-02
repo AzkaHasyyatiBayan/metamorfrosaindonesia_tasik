@@ -67,24 +67,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const router = useRouter()
   const pathname = usePathname()
 
-  // PERBAIKAN: Menggunakan UPPERCASE agar sesuai dengan Enum Database PostgreSQL
   const getUserRole = useCallback((email: string): string => {
     const isAdminEmail = ADMIN_EMAILS.includes(email.toLowerCase())
-    console.log('🔍 Checking role for email:', email, 'isAdmin:', isAdminEmail)
     return isAdminEmail ? 'ADMIN' : 'USER'
   }, [])
 
-  // Helper untuk mengecek role admin secara case-insensitive
-  const checkIsAdmin = (role?: string) => {
-    return (role || '').toString().trim().toUpperCase() === 'ADMIN'
-  }
-
   const createUserProfile = useCallback(async (userId: string, userEmail?: string, userName?: string) => {
     try {
-      console.log('📝 Creating new profile for:', userId)
-      
       const userRole = userEmail ? getUserRole(userEmail) : 'USER'
-      console.log('🎯 Setting user role to:', userRole)
       
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
@@ -93,45 +83,35 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             id: userId,
             email: userEmail || '',
             name: userName || userEmail?.split('@')[0] || 'User',
-            role: userRole // Kirim UPPERCASE ke DB
+            role: userRole
           }
         ])
         .select()
         .single()
 
       if (createError) {
-        console.error('❌ Error creating profile:', createError.message, createError.code)
-        
         if (createError.code === '23505') {
-          console.log('🔄 Profile already exists, fetching again...')
-          const { data: existingProfile, error: fetchAgainError } = await supabase
+          const { data: existingProfile } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', userId)
             .single()
             
-          if (fetchAgainError) {
-            console.error('❌ Error fetching existing profile:', fetchAgainError.message)
-            return null
-          }
-          
           return existingProfile
         }
+        console.error('Error creating profile:', createError)
         return null
       }
 
-      console.log('✅ Profile created successfully with role:', newProfile?.role)
       return newProfile
     } catch (error) {
-      console.error('💥 Unexpected error in createUserProfile:', error)
+      console.error('Unexpected error in createUserProfile:', error)
       return null
     }
   }, [getUserRole])
 
   const fetchUserProfile = useCallback(async (userId: string, userEmail?: string, userName?: string) => {
     try {
-      console.log('🔄 Fetching user profile for:', userId)
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -139,35 +119,26 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         .single()
 
       if (error) {
-        console.error('❌ Error fetching profile:', error.message, error.code)
-        
         if (error.code === 'PGRST116') {
           const newProfile = await createUserProfile(userId, userEmail, userName)
           if (newProfile) {
             setUserProfile(newProfile)
-            setIsAdmin(checkIsAdmin(newProfile.role))
+            setIsAdmin(newProfile.role?.toUpperCase() === 'ADMIN')
             return newProfile
           }
         }
-        
-        console.warn('⚠️ Profile fetch failed:', error.message)
         return null
       }
 
       if (data) {
-        // Normalize role value to avoid formatting/case issues
-        const normalizedRole = data.role ? data.role.toString().trim().toUpperCase() : 'USER'
-        const normalizedProfile = { ...data, role: normalizedRole }
-        console.log('✅ Profile found with role:', normalizedProfile.role)
-        setUserProfile(normalizedProfile)
-        // Cek admin dengan case-insensitive (role already normalized)
-        setIsAdmin(checkIsAdmin(normalizedProfile.role))
-        return normalizedProfile
+        setUserProfile(data)
+        setIsAdmin(data.role?.toUpperCase() === 'ADMIN')
+        return data
       }
       
       return null
     } catch (error) {
-      console.error('💥 Unexpected error in fetchUserProfile:', error)
+      console.error('Unexpected error in fetchUserProfile:', error)
       return null
     }
   }, [createUserProfile])
@@ -182,18 +153,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     if (!user?.id) return
 
     try {
-      console.log('📝 Updating user profile')
-      
-      // Pastikan role dikirim UPPERCASE jika ada update role
-      const normalizedUpdates = {
-        ...updates,
-        ...(updates.role && { role: updates.role.toUpperCase() })
-      }
-      
       const { data, error } = await supabase
         .from('profiles')
         .update({
-          ...normalizedUpdates,
+          ...updates,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
@@ -203,12 +166,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       if (error) throw error
 
       if (data) {
-        console.log('✅ Profile updated successfully')
         setUserProfile(data)
-        setIsAdmin(checkIsAdmin(data.role))
+        setIsAdmin(data.role?.toUpperCase() === 'ADMIN')
       }
     } catch (error) {
-      console.error('💥 Error updating profile:', error)
+      console.error('Error updating profile:', error)
       throw error
     }
   }, [user])
@@ -219,22 +181,22 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   const signOut = useCallback(async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
+      await supabase.auth.signOut()
       setUser(null)
       setSession(null)
       setUserProfile(null)
       setIsAdmin(false)
       setError(null)
-      
-      console.log('✅ Signed out successfully')
+      // Menggunakan window.location untuk hard refresh agar state bersih total
+      window.location.href = '/'
     } catch (error) {
-      console.error('❌ Error signing out:', error)
-      throw error
+      console.error('Error signing out:', error)
     }
   }, [])
 
+  // EFFECT 1: INITIALIZATION
+  // Hanya dijalankan SEKALI saat aplikasi dimuat pertama kali.
+  // Tidak bergantung pada 'pathname' atau 'router' agar tidak looping saat navigasi.
   useEffect(() => {
     let mounted = true
 
@@ -247,38 +209,21 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         if (!mounted) return
 
         if (sessionError) {
-          setError(sessionError.message)
-          return
+          throw sessionError
         }
 
         if (currentSession?.user) {
           setSession(currentSession)
           setUser(currentSession.user)
           
-          const profile = await fetchUserProfile(
+          await fetchUserProfile(
             currentSession.user.id, 
             currentSession.user.email || undefined, 
             currentSession.user.user_metadata?.name
           )
-
-          if (profile) {
-            const isUserAdmin = checkIsAdmin(profile.role)
-            
-            if (isUserAdmin && !pathname.startsWith('/admin') && pathname !== '/auth/login') {
-              console.log('👑 Admin detected, redirecting to admin dashboard')
-              // Timeout kecil untuk memastikan state stabil
-              setTimeout(() => {
-                router.push('/admin')
-              }, 100)
-            }
-          }
-        } else {
-          setSession(null)
-          setUser(null)
-          setUserProfile(null)
-          setIsAdmin(false)
         }
       } catch (error) {
+        console.error('Auth initialization error:', error)
         setError(error instanceof Error ? error.message : 'Authentication error')
       } finally {
         if (mounted) {
@@ -297,21 +242,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
           setSession(currentSession)
           setUser(currentSession.user)
           
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            const profile = await fetchUserProfile(
+          if (event === 'SIGNED_IN') {
+             await fetchUserProfile(
               currentSession.user.id, 
               currentSession.user.email,
               currentSession.user.user_metadata?.name
             )
-
-            if (event === 'SIGNED_IN' && profile) {
-              const isUserAdmin = checkIsAdmin(profile.role)
-              if (isUserAdmin && !pathname.startsWith('/admin')) {
-                setTimeout(() => {
-                  router.push('/admin')
-                }, 100)
-              }
-            }
           }
         } else {
           setSession(null)
@@ -320,7 +256,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
           setIsAdmin(false)
         }
         
-        setError(null)
+        if (event === 'SIGNED_OUT') {
+           setLoading(false)
+        }
       }
     )
 
@@ -328,7 +266,42 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       mounted = false
       subscription.unsubscribe()
     }
-  }, [fetchUserProfile, router, pathname])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) 
+
+  // EFFECT 2: ROUTE PROTECTION
+  // Dijalankan setiap kali user berpindah halaman (pathname berubah).
+  // Cek apakah user boleh mengakses halaman tersebut.
+  useEffect(() => {
+    if (loading) return // Tunggu loading selesai dulu
+
+    // 1. Proteksi Halaman Admin
+    if (pathname.startsWith('/admin')) {
+      if (!user) {
+        router.push('/auth/login')
+      } else if (!isAdmin) {
+        router.push('/')
+      }
+    }
+
+    // 2. Proteksi Halaman User (Profile, Events, dll)
+    if (pathname.startsWith('/user')) {
+      if (!user) {
+        router.push('/auth/login')
+      }
+    }
+
+    // 3. Redirect Login Page jika sudah login
+    if (pathname === '/auth/login' || pathname === '/auth/register') {
+      if (user) {
+        if (isAdmin) {
+          router.push('/admin')
+        } else {
+          router.push('/')
+        }
+      }
+    }
+  }, [user, isAdmin, loading, pathname, router])
 
   const value = {
     user,

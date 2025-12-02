@@ -1,13 +1,20 @@
 'use client'
-import { useState } from 'react'
-import { useEffect } from 'react'
-import { supabase } from '../../../lib/supabase'
-import { useAuth } from '../../../components/AuthProvider'
-import { useRouter } from 'next/navigation'
-import { useSearchParams } from 'next/navigation'
+
+import { useState, useEffect, useRef } from 'react'
+import { supabase } from '../../../lib/supabase' 
+import { useAuth } from '../../../components/AuthProvider' 
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 
+// --- TIPE DATA ---
 type AccessibilityCategory = 'SIGN_LANGUAGE' | 'WHEELCHAIR_ACCESS' | 'BRAILLE' | 'AUDIO_DESCRIPTION' | 'TACTILE'
+
+// --- ICON COMPONENTS ---
+const ArrowLeftIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+  </svg>
+)
 
 const CalendarIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,21 +41,46 @@ const ImageIcon = () => (
   </svg>
 )
 
-const AccessibilityIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
-  </svg>
-)
-
 const DescriptionIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
   </svg>
 )
 
-const ArrowLeftIcon = () => (
+const TitleIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+  </svg>
+)
+
+// Accessibility Icons
+const SignLanguageIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+  </svg>
+)
+
+const WheelchairIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+  </svg>
+)
+
+const BrailleIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h.01M4 12h.01M4 18h.01M12 6h.01M12 12h.01M12 18h.01M20 6h.01M20 12h.01M20 18h.01" />
+  </svg>
+)
+
+const AudioIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+  </svg>
+)
+
+const TactileIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
   </svg>
 )
 
@@ -71,33 +103,6 @@ const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string })
       </div>
     )
   }
-  const isExternal = imageUrl.startsWith('http') || imageUrl.startsWith('//')
-
-  if (isExternal) {
-    return (
-      <div className="aspect-video relative rounded-xl overflow-hidden bg-gray-100">
-        <Image
-          src={imageUrl}
-          alt={`Preview: ${title}`}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement
-            if (target) target.style.display = 'none'
-            const parent = (e.target as HTMLImageElement).parentElement
-            if (parent) {
-              const fallback = document.createElement('div')
-              fallback.className = "flex items-center justify-center text-white w-full h-full"
-              fallback.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)'
-              fallback.innerHTML = `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`
-              parent.appendChild(fallback)
-            }
-          }}
-        />
-      </div>
-    )
-  }
 
   return (
     <div className="aspect-video relative rounded-xl overflow-hidden bg-gray-100">
@@ -105,31 +110,12 @@ const PreviewImage = ({ imageUrl, title }: { imageUrl?: string; title: string })
         src={imageUrl}
         alt={`Preview: ${title}`}
         fill
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         className="object-cover"
-        onError={(e) => {
-          const target = e.target as HTMLImageElement
-          target.style.display = 'none'
-          const parent = target.parentElement
-          if (parent) {
-            const fallback = document.createElement('div')
-            fallback.className = "flex items-center justify-center text-white w-full h-full"
-            fallback.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)'
-            fallback.innerHTML = `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`
-            parent.appendChild(fallback)
-          }
-        }}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        unoptimized 
       />
     </div>
   )
-}
-
-// Type untuk error handling
-interface SupabaseError {
-  message?: string;
-  code?: string;
-  details?: string;
-  hint?: string;
 }
 
 export default function CreateEvent() {
@@ -139,18 +125,23 @@ export default function CreateEvent() {
   const [location, setLocation] = useState('')
   const [categories, setCategories] = useState<AccessibilityCategory[]>([])
   const [maxParticipants, setMaxParticipants] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
+  
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState('')
+  const [existingImageUrl, setExistingImageUrl] = useState('') 
+  
   const [loading, setLoading] = useState(false)
+  const [loadingText, setLoadingText] = useState('')
   const [message, setMessage] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [, setLoadingEvent] = useState(false)
   
-  const { user, userProfile, isAdmin } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  const { user, isAdmin, loading: authLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Load event to edit when `id` query param exists
   useEffect(() => {
     const id = searchParams?.get('id')
     if (!id) return
@@ -158,8 +149,7 @@ export default function CreateEvent() {
     let mounted = true
     const load = async () => {
       try {
-        setLoadingEvent(true)
-        setMessage('')
+        console.log('Fetching event data for edit...')
         const { data, error } = await supabase
           .from('events')
           .select('*')
@@ -174,7 +164,6 @@ export default function CreateEvent() {
 
         if (!mounted) return
 
-        // Prefill form
         setIsEditing(true)
         setEditingId(id)
         setTitle(data.title || '')
@@ -183,12 +172,14 @@ export default function CreateEvent() {
         setLocation(data.location || '')
         setCategories(data.category || [])
         setMaxParticipants(data.max_participants ? String(data.max_participants) : '')
-        setImageUrl(data.image_url || '')
+        
+        if (data.image_url) {
+          setExistingImageUrl(data.image_url)
+          setPreviewUrl(data.image_url)
+        }
       } catch (err) {
         console.error('Error loading event for edit', err)
         setMessage('Gagal memuat data event untuk diedit (cek koneksi)')
-      } finally {
-        setLoadingEvent(false)
       }
     }
 
@@ -204,25 +195,33 @@ export default function CreateEvent() {
     )
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { 
+        alert("Ukuran gambar maksimal 2MB")
+        return
+      }
+      setImageFile(file)
+      setPreviewUrl(URL.createObjectURL(file))
+    }
+  }
+
   const validateForm = () => {
     if (!title.trim()) {
-      setMessage('Judul event harus diisi')
+      alert('Judul event harus diisi')
       return false
     }
     if (!description.trim()) {
-      setMessage('Deskripsi event harus diisi')
+      alert('Deskripsi event harus diisi')
       return false
     }
     if (!dateTime) {
-      setMessage('Tanggal dan waktu harus diisi')
+      alert('Tanggal dan waktu harus diisi')
       return false
     }
     if (!location.trim()) {
-      setMessage('Lokasi event harus diisi')
-      return false
-    }
-    if (new Date(dateTime) <= new Date()) {
-      setMessage('Tanggal event harus di masa depan')
+      alert('Lokasi event harus diisi')
       return false
     }
     return true
@@ -231,8 +230,12 @@ export default function CreateEvent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Perbaikan: cek admin case-insensitive menggunakan isAdmin
-    if (!user || !isAdmin) {
+    if (!user) {
+      alert('Sesi Anda telah berakhir. Silakan login kembali.')
+      return
+    }
+
+    if (!isAdmin) {
       setMessage('Unauthorized access - Hanya admin yang dapat membuat event')
       return
     }
@@ -243,113 +246,141 @@ export default function CreateEvent() {
 
     setLoading(true)
     setMessage('')
+    setLoadingText('Memproses...')
 
     try {
-      console.log('Creating event with data:', {
+      let finalImageUrl = existingImageUrl
+
+      if (imageFile) {
+        setLoadingText('Mengupload gambar...')
+        console.log('Mulai proses upload gambar...')
+        
+        const fileExt = imageFile.name.split('.').pop()
+        const fileName = `event-${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`
+        const filePath = `events/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('events')
+          .upload(filePath, imageFile, {
+            cacheControl: '3600',
+            upsert: false
+          })
+
+        if (uploadError) {
+          console.error('Upload Error Details:', uploadError)
+          throw new Error(`Gagal upload gambar: ${uploadError.message}`)
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('events')
+          .getPublicUrl(filePath)
+          
+        finalImageUrl = publicUrlData.publicUrl
+        console.log('Upload berhasil, URL:', finalImageUrl)
+      }
+
+      setLoadingText('Menyimpan data event...')
+      console.log('Menyimpan ke database...')
+
+      const eventData = {
         title: title.trim(),
         description: description.trim(),
         date_time: new Date(dateTime).toISOString(),
         location: location.trim(),
         category: categories,
         max_participants: maxParticipants ? parseInt(maxParticipants) : null,
-        image_url: imageUrl || null,
+        image_url: finalImageUrl || null,
         creator_id: user.id
-      })
+      }
 
+      let error
+      
       if (isEditing && editingId) {
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from('events')
           .update({
-            title: title.trim(),
-            description: description.trim(),
-            date_time: new Date(dateTime).toISOString(),
-            location: location.trim(),
-            category: categories,
-            max_participants: maxParticipants ? parseInt(maxParticipants) : null,
-            image_url: imageUrl || null,
+            ...eventData,
             updated_at: new Date().toISOString()
           })
           .eq('id', editingId)
-          .select()
-
-        if (error) {
-          console.error('Supabase update error:', error)
-          throw error
-        }
-
-        setMessage('Event berhasil diperbarui!')
-        setTimeout(() => router.push('/admin/events'), 1500)
+          
+        error = updateError
       } else {
-        const { data, error } = await supabase
+        const { error: insertError } = await supabase
           .from('events')
-          .insert([
-            {
-              title: title.trim(),
-              description: description.trim(),
-              date_time: new Date(dateTime).toISOString(), // Perbaikan: konversi ke ISO string
-              location: location.trim(),
-              category: categories,
-              max_participants: maxParticipants ? parseInt(maxParticipants) : null,
-              image_url: imageUrl || null,
-              creator_id: user.id
-            }
-          ])
-          .select()
+          .insert([eventData])
+          
+        error = insertError
+      }
 
-        if (error) {
-          console.error('Supabase error:', error)
-          throw error
-        }
+      if (error) {
+        console.error('Database Insert Error:', error)
+        throw error
+      }
 
-        console.log('Event created successfully:', data)
-
-        setMessage('Event berhasil dibuat!')
-        setTimeout(() => {
-          router.push('/admin/events')
-        }, 2000)
+      console.log('Data berhasil disimpan!')
+      setMessage('Event berhasil disimpan! Mengalihkan...')
+      
+      setTimeout(() => {
+        router.refresh()
+        router.push('/admin/events')
+      }, 1500)
+      
+    } catch (error: unknown) { // FIX: Menggunakan unknown, bukan any
+      console.error('Error in saving process:', error)
+      
+      let errorMsg = 'Terjadi kesalahan saat menyimpan event'
+      
+      if (error instanceof Error) {
+        errorMsg = error.message
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        // Safe access to .message property
+        errorMsg = (error as { message: string }).message
       }
       
-    } catch (error: unknown) {
-      console.error('Error creating event:', error)
-      
-      // Type-safe error handling
-      let errorMessage = 'Unknown error occurred'
-      if (error && typeof error === 'object' && 'message' in error) {
-        const supabaseError = error as SupabaseError
-        errorMessage = supabaseError.message || 'Unknown error occurred'
-      } else if (error instanceof Error) {
-        errorMessage = error.message
-      }
-      
-      setMessage(`Error: ${errorMessage}`)
+      setMessage(`Gagal: ${errorMsg}`)
+      alert(errorMsg) 
     } finally {
-      setLoading(false)
+      if (!message.includes('berhasil')) {
+        setLoading(false)
+        setLoadingText('')
+      }
     }
   }
 
   const getCategoryIcon = (category: AccessibilityCategory) => {
-    const icons = {
-      'SIGN_LANGUAGE': '👐',
-      'WHEELCHAIR_ACCESS': '♿',
-      'BRAILLE': '🔤',
-      'AUDIO_DESCRIPTION': '🎧',
-      'TACTILE': '✋'
+    switch (category) {
+      case 'SIGN_LANGUAGE': return <SignLanguageIcon />
+      case 'WHEELCHAIR_ACCESS': return <WheelchairIcon />
+      case 'BRAILLE': return <BrailleIcon />
+      case 'AUDIO_DESCRIPTION': return <AudioIcon />
+      case 'TACTILE': return <TactileIcon />
+      default: return null
     }
-    return icons[category]
   }
 
-  // Perbaikan: cek admin case-insensitive menggunakan isAdmin
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent"></div>
+          <p className="mt-4 text-gray-500 font-medium">Memverifikasi akses...</p>
+        </div>
+      </div>
+    )
+  }
+
   if (!user || !isAdmin) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center bg-white rounded-2xl shadow-lg p-8 max-w-md mx-4 border border-gray-200">
+        <div className="text-center bg-white rounded-2xl shadow-lg p-8 max-w-md mx-4 border border-gray-100">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Akses Ditolak</h2>
-          <p className="text-gray-600 mb-6">Anda tidak memiliki akses ke halaman admin. Role Anda: {userProfile?.role}</p>
+          <p className="text-gray-500 mb-6 leading-relaxed">Anda tidak memiliki akses ke halaman ini. Silakan login sebagai administrator.</p>
           <button 
             onClick={() => router.push('/')}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -362,270 +393,297 @@ export default function CreateEvent() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gray-50/50">
+      
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => router.back()}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+              className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
             >
               <ArrowLeftIcon />
             </button>
             <div>
-                <h1 className="text-3xl font-bold text-gray-900">{isEditing ? 'Edit Event' : 'Buat Event Baru'}</h1>
-              <p className="text-gray-600 mt-1">
-                Buat event baru untuk komunitas Anda
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                {isEditing ? 'Edit Event' : 'Buat Event Baru'}
+              </h1>
+              <p className="text-gray-500 mt-1 text-sm">
+                Isi detail di bawah untuk {isEditing ? 'memperbarui' : 'mempublikasikan'} kegiatan komunitas.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 space-y-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Judul Event *
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                  placeholder="Masukkan judul event yang menarik"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Deskripsi Event *
-                </label>
-                <div className="relative">
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    required
-                    rows={5}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
-                    placeholder="Jelaskan detail event, agenda, dan manfaat yang akan didapat peserta..."
-                  />
-                  <div className="absolute top-3 left-3 text-gray-400">
-                    <DescriptionIcon />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-900">
-                    Tanggal & Waktu *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="datetime-local"
-                      value={dateTime}
-                      onChange={(e) => setDateTime(e.target.value)}
-                      required
-                      min={new Date().toISOString().slice(0, 16)}
-                      className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                    />
-                    <div className="absolute top-3 left-3 text-gray-400">
-                      <CalendarIcon />
-                    </div>
-                  </div>
+          
+          {/* Main Form Column */}
+          <div className="lg:col-span-2 space-y-6">
+            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8 space-y-8">
+              
+              {/* Basic Info Section */}
+              <div className="space-y-6">
+                <div className="border-b border-gray-100 pb-4 mb-4">
+                  <h3 className="text-lg font-bold text-gray-900">Informasi Utama</h3>
+                  <p className="text-sm text-gray-500">Detail dasar mengenai acara Anda.</p>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-900">
-                    Lokasi *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                      placeholder="Tempat pelaksanaan event"
-                    />
-                    <div className="absolute top-3 left-3 text-gray-400">
-                      <LocationIcon />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-sm font-semibold text-gray-900">
-                  <div className="flex items-center space-x-2">
-                    <AccessibilityIcon />
-                    <span>Fitur Aksesibilitas</span>
-                  </div>
-                </label>
-                <p className="text-sm text-gray-600">
-                  Pilih fitur aksesibilitas yang tersedia untuk event ini
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {(['SIGN_LANGUAGE', 'WHEELCHAIR_ACCESS', 'BRAILLE', 'AUDIO_DESCRIPTION', 'TACTILE'] as AccessibilityCategory[]).map((category) => (
-                    <label 
-                      key={category} 
-                      className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                        categories.includes(category)
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Judul Event *</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <TitleIcon />
+                      </div>
                       <input
-                        type="checkbox"
-                        checked={categories.includes(category)}
-                        onChange={() => toggleCategory(category)}
-                        className="mr-3 text-red-600 focus:ring-red-500"
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        required
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        placeholder="Contoh: Workshop Bahasa Isyarat Dasar"
                       />
-                      <span className="text-lg mr-2">{getCategoryIcon(category)}</span>
-                      <span className="font-medium text-gray-900">
-                        {category.replace('_', ' ')}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-900">
-                    Maksimal Peserta
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={maxParticipants}
-                      onChange={(e) => setMaxParticipants(e.target.value)}
-                      min="1"
-                      className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                      placeholder="Kosongkan untuk tidak terbatas"
-                    />
-                    <div className="absolute top-3 left-3 text-gray-400">
-                      <UsersIcon />
                     </div>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-900">
-                    URL Gambar
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="url"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
-                      placeholder="https://example.com/image.jpg"
-                    />
-                    <div className="absolute top-3 left-3 text-gray-400">
-                      <ImageIcon />
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Deskripsi *</label>
+                    <div className="relative">
+                      <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
+                        <DescriptionIcon />
+                      </div>
+                      <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        required
+                        rows={5}
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all resize-none"
+                        placeholder="Jelaskan detail agenda, tujuan, dan siapa yang sebaiknya hadir..."
+                      />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md"
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                    Membuat Event...
+              {/* Date & Location Section */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tanggal & Waktu *</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <CalendarIcon />
+                      </div>
+                      <input
+                        type="datetime-local"
+                        value={dateTime}
+                        onChange={(e) => setDateTime(e.target.value)}
+                        required
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                      />
+                    </div>
                   </div>
-                ) : (
-                  'Buat Event Sekarang'
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Lokasi *</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <LocationIcon />
+                      </div>
+                      <input
+                        type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        required
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        placeholder="Nama Gedung / Link Zoom"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Accessibility & Capacity */}
+              <div className="space-y-6">
+                <div className="border-b border-gray-100 pb-4 mb-4 pt-4">
+                  <h3 className="text-lg font-bold text-gray-900">Detail & Aksesibilitas</h3>
+                  <p className="text-sm text-gray-500">Kapasitas dan fitur inklusifitas event.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Fitur Aksesibilitas</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {(['SIGN_LANGUAGE', 'WHEELCHAIR_ACCESS', 'BRAILLE', 'AUDIO_DESCRIPTION', 'TACTILE'] as AccessibilityCategory[]).map((category) => (
+                      <label 
+                        key={category} 
+                        className={`
+                          flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none
+                          ${categories.includes(category)
+                            ? 'border-red-500 bg-red-50 text-red-700'
+                            : 'border-gray-100 bg-white text-gray-600 hover:border-red-200'
+                          }
+                        `}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={categories.includes(category)}
+                          onChange={() => toggleCategory(category)}
+                          className="w-4 h-4 text-red-600 rounded focus:ring-red-500 border-gray-300 mr-3 accent-red-600"
+                        />
+                        <span className="mr-2 text-current">{getCategoryIcon(category)}</span>
+                        <span className="text-sm font-medium">{category.replace(/_/g, ' ')}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Maksimal Peserta</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <UsersIcon />
+                      </div>
+                      <input
+                        type="number"
+                        value={maxParticipants}
+                        onChange={(e) => setMaxParticipants(e.target.value)}
+                        min="1"
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        placeholder="Tidak terbatas"
+                      />
+                    </div>
+                  </div>
+
+                  {/* UPLOAD GAMBAR */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Banner</label>
+                    <div className="relative">
+                       <input
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden" // Sembunyikan input asli
+                      />
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 border-dashed rounded-xl cursor-pointer hover:bg-gray-100 hover:border-red-300 transition-all"
+                      >
+                        <div className="flex items-center gap-3 text-gray-500">
+                            <ImageIcon />
+                            <span className="text-sm truncate">
+                              {imageFile ? imageFile.name : (isEditing && existingImageUrl ? "Ganti Gambar (Opsional)" : "Pilih Gambar...")}
+                            </span>
+                        </div>
+                        <span className="text-xs bg-gray-200 px-2 py-1 rounded text-gray-600">Browse</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1 ml-1">Max 2MB. Format: JPG, PNG</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-6">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.01] shadow-lg hover:shadow-red-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex justify-center items-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                      <span>{loadingText || 'Menyimpan...'}</span>
+                    </>
+                  ) : (
+                    <span>{isEditing ? 'Simpan Perubahan' : 'Buat Event Sekarang'}</span>
+                  )}
+                </button>
+                
+                {message && (
+                  <div className={`mt-4 p-4 rounded-xl text-center text-sm font-medium animate-fade-in ${
+                    message.toLowerCase().includes('berhasil') 
+                      ? 'bg-green-50 text-green-700 border border-green-200' 
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
+                    {message}
+                  </div>
                 )}
-              </button>
-
-              {message && (
-                <div className={`p-4 rounded-xl text-center font-medium ${
-                  message.includes('berhasil') 
-                    ? 'bg-green-100 text-green-700 border border-green-200' 
-                    : 'bg-red-100 text-red-700 border border-red-200'
-                }`}>
-                  {message}
-                </div>
-              )}
+              </div>
             </form>
           </div>
 
+          {/* Preview Column */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-6">
-              <h3 className="font-bold text-gray-900 text-lg mb-4">Preview Event</h3>
-              
-              <div className="space-y-4">
-                <PreviewImage imageUrl={imageUrl} title={title} />
+            <div className="sticky top-28 space-y-6">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="p-4 bg-gray-50 border-b border-gray-100">
+                  <h3 className="font-bold text-gray-900">Preview Kartu Event</h3>
+                  <p className="text-xs text-gray-500">Tampilan event di halaman user</p>
+                </div>
                 
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    {title || 'Judul Event'}
-                  </h4>
-                  <p className="text-sm text-gray-600 line-clamp-3">
-                    {description || 'Deskripsi event akan muncul di sini...'}
-                  </p>
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  {dateTime && (
-                    <div className="flex items-center text-gray-600">
-                      <CalendarIcon />
-                      <span className="ml-2">
-                        {new Date(dateTime).toLocaleDateString('id-ID', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
+                <div className="p-4">
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden pointer-events-none select-none">
+                    <div className="relative h-48 w-full bg-gray-100">
+                      {/* Tampilkan Preview */}
+                      <PreviewImage imageUrl={previewUrl} title={title} />
+                      <div className="absolute top-3 right-3 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-xs font-bold text-green-700 shadow-sm">
+                        ACTIVE
+                      </div>
                     </div>
-                  )}
-                  
-                  {location && (
-                    <div className="flex items-center text-gray-600">
-                      <LocationIcon />
-                      <span className="ml-2">{location}</span>
-                    </div>
-                  )}
-
-                  {maxParticipants && (
-                    <div className="flex items-center text-gray-600">
-                      <UsersIcon />
-                      <span className="ml-2">Maks. {maxParticipants} peserta</span>
-                    </div>
-                  )}
-                </div>
-
-                {categories.length > 0 && (
-                  <div>
-                    <h5 className="font-medium text-gray-900 text-sm mb-2">Fitur Aksesibilitas:</h5>
-                    <div className="flex flex-wrap gap-1">
-                      {categories.map((cat) => (
-                        <span 
-                          key={cat}
-                          className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs"
-                        >
-                          {cat.replace('_', ' ')}
-                        </span>
-                      ))}
+                    
+                    <div className="p-4">
+                      <h4 className="font-bold text-gray-900 mb-2 line-clamp-1">
+                        {title || 'Judul Event Anda'}
+                      </h4>
+                      
+                      <div className="space-y-1.5 mb-4">
+                        <div className="flex items-center text-xs text-gray-500">
+                          <span className="text-red-500 mr-2"><CalendarIcon /></span>
+                          <span>
+                            {dateTime ? new Date(dateTime).toLocaleDateString('id-ID', { 
+                              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                            }) : 'Hari, DD Bulan YYYY'}
+                          </span>
+                        </div>
+                        <div className="flex items-center text-xs text-gray-500">
+                          <span className="text-red-500 mr-2"><LocationIcon /></span>
+                          <span className="truncate">{location || 'Lokasi Event'}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+                        <div className="flex items-center gap-1.5">
+                          <div className="p-1 bg-gray-100 rounded-full text-gray-500">
+                            <UsersIcon />
+                          </div>
+                          <span className="text-xs font-semibold text-gray-700">0</span>
+                          <span className="text-[10px] text-gray-400 uppercase">Peserta</span>
+                        </div>
+                        <div className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg">
+                          Detail
+                        </div>
+                      </div>
                     </div>
                   </div>
-                )}
+                </div>
+              </div>
+
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                <h4 className="font-semibold text-blue-800 text-sm mb-1">Tips Admin</h4>
+                <ul className="text-xs text-blue-700 space-y-1 list-disc pl-4">
+                  <li>Gunakan gambar rasio 16:9 untuk hasil terbaik.</li>
+                  <li>Deskripsi yang jelas meningkatkan partisipasi.</li>
+                  <li>Pastikan link lokasi (Zoom/Maps) valid.</li>
+                </ul>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
