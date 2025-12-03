@@ -79,16 +79,14 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
 
   const handleCloseModal = () => {
     setShowModal(false)
-    setShowRegistration(false) // Reset tampilan ke detail saat modal ditutup
+    setShowRegistration(false)
   }
 
   return (
     <>
       <div className="group relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 overflow-hidden hover:shadow-red-500/20 transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col">
-        {/* Decorative blur effect (seperti di RegistrationForm) */}
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-red-500/10 rounded-full blur-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-        {/* --- Image Section --- */}
         <div className="relative h-52 overflow-hidden shrink-0">
           {event.image_url && !imageError ? (
             <Image
@@ -115,7 +113,6 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
             </div>
           )}
           
-          {/* Categories Floating Badge */}
           <div className="absolute top-4 left-4 flex flex-wrap gap-2 z-10">
             {event.category.slice(0, 2).map((cat) => (
               <span 
@@ -132,11 +129,9 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
             )}
           </div>
 
-          {/* Gradient Overlay for Text Readability if needed */}
           <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
         </div>
 
-        {/* --- Content Section --- */}
         <div className="p-6 flex flex-col flex-1 relative z-10">
           <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-red-600 transition-colors tracking-tight">
             {event.title}
@@ -186,12 +181,10 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
         </div>
       </div>
 
-      {/* --- Modal Detail Event --- */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-white/95 backdrop-blur-2xl rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/50 shadow-2xl relative">
             
-            {/* Modal Header Image (Optional) */}
             <div className="relative">
                 {event.image_url && (
                   <div className="relative h-64 md:h-72 w-full">
@@ -212,7 +205,6 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
                   </div>
                 )}
                 
-                {/* Fallback close button if no image */}
                 {!event.image_url && (
                    <button
                     onClick={handleCloseModal}
@@ -228,13 +220,10 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
                  <h2 className="text-3xl font-bold text-gray-900 mb-6">{event.title}</h2>
               )}
               
-              {/* Judul Overlap Image jika ada gambar */}
               {event.image_url && (
-                 // PERBAIKAN: Menghapus text-gray-900 karena sudah ada text-white
                  <h2 className="text-3xl font-bold mb-6 -mt-16 relative z-10 text-white drop-shadow-md">{event.title}</h2>
               )}
 
-              {/* View Toggle: Description or Registration */}
               {!showRegistration ? (
                 <>
                   <div className="space-y-8">
@@ -243,7 +232,6 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
                       <p className="text-gray-600 leading-relaxed text-lg">{event.description}</p>
                     </div>
 
-                    {/* Info Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
                       <div className="flex items-start space-x-4">
                         <div className="p-3 bg-white rounded-xl shadow-sm text-red-500">
@@ -279,7 +267,6 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
                       )}
                     </div>
 
-                    {/* Categories */}
                     {event.category.length > 0 && (
                       <div>
                         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Kategori & Aksesibilitas</h3>
@@ -324,7 +311,6 @@ export default function EventCard({ event, onShowDetail }: EventCardProps) {
                       </button>
                       <h3 className="text-xl font-bold text-gray-900">Formulir Pendaftaran</h3>
                    </div>
-                   {/* Form Pendaftaran */}
                    <RegistrationForm eventId={event.id} />
                 </div>
               )}

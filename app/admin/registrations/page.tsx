@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../components/AuthProvider'
 import { useRouter } from 'next/navigation'
@@ -18,7 +18,6 @@ type Registration = {
   event_location: string
 }
 
-// Simple registration row from DB
 interface DBRegistrationRow {
   id: string
   event_id: string
@@ -30,7 +29,6 @@ interface DBRegistrationRow {
   created_at: string
 }
 
-// Simple event row from DB
 interface DBEventRow {
   id: string
   title: string
@@ -38,15 +36,12 @@ interface DBEventRow {
   location: string
 }
 
-// Simple profile row from DB
 interface DBProfileRow {
   id: string
   name: string
   email: string
   phone?: string | null
 }
-
-// --- ICON COMPONENTS (SVG) ---
 
 const UserIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +110,6 @@ const XCircleIcon = () => (
   </svg>
 )
 
-// Helper to safely map fetched rows to typed Registration
 const mapFallbackRegistration = (reg: DBRegistrationRow, eventsMap: Record<string, DBEventRow>, profilesMap: Record<string, DBProfileRow>): Registration => {
   const event = eventsMap[reg.event_id] || { id: reg.event_id, title: 'Unknown', date_time: '', location: '' }
   const profile = profilesMap[reg.user_id] || { id: reg.user_id, name: 'Unknown', email: '', phone: null }
@@ -190,7 +184,7 @@ export default function AdminRegistrations() {
     }
   }
 
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = useCallback(async () => {
     try {
       setLoading(true)
       const from = page * pageSize
@@ -256,7 +250,7 @@ export default function AdminRegistrations() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, pageSize])
 
   const updateRegistrationStatus = async (registrationId: string, status: 'PENDING' | 'CONFIRMED' | 'REJECTED') => {
     try {
@@ -291,8 +285,7 @@ export default function AdminRegistrations() {
     if (user && isAdmin) {
       fetchRegistrations()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, isAdmin, page])
+  }, [user, isAdmin, fetchRegistrations])
 
   const filteredRegistrations = registrations.filter(reg => 
     filter === 'ALL' ? true : reg.status === filter
@@ -340,7 +333,6 @@ export default function AdminRegistrations() {
   return (
     <div className="min-h-screen bg-gray-50/50">
       
-      {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Kelola Pendaftaran</h1>
@@ -352,7 +344,6 @@ export default function AdminRegistrations() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
@@ -403,7 +394,6 @@ export default function AdminRegistrations() {
           </div>
         </div>
 
-        {/* Filter Tabs */}
         <div className="mb-8 overflow-x-auto pb-2">
           <div className="flex gap-2">
             {[
@@ -441,7 +431,6 @@ export default function AdminRegistrations() {
           </div>
         </div>
 
-        {/* Table Section */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-100">
@@ -471,7 +460,6 @@ export default function AdminRegistrations() {
                 {filteredRegistrations.map((registration) => (
                   <tr key={registration.id} className="hover:bg-gray-50/80 transition-colors">
                     
-                    {/* User Info */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-start gap-3">
                         <div className="p-2 bg-gray-100 rounded-lg text-gray-500">
@@ -493,7 +481,6 @@ export default function AdminRegistrations() {
                       </div>
                     </td>
 
-                    {/* Event Info */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-start gap-3">
                         <div className="p-2 bg-gray-100 rounded-lg text-gray-500 mt-0.5">
@@ -514,7 +501,6 @@ export default function AdminRegistrations() {
                       </div>
                     </td>
 
-                    {/* Type Badge */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`
                         inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border
@@ -528,7 +514,6 @@ export default function AdminRegistrations() {
                       </span>
                     </td>
 
-                    {/* Status Badge */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`
                         inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border
@@ -547,12 +532,10 @@ export default function AdminRegistrations() {
                       </span>
                     </td>
 
-                    {/* Date */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(registration.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
 
-                    {/* Actions */}
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       {registration.status === 'PENDING' ? (
                         <div className="flex justify-end gap-2">

@@ -187,16 +187,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setUserProfile(null)
       setIsAdmin(false)
       setError(null)
-      // Menggunakan window.location untuk hard refresh agar state bersih total
       window.location.href = '/'
     } catch (error) {
       console.error('Error signing out:', error)
     }
   }, [])
 
-  // EFFECT 1: INITIALIZATION
-  // Hanya dijalankan SEKALI saat aplikasi dimuat pertama kali.
-  // Tidak bergantung pada 'pathname' atau 'router' agar tidak looping saat navigasi.
   useEffect(() => {
     let mounted = true
 
@@ -266,16 +262,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       mounted = false
       subscription.unsubscribe()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) 
+  }, [fetchUserProfile]) 
 
-  // EFFECT 2: ROUTE PROTECTION
-  // Dijalankan setiap kali user berpindah halaman (pathname berubah).
-  // Cek apakah user boleh mengakses halaman tersebut.
   useEffect(() => {
-    if (loading) return // Tunggu loading selesai dulu
+    if (loading) return
 
-    // 1. Proteksi Halaman Admin
+    const publicPages = ['/user/events', '/user/about']
+    const isPublicPage = publicPages.some(page => pathname === page)
+
     if (pathname.startsWith('/admin')) {
       if (!user) {
         router.push('/auth/login')
@@ -284,14 +278,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       }
     }
 
-    // 2. Proteksi Halaman User (Profile, Events, dll)
-    if (pathname.startsWith('/user')) {
+    if (pathname.startsWith('/user') && !isPublicPage) {
       if (!user) {
         router.push('/auth/login')
       }
     }
 
-    // 3. Redirect Login Page jika sudah login
     if (pathname === '/auth/login' || pathname === '/auth/register') {
       if (user) {
         if (isAdmin) {

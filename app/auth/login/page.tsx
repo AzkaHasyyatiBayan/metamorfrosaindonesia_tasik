@@ -46,8 +46,6 @@ export default function LoginPage() {
       if (error) throw error
 
       if (data.user) {
-        // Cek Role di Profile
-        // Menghapus 'error: profileError' karena tidak digunakan
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
@@ -56,7 +54,6 @@ export default function LoginPage() {
 
         let role = profile?.role?.toUpperCase()
 
-        // Fallback: Cek hardcoded admin emails jika di database belum ada
         if (!role) {
            const ADMIN_EMAILS = [
             '237006049@student.unsil.ac.id',
@@ -74,8 +71,7 @@ export default function LoginPage() {
           console.log('👑 Admin detected, performing hard redirect...')
           setMessage('Login berhasil! Mengalihkan ke Admin Dashboard...')
           
-          // Gunakan window.location.href untuk Admin agar state bersih
-          window.location.href = '/admin'
+         window.location.href = '/admin'
           return 
         } else {
           console.log('👤 Regular user, redirecting to home')
@@ -130,7 +126,7 @@ export default function LoginPage() {
             )}
           </div>
           <h1 className="text-4xl font-bold mb-2 bg-linear-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
-            Metamorfosa
+            Metamorfrosa
           </h1>
           <h2 className="text-2xl font-semibold text-gray-700 mb-4">Masuk ke Akun</h2>
           <p className="text-gray-600">

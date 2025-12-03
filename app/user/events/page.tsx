@@ -6,11 +6,9 @@ import EventCard, { Event } from '../../components/EventCard'
 import EventFilter, { FilterState } from '../../components/EventFilter'
 
 export default function UserEventsPage() {
-  // State untuk data
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
 
-  // State untuk filter
   const [filters, setFilters] = useState<FilterState>({
     category: [],
     dateRange: {
@@ -21,7 +19,6 @@ export default function UserEventsPage() {
     accessibility: '' 
   })
 
-  // 1. Fetch Data dari Supabase
   const loadEvents = async () => {
     try {
       setLoading(true)
@@ -48,32 +45,27 @@ export default function UserEventsPage() {
     loadEvents()
   }, [])
 
-  // 2. Logika Filtering
   const filteredEvents = useMemo(() => {
     let filtered = [...events]
 
-    // Filter by Category (menggunakan field accessibility dari filter)
     if (filters.accessibility) {
       filtered = filtered.filter(event =>
         event.category && event.category.includes(filters.accessibility)
       )
     }
 
-    // Filter by Date Start
     if (filters.dateRange.start) {
       filtered = filtered.filter(event =>
         new Date(event.date_time) >= new Date(filters.dateRange.start)
       )
     }
 
-    // Filter by Date End
     if (filters.dateRange.end) {
       filtered = filtered.filter(event =>
         new Date(event.date_time) <= new Date(filters.dateRange.end)
       )
     }
 
-    // Filter by Location
     if (filters.location) {
       filtered = filtered.filter(event =>
         event.location.toLowerCase().includes(filters.location.toLowerCase())
@@ -83,20 +75,17 @@ export default function UserEventsPage() {
     return filtered
   }, [events, filters])
 
-  // Get unique categories for filter dropdown
   const allCategories = useMemo(() => {
     return Array.from(new Set(events.flatMap(event => event.category || [])))
   }, [events])
 
-  // Menggunakan Generic Type <K> agar tidak error 'no-explicit-any'
   const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100/30 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
         <div className="text-center mb-16 relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none"></div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight relative z-10">
@@ -108,7 +97,6 @@ export default function UserEventsPage() {
           </p>
         </div>
 
-        {/* Modular Event Filter Component */}
         <div className="mb-12">
           <EventFilter 
             filters={filters}
@@ -119,7 +107,6 @@ export default function UserEventsPage() {
           />
         </div>
 
-        {/* Content Section */}
         {loading ? (
           <div className="text-center py-20 bg-white rounded-[2.5rem] p-8 shadow-xl border border-gray-100">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
@@ -135,7 +122,6 @@ export default function UserEventsPage() {
             ))}
           </div>
         ) : (
-          /* No Events Found View */
           <div className="text-center py-20 bg-white rounded-[2.5rem] p-8 shadow-xl border border-gray-100">
             <div className="text-gray-300 mx-auto mb-4">
               <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">

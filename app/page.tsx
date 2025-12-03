@@ -76,7 +76,7 @@ export default async function HomePage() {
         
         <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 drop-shadow-lg">
-            Metamorfosa Community
+            Metamorfrosa Community
           </h1>
           <p className="text-xl md:text-2xl mb-8 leading-relaxed drop-shadow-md">
             Wadah bagi komunitas untuk berbagi, belajar, dan tumbuh bersama 
@@ -97,11 +97,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gray-100/40">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              Yuk Kenalan Sama Metamorfosa!
+              Yuk Kenalan Sama Metamorfrosa!
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Komunitas yang peduli dengan inklusivitas dan pemberdayaan melalui bahasa isyarat
@@ -115,7 +115,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-4">Tentang Kami</h3>
               <p className="text-gray-600 leading-relaxed">
-                Metamorfosa adalah komunitas yang berfokus pada pengembangan kemampuan bahasa isyarat 
+                Metamorfrosa adalah komunitas yang berfokus pada pengembangan kemampuan bahasa isyarat 
                 dan menciptakan lingkungan yang inklusif bagi semua anggota.
               </p>
             </div>
@@ -162,7 +162,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">
-              Ada Apa Saja di Metamorfosa?
+              Ada Apa Saja di Metamorfrosa?
             </h2>
             <p className="text-xl text-red-100 max-w-2xl mx-auto">
               Temukan berbagai kegiatan seru dan bermanfaat untuk pengembangan diri dan komunitas
@@ -238,7 +238,7 @@ export default async function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Event Mendatang</h2>
             <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Temukan event-event seru yang akan datang di komunitas Metamorfosa
+              Temukan event-event seru yang akan datang di komunitas Metamorfrosa
             </p>
           </div>
           

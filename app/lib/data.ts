@@ -385,7 +385,6 @@ export async function updateRegistrationStatus(id: string, status: RegistrationS
 
 export async function getAdminStats(): Promise<AdminStats> {
   try {
-    // Helper to safely run a count/head query with generic builder
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const safeCount = async (builder: any): Promise<{ count: number; data: unknown[] }> => {
       try {

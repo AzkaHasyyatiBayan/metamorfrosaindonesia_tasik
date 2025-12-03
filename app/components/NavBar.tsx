@@ -31,16 +31,23 @@ export default function Navbar() {
 
   if (loading) {
     return (
-      <nav className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-40">
+      <nav className="bg-white shadow-lg sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">M</span>
+              <div className="relative w-12 h-12 overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100">
+                <div className="w-full h-full bg-linear-to-br from-red-600 to-orange-600 flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">MI</span>
+                </div>
               </div>
-              <span className="text-3xl font-disney tracking-wide text-gray-900">
-                Metamorfosa
-              </span>
+              <div className="flex flex-col">
+                <span className="text-base font-bold leading-none text-gray-900">
+                  Metamorfosa
+                </span>
+                <span className="text-[10px] font-medium tracking-wider text-red-600">
+                  INDONESIA
+                </span>
+              </div>
             </div>
             <div className="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
           </div>
@@ -50,40 +57,46 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-40">
+    <nav className="bg-white shadow-lg sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-3">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center group-hover:bg-red-700 transition-colors duration-200 overflow-hidden">
+              <div className="relative w-12 h-12 overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100 transition-transform duration-300 group-hover:scale-105">
                 {!logoError ? (
-                  <Image 
+                  <Image
                     src="/logo.jpg"
-                    alt="Metamorfosa Logo" 
+                    alt="Metamorfosa Logo"
                     fill
-                    sizes="40px"
-                    className="object-cover" 
+                    className="object-cover transform scale-110"
+                    sizes="48px"
+                    priority
                     onError={() => setLogoError(true)}
                   />
                 ) : (
-                  <span className="text-white font-bold text-lg">M</span>
+                  <div className="w-full h-full bg-linear-to-br from-red-600 to-orange-600 flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">MI</span>
+                  </div>
                 )}
               </div>
-              <span className="text-3xl font-disney tracking-wide text-gray-900">
-                Metamorfosa
-              </span>
+              <div className="flex flex-col">
+                <span className="text-base font-bold leading-none text-gray-900">
+                  Metamorfosa
+                </span>
+                <span className="text-[10px] font-medium tracking-wider text-red-600">
+                  INDONESIA
+                </span>
+              </div>
             </Link>
           </div>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            {/* PERBAIKAN: Tambahkan prefetch={false} agar selalu load data baru */}
             <Link 
               href="/" 
               prefetch={false}
               className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
                 isActive('/') 
-                  ? 'text-red-600 border-b-2 border-red-600' 
+                  ? 'text-red-600 font-semibold' 
                   : 'text-gray-700 hover:text-red-600'
               }`}
             >
@@ -94,7 +107,7 @@ export default function Navbar() {
               prefetch={false}
               className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
                 isActive('/user/events') 
-                  ? 'text-red-600 border-b-2 border-red-600' 
+                  ? 'text-red-600 font-semibold' 
                   : 'text-gray-700 hover:text-red-600'
               }`}
             >
@@ -105,24 +118,25 @@ export default function Navbar() {
               prefetch={false}
               className={`px-3 py-2 text-sm font-medium transition-all duration-200 ${
                 isActive('/user/about') 
-                  ? 'text-red-600 border-b-2 border-red-600' 
+                  ? 'text-red-600 font-semibold' 
                   : 'text-gray-700 hover:text-red-600'
               }`}
             >
               Tentang Kami
             </Link>
 
-            {/* User Dropdown / Login Buttons */}
             {user ? (
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 px-3 py-2"
                 >
-                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center border border-red-200">
-                    <span className="text-red-600 text-sm font-semibold">
-                      {(userProfile?.name || user.email || 'U').charAt(0).toUpperCase()}
-                    </span>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-red-300 shadow-sm">
+                    <div className="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center">
+                      <span className="text-red-600 text-sm font-semibold">
+                        {(userProfile?.name || user.email || 'U').charAt(0).toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                   <span className="max-w-32 truncate">{userProfile?.name || 'User'}</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +192,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -191,15 +204,17 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu Content */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 py-4">
+          <div className="md:hidden bg-white py-4">
             <div className="flex flex-col space-y-3">
-              {/* Tambahkan prefetch={false} juga di mobile menu */}
               <Link 
                 href="/" 
                 prefetch={false}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
+                className={`px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-red-50 rounded ${
+                  isActive('/') 
+                    ? 'text-red-600 font-semibold' 
+                    : 'text-gray-700 hover:text-red-600'
+                }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Beranda
@@ -207,7 +222,11 @@ export default function Navbar() {
               <Link 
                 href="/user/events" 
                 prefetch={false}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
+                className={`px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-red-50 rounded ${
+                  isActive('/user/events') 
+                    ? 'text-red-600 font-semibold' 
+                    : 'text-gray-700 hover:text-red-600'
+                }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Event
@@ -215,7 +234,11 @@ export default function Navbar() {
               <Link 
                 href="/user/about" 
                 prefetch={false}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-200 hover:bg-red-50 rounded"
+                className={`px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-red-50 rounded ${
+                  isActive('/user/about') 
+                    ? 'text-red-600 font-semibold' 
+                    : 'text-gray-700 hover:text-red-600'
+                }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Tentang Kami
@@ -223,7 +246,7 @@ export default function Navbar() {
               
               {user ? (
                 <>
-                  <div className="px-4 py-2 border-t border-gray-200 mt-2 pt-4">
+                  <div className="px-4 py-2 mt-2 pt-4">
                     <p className="text-sm font-medium text-gray-900">{userProfile?.name}</p>
                     <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
@@ -246,7 +269,7 @@ export default function Navbar() {
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                <div className="flex flex-col space-y-2 pt-4">
                   <Link 
                     href="/auth/login" 
                     prefetch={false}

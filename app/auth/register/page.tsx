@@ -73,7 +73,7 @@ export default function RegisterPage() {
             )}
           </div>
           <h1 className="text-4xl font-bold mb-2 bg-linear-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
-            Metamorfosa
+            Metamorfrosa
           </h1>
           <h2 className="text-2xl font-semibold text-gray-700 mb-4">Daftar Akun Baru</h2>
           <p className="text-gray-600">

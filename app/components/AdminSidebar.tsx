@@ -3,10 +3,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import Image from 'next/image'
-import { supabase } from '../lib/supabase' // Sesuaikan path ini dengan projectmu
-import { useAuth } from '../components/AuthProvider' // Sesuaikan path ini dengan projectmu
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../components/AuthProvider'
 
-// --- ICONS (Tetap sama) ---
 const DashboardIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -99,16 +98,11 @@ export default function AdminSidebar() {
         ${isCollapsed ? 'w-20' : 'w-64'} 
       `}
     >
-      {/* PERBAIKAN HEADER: 
-        - Jika collapsed, gunakan flex-col agar logo dan tombol ada di atas-bawah (tidak nabrak).
-        - Tambahkan gap-4 untuk jarak.
-      */}
       <div className={`
         p-4 border-b border-red-500 shrink-0 flex transition-all duration-300
         ${isCollapsed ? 'flex-col items-center gap-4 py-6' : 'items-center justify-between'}
       `}>
         
-        {/* LOGO WRAPPER */}
         <div className={`flex items-center ${!isCollapsed ? 'space-x-3' : 'justify-center'}`}>
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
             {!logoError ? (
@@ -127,11 +121,9 @@ export default function AdminSidebar() {
               </div>
             )}
           </div>
-          {/* Teks Admin hanya muncul jika tidak collapsed */}
           {!isCollapsed && <span className="text-white font-bold text-lg whitespace-nowrap">Admin</span>}
         </div>
 
-        {/* TOGGLE BUTTON */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={`
@@ -145,7 +137,6 @@ export default function AdminSidebar() {
         </button>
       </div>
 
-      {/* USER PROFILE - Hanya muncul saat Expanded */}
       {!isCollapsed && userProfile && (
         <div className="p-4 border-b border-red-500 animate-fadeIn">
           <div className="flex items-center space-x-3">
@@ -162,7 +153,6 @@ export default function AdminSidebar() {
         </div>
       )}
 
-      {/* NAVIGATION */}
       <nav className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
         {menuItems.map((item) => {
           const active = isActive(item.path)
@@ -194,7 +184,6 @@ export default function AdminSidebar() {
         })}
       </nav>
 
-      {/* LOGOUT SECTION */}
       <div className="p-4 border-t border-red-500 shrink-0">
         <button
           onClick={handleLogout}

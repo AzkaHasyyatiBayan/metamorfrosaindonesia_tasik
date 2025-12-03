@@ -1,9 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 
-// --- ICONS ---
 const InfoIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -52,7 +51,18 @@ const DownloadIcon = () => (
   </svg>
 )
 
-// Banner images from public folder
+const ChevronLeftIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+  </svg>
+)
+
+const ChevronRightIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+  </svg>
+)
+
 const bannerImages = [
   { id: 1, src: '/banner.jpeg', alt: 'Banner kegiatan komunitas 1' },
   { id: 2, src: '/banner2.jpeg', alt: 'Banner kegiatan komunitas 2' },
@@ -60,7 +70,6 @@ const bannerImages = [
   { id: 4, src: '/banner4.jpg', alt: 'Banner kegiatan komunitas 4' },
 ]
 
-// --- DATA ---
 type AboutSection = {
   id: string
   title: string
@@ -135,14 +144,13 @@ const aboutSections: AboutSection[] = [
 
 export default function AboutPage() {
   const [selectedBanner, setSelectedBanner] = useState<typeof bannerImages[0] | null>(null)
+  const [selectedBannerIndex, setSelectedBannerIndex] = useState<number>(0)
   
-  // Helper sederhana untuk memformat konten teks menjadi paragraf atau list
   const renderContent = (content: string) => {
     return content.split('\n').map((line, index) => {
       const trimmedLine = line.trim()
-      if (!trimmedLine) return <div key={index} className="h-4"></div> // Spacer untuk baris kosong
+      if (!trimmedLine) return <div key={index} className="h-4"></div>
 
-      // Deteksi List Item (dimulai dengan "-" atau angka "1.")
       const isListItem = /^-|^\d+\./.test(trimmedLine)
       
       if (isListItem) {
@@ -154,7 +162,6 @@ export default function AboutPage() {
         )
       }
 
-      // Deteksi Sub-heading (diakhiri dengan ":")
       if (trimmedLine.endsWith(':')) {
         return (
           <h4 key={index} className="font-bold text-gray-900 mt-4 mb-2 text-lg">
@@ -171,20 +178,54 @@ export default function AboutPage() {
     })
   }
 
-  // Fungsi untuk membuka modal banner
   const openBannerModal = (banner: typeof bannerImages[0]) => {
+    const index = bannerImages.findIndex(img => img.id === banner.id)
+    setSelectedBannerIndex(index >= 0 ? index : 0)
     setSelectedBanner(banner)
   }
 
-  // Fungsi untuk menutup modal
-  const closeImageModal = () => {
+  const closeImageModal = useCallback(() => {
     setSelectedBanner(null)
-  }
+  }, [])
+
+  const goToPreviousImage = useCallback(() => {
+    setSelectedBannerIndex(prevIndex => {
+      const newIndex = prevIndex === 0 ? bannerImages.length - 1 : prevIndex - 1
+      setSelectedBanner(bannerImages[newIndex])
+      return newIndex
+    })
+  }, [])
+
+  const goToNextImage = useCallback(() => {
+    setSelectedBannerIndex(prevIndex => {
+      const newIndex = prevIndex === bannerImages.length - 1 ? 0 : prevIndex + 1
+      setSelectedBanner(bannerImages[newIndex])
+      return newIndex
+    })
+  }, [])
+
+  React.useEffect(() => {
+    if (!selectedBanner) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goToPreviousImage()
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        goToNextImage()
+      } else if (e.key === 'Escape') {
+        closeImageModal()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedBanner, goToPreviousImage, goToNextImage, closeImageModal])
 
   return (
-    <div className="min-h-screen bg-gray-50/50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100/30 py-12 px-4 sm:px-6 lg:px-8">
       
-      {/* Header Section */}
       <div className="max-w-4xl mx-auto text-center mb-16 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight relative z-10">
@@ -196,21 +237,17 @@ export default function AboutPage() {
         </p>
       </div>
 
-      {/* Banner Section */}
       <div className="max-w-5xl mx-auto mb-16">
         <section className="group relative bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl border border-gray-100 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 overflow-hidden">
-          {/* Decorative Top Accent */}
           <div className="absolute top-0 left-0 w-full h-1.5 bg-linear-to-r from-red-500/0 via-red-500/50 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* Icon / Visual Identifier */}
             <div className="shrink-0">
               <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-red-600 group-hover:text-white transition-all duration-500">
                 <GalleryIcon />
               </div>
             </div>
 
-            {/* Content */}
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center group-hover:text-red-600 transition-colors">
                 Galeri Kami
@@ -220,7 +257,6 @@ export default function AboutPage() {
                 Lihat momen-momen spesial dari berbagai kegiatan dan acara yang telah kami selenggarakan bersama komunitas.
               </p>
               
-              {/* Banner Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {bannerImages.map((banner) => (
                   <div 
@@ -248,7 +284,6 @@ export default function AboutPage() {
         </section>
       </div>
       
-      {/* Content Sections */}
       <div className="max-w-5xl mx-auto space-y-10">
         {aboutSections.map((section, idx) => (
           <section 
@@ -259,19 +294,16 @@ export default function AboutPage() {
               ${idx % 2 === 0 ? 'md:ml-0' : 'md:mr-0'}
             `}
           >
-            {/* Decorative Top Accent */}
             <div className="absolute top-0 left-0 w-full h-1.5 bg-linear-to-r from-red-500/0 via-red-500/50 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
             <div className="flex flex-col md:flex-row gap-8 items-start">
               
-              {/* Icon / Visual Identifier */}
               <div className="shrink-0">
                 <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-red-600 group-hover:text-white transition-all duration-500">
                   {section.icon}
                 </div>
               </div>
 
-              {/* Text Content */}
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center group-hover:text-red-600 transition-colors">
                   {section.title}
@@ -281,7 +313,6 @@ export default function AboutPage() {
                   {renderContent(section.content)}
                 </div>
 
-                {/* Optional Image */}
                 {section.image_url && (
                   <div className="mt-8 rounded-2xl overflow-hidden shadow-lg border border-gray-100 group-hover:shadow-xl transition-shadow">
                     <Image 
@@ -299,7 +330,6 @@ export default function AboutPage() {
         ))}
       </div>
 
-      {/* Footer Quote / Call to Action */}
       <div className="max-w-3xl mx-auto text-center mt-20">
         <blockquote className="text-xl font-medium text-gray-600 italic">
           &quot;Karena setiap individu berhak mendapatkan kesempatan yang sama untuk berkembang dan berkarya.&quot;
@@ -309,15 +339,31 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Single Banner Modal */}
       {selectedBanner && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
           <div className="relative max-w-4xl max-h-[90vh] w-full">
             <button 
               onClick={closeImageModal}
               className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors"
+              aria-label="Close modal"
             >
               <XIcon />
+            </button>
+
+            <button
+              onClick={goToPreviousImage}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:text-gray-300 bg-black/50 hover:bg-black/70 p-3 rounded-full transition-colors hidden sm:flex items-center justify-center"
+              aria-label="Previous image"
+            >
+              <ChevronLeftIcon />
+            </button>
+
+            <button
+              onClick={goToNextImage}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:text-gray-300 bg-black/50 hover:bg-black/70 p-3 rounded-full transition-colors hidden sm:flex items-center justify-center"
+              aria-label="Next image"
+            >
+              <ChevronRightIcon />
             </button>
             
             <div className="bg-white rounded-2xl overflow-hidden">
@@ -335,8 +381,10 @@ export default function AboutPage() {
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {selectedBanner.alt}
                 </h3>
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-500">Banner Dokumentasi Kegiatan</p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <p className="text-sm text-gray-500">
+                    {selectedBannerIndex + 1} / {bannerImages.length} • Gunakan tombol ← → atau Arrow Keys untuk navigasi
+                  </p>
                   <a 
                     href={selectedBanner.src}
                     target="_blank"

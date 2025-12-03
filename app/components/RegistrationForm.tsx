@@ -17,9 +17,6 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
   const [notes, setNotes] = useState('')
   const [hasDisability, setHasDisability] = useState(false)
   const [disabilityType, setDisabilityType] = useState<string | undefined>(undefined)
-  // Volunteer UI temporarily disabled
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [volunteerType, setVolunteerType] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
@@ -28,7 +25,6 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // 1. Validasi Awal
     if (!user) {
       router.push('/auth/login')
       return
@@ -46,11 +42,9 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
     setIsSuccess(false)
 
     try {
-      // Map front-end registration type to DB `role` values
       const roleValue = type === 'VOLUNTEER' ? 'volunteer' : 'peserta'
       const statusValue = 'pending'
 
-      // Prepare notes
       let finalNotes = notes || ''
       if (type === 'PARTICIPANT' && hasDisability && disabilityType) {
         finalNotes = finalNotes ? `${finalNotes} \nDisability: ${disabilityType}` : `Disability: ${disabilityType}`
@@ -67,24 +61,19 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
         phone: userProfile?.phone || null
       }
 
-      if (type === 'VOLUNTEER' && volunteerType) insertPayload.volunteer_type = volunteerType
-
       const { error } = await supabase
         .from('registrations')
         .insert([insertPayload])
 
       if (error) {
-        // Lempar error agar ditangkap catch block
         throw error
       }
 
-      // Sukses
       setIsSuccess(true)
       setMessage(`Pendaftaran Berhasil! Mengalihkan...`)
       setNotes('')
       setType('PARTICIPANT')
       
-      // Redirect setelah sukses
       setTimeout(() => {
         router.push('/user/profile')
       }, 1500)
@@ -94,9 +83,7 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
       
       let errMsg = 'Terjadi kesalahan saat mendaftar.'
       
-      // FIX: Menggunakan type guard dan casting yang spesifik untuk menghindari 'any'
       if (typeof error === 'object' && error !== null) {
-         // Casting aman ke bentuk minimal error object yang kita harapkan
          const err = error as { code?: string; message?: string };
 
          if (err.code === '23505') {
@@ -112,15 +99,12 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
 
       setMessage(`Gagal: ${errMsg}`)
       
-      // PENTING: Alert dinyalakan agar user sadar proses berhenti karena error
       alert(`Pendaftaran Gagal: ${errMsg}`) 
     } finally {
-      // PENTING: Memastikan loading berhenti apapun hasilnya
       setLoading(false)
     }
   }
 
-  // --- STATE: USER BELUM LOGIN ---
   if (!user) {
     return (
       <div className="relative overflow-hidden bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-10 text-center group transition-all hover:shadow-red-100/50">
@@ -148,10 +132,8 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
     )
   }
 
-  // --- STATE: USER SUDAH LOGIN (FORM) ---
   return (
     <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 p-8 md:p-10 overflow-hidden">
-      {/* Decorative Blur Element */}
       <div className="absolute -top-20 -right-20 w-64 h-64 bg-red-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="relative text-center mb-10">
@@ -164,7 +146,6 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
 
       <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
         
-        {/* Section: Tipe Pendaftaran */}
         <div>
           <label className="block text-sm font-bold text-gray-900 mb-4 uppercase tracking-wide opacity-80">
             Daftar Sebagai
@@ -194,7 +175,6 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
                   <span className="text-sm text-gray-500">Ikut serta dalam kegiatan event</span>
                 </div>
                 
-                {/* Checkmark Icon if selected */}
                 {type === 'PARTICIPANT' && (
                   <div className="absolute top-6 right-6 text-red-500 animate-fadeIn">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -205,7 +185,6 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
           </div>
         </div>
 
-        {/* Section: Accessibility (Conditional) */}
         <div className="space-y-4">
           {type === 'PARTICIPANT' && (
             <div className={`p-5 rounded-2xl border transition-all duration-300 ${hasDisability ? 'bg-red-50/30 border-red-100' : 'bg-gray-50/50 border-transparent hover:bg-white hover:border-gray-200'}`}>
@@ -250,7 +229,6 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
           )}
         </div>
 
-        {/* Section: Notes */}
         <div>
           <label htmlFor="notes" className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide opacity-80">
             Catatan Tambahan <span className="text-gray-400 font-normal normal-case ml-1">(Opsional)</span>
@@ -271,7 +249,6 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
           </div>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
           disabled={loading || isSuccess}
@@ -298,13 +275,11 @@ export default function RegistrationForm({ eventId }: RegistrationFormProps) {
               </>
             )}
           </div>
-          {/* Shine Effect */}
           {!loading && !isSuccess && (
              <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-linear-to-r from-transparent to-white opacity-20 group-hover:animate-shine" />
           )}
         </button>
 
-        {/* Feedback Message */}
         {message && (
           <div className={`p-4 rounded-xl text-center text-sm font-medium border animate-fadeIn transition-all ${
             isSuccess 

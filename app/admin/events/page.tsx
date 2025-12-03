@@ -5,7 +5,6 @@ import { useAuth } from '../../components/AuthProvider'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
-// Definisi Tipe Data Event
 type Event = {
   id: string
   title: string
@@ -23,21 +22,18 @@ type Event = {
   registrations?: Array<{ count: number }>
 }
 
-// Definisi Tipe Error untuk menangani catch block dengan aman
 interface AppError {
   message: string
   code?: string
   details?: string
 }
 
-// Komponen Icon Placeholder jika tidak ada gambar
 const EventPlaceholderIcon = () => (
   <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
   </svg>
 )
 
-// Komponen Icon X untuk Error Box
 const XIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -45,7 +41,6 @@ const XIcon = () => (
 )
 
 export default function AdminEventsPage() {
-  // State Management
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -53,20 +48,17 @@ export default function AdminEventsPage() {
   const { user, isAdmin } = useAuth()
   const router = useRouter()
 
-  // Effect untuk load events saat user admin terdeteksi
   useEffect(() => {
     if (user && isAdmin) {
       loadEvents()
     }
   }, [user, isAdmin])
 
-  // Fungsi Memuat Data Events dari Supabase
   const loadEvents = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      // Ambil data events urut berdasarkan waktu dibuat terbaru
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
         .select('*')
@@ -76,7 +68,6 @@ export default function AdminEventsPage() {
         throw eventsError
       }
 
-      // Hitung jumlah peserta untuk setiap event
       const eventsWithParticipants = await Promise.all(
         (eventsData || []).map(async (event) => {
           try {
@@ -100,7 +91,6 @@ export default function AdminEventsPage() {
 
       setEvents(eventsWithParticipants as Event[])
     } catch (rawError: unknown) {
-      // PERBAIKAN: Menggunakan type assertion yang aman
       const err = rawError as AppError
       console.error('Error in loadEvents:', err)
       setError(err.message || 'Terjadi kesalahan saat memuat events')
@@ -109,12 +99,10 @@ export default function AdminEventsPage() {
     }
   }
 
-  // Fungsi Mengisi Form Saat Tombol Edit Diklik
   const editEvent = (event: Event) => {
     router.push(`/admin/events/create?id=${event.id}`)
   }
 
-  // Fungsi Mengubah Status Aktif/Non-aktif
   const toggleEventStatus = async (eventId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
@@ -133,7 +121,6 @@ export default function AdminEventsPage() {
     }
   }
 
-  // Fungsi Menghapus Event
   const deleteEvent = async (eventId: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus event ini? Data peserta terkait juga akan terhapus.')) return
 
@@ -151,7 +138,6 @@ export default function AdminEventsPage() {
     }
   }
 
-  // Tampilan Akses Ditolak (Jika bukan Admin)
   if (!user || !isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -174,11 +160,9 @@ export default function AdminEventsPage() {
     )
   }
 
-  // Tampilan Utama Halaman Admin Events
   return (
     <div className="min-h-screen bg-gray-50/50">
       
-      {/* Sticky Header Section */}
       <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -201,7 +185,6 @@ export default function AdminEventsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Error Message Display */}
         {error && (
           <div className="mb-8 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl flex justify-between items-center shadow-sm animate-fade-in">
             <div className="flex items-center">
@@ -216,7 +199,6 @@ export default function AdminEventsPage() {
           </div>
         )}
 
-        {/* Loading State */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24">
             <div className="relative w-16 h-16">
@@ -226,7 +208,6 @@ export default function AdminEventsPage() {
             <p className="mt-4 text-gray-400 font-medium animate-pulse">Sedang memuat data event...</p>
           </div>
         ) : events.length === 0 ? (
-          /* Empty State */
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
             <div className="p-4 bg-gray-50 rounded-full mb-4">
               <EventPlaceholderIcon />
@@ -243,12 +224,10 @@ export default function AdminEventsPage() {
             </button>
           </div>
         ) : (
-          /* Event Grid */
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
               <div key={event.id} className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-red-100 transition-all duration-300 flex flex-col overflow-hidden">
                 
-                {/* Event Image Card */}
                 <div className="relative h-52 w-full bg-gray-100 overflow-hidden">
                   {event.image_url ? (
                     <Image
@@ -268,7 +247,6 @@ export default function AdminEventsPage() {
                     </div>
                   )}
                   
-                  {/* Status Overlay Badge */}
                   <div className="absolute top-4 right-4">
                     <span className={`px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide shadow-sm backdrop-blur-md border ${
                       event.is_active 
@@ -280,7 +258,6 @@ export default function AdminEventsPage() {
                   </div>
                 </div>
                 
-                {/* Event Details */}
                 <div className="p-6 flex-1 flex flex-col">
                   <div className="mb-4">
                     <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-red-600 transition-colors" title={event.title}>
@@ -308,7 +285,6 @@ export default function AdminEventsPage() {
                     </div>
                   </div>
                   
-                  {/* Footer Actions */}
                   <div className="mt-auto pt-5 border-t border-gray-100 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span className="flex h-2 w-2 rounded-full bg-red-600"></span>

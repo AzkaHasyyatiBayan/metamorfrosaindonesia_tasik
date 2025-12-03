@@ -140,17 +140,10 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center space-x-6 mb-4 md:mb-0">
-            <p className="text-gray-400 text-sm">
-              © {currentYear} Metamorfrosa Community. All rights reserved.
-            </p>
-          </div>
-          <div className="flex space-x-6">
-            <Link href="/sitemap" className="text-gray-400 hover:text-white text-sm transition-colors">
-              Sitemap
-            </Link>
-          </div>
+        <div className="border-t border-gray-700 pt-8 flex justify-center items-center">
+          <p className="text-gray-400 text-sm">
+            © {currentYear} Metamorfrosa Community. All rights reserved.
+          </p>
         </div>
       </div>
 

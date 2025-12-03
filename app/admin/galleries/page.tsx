@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import FileUpload from '../../components/FileUpload'
 
-// --- ICON COMPONENTS ---
-
 const ImageIcon = () => (
   <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -50,8 +48,6 @@ const ClockIcon = () => (
   </svg>
 )
 
-// --- TYPES ---
-
 type Gallery = {
   id: string
   file_url: string
@@ -61,7 +57,6 @@ type Gallery = {
   event_title: string
 }
 
-// Helper types for fallback join
 interface MediaRow {
   id: string
   event_id: string
@@ -76,12 +71,11 @@ interface EventForGallery {
   title: string
 }
 
-// Helper function to safely map fallback join result to Gallery type
 function mapFallbackGallery(media: MediaRow, eventsMap: Record<string, EventForGallery>): Gallery {
   const event = eventsMap[media.event_id]
   return {
     ...media,
-    event_title: event?.title || 'Umum' // Default ke Umum jika tidak ada event
+    event_title: event?.title || 'Umum'
   }
 }
 
@@ -120,7 +114,6 @@ export default function AdminGalleries() {
         .order('created_at', { ascending: false })
 
       if (error) {
-        // Fallback when PostgREST can't resolve relationship media->events
         if (error.code === 'PGRST200' || (error.message && String(error.message).includes('Could not find a relationship'))) {
           console.warn('media->events relationship missing; falling back to manual join for galleries')
 
@@ -159,9 +152,7 @@ export default function AdminGalleries() {
       }
 
       if (data) {
-        // Fix: Menggunakan type assertion yang spesifik untuk menghindari 'any'
         const formattedData = data.map((item) => {
-          // Cast item ke tipe yang diharapkan dari query join
           const joinedItem = item as MediaRow & { events: { title: string } | null };
           return {
             ...joinedItem,
@@ -238,7 +229,6 @@ export default function AdminGalleries() {
   return (
     <div className="min-h-screen bg-gray-50/50">
       
-      {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -270,7 +260,6 @@ export default function AdminGalleries() {
             <p className="mt-4 text-gray-400 font-medium animate-pulse">Memuat galeri...</p>
           </div>
         ) : galleries.length === 0 ? (
-          /* Empty State */
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
             <div className="p-6 bg-gray-50 rounded-full mb-4">
               <ImageIcon />
@@ -288,12 +277,10 @@ export default function AdminGalleries() {
             </button>
           </div>
         ) : (
-          /* Gallery Grid */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {galleries.map((gallery) => (
               <div key={gallery.id} className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:border-red-100 transition-all duration-300 flex flex-col overflow-hidden transform hover:-translate-y-1">
                 
-                {/* Image Area */}
                 <div className="relative h-48 w-full bg-gray-100 overflow-hidden">
                   <Image
                     src={gallery.file_url}
@@ -303,10 +290,8 @@ export default function AdminGalleries() {
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                   
-                  {/* Overlay Gradient on Hover (Fix: bg-linear-to-t) */}
                   <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   
-                  {/* Top Right Action (Delete) - Visible on Hover */}
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <button
                       onClick={() => deleteGallery(gallery)}
@@ -318,9 +303,7 @@ export default function AdminGalleries() {
                   </div>
                 </div>
                 
-                {/* Content Area */}
                 <div className="p-4 flex-1 flex flex-col">
-                  {/* Tags & Date */}
                   <div className="flex items-center justify-between mb-3 text-xs">
                     <div className="flex items-center text-blue-600 bg-blue-50 px-2 py-1 rounded-md max-w-[65%]">
                       <EventTagIcon />
@@ -346,7 +329,6 @@ export default function AdminGalleries() {
         )}
       </div>
 
-      {/* Upload Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">

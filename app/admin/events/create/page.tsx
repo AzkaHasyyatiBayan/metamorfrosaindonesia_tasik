@@ -6,10 +6,8 @@ import { useAuth } from '../../../components/AuthProvider'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 
-// --- TIPE DATA ---
 type AccessibilityCategory = 'SIGN_LANGUAGE' | 'WHEELCHAIR_ACCESS' | 'BRAILLE' | 'AUDIO_DESCRIPTION' | 'TACTILE'
 
-// --- ICON COMPONENTS ---
 const ArrowLeftIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -53,7 +51,6 @@ const TitleIcon = () => (
   </svg>
 )
 
-// Accessibility Icons
 const SignLanguageIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
@@ -326,7 +323,7 @@ export default function CreateEvent() {
         router.push('/admin/events')
       }, 1500)
       
-    } catch (error: unknown) { // FIX: Menggunakan unknown, bukan any
+    } catch (error: unknown) {
       console.error('Error in saving process:', error)
       
       let errorMsg = 'Terjadi kesalahan saat menyimpan event'
@@ -334,7 +331,6 @@ export default function CreateEvent() {
       if (error instanceof Error) {
         errorMsg = error.message
       } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        // Safe access to .message property
         errorMsg = (error as { message: string }).message
       }
       
@@ -395,7 +391,6 @@ export default function CreateEvent() {
   return (
     <div className="min-h-screen bg-gray-50/50">
       
-      {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center space-x-4">
@@ -420,11 +415,9 @@ export default function CreateEvent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Main Form Column */}
           <div className="lg:col-span-2 space-y-6">
             <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8 space-y-8">
               
-              {/* Basic Info Section */}
               <div className="space-y-6">
                 <div className="border-b border-gray-100 pb-4 mb-4">
                   <h3 className="text-lg font-bold text-gray-900">Informasi Utama</h3>
@@ -468,7 +461,6 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              {/* Date & Location Section */}
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -506,7 +498,6 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              {/* Accessibility & Capacity */}
               <div className="space-y-6">
                 <div className="border-b border-gray-100 pb-4 mb-4 pt-4">
                   <h3 className="text-lg font-bold text-gray-900">Detail & Aksesibilitas</h3>
@@ -558,7 +549,6 @@ export default function CreateEvent() {
                     </div>
                   </div>
 
-                  {/* UPLOAD GAMBAR */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Banner</label>
                     <div className="relative">
@@ -567,7 +557,7 @@ export default function CreateEvent() {
                         accept="image/*"
                         ref={fileInputRef}
                         onChange={handleFileChange}
-                        className="hidden" // Sembunyikan input asli
+                        className="hidden"
                       />
                       <div 
                         onClick={() => fileInputRef.current?.click()}
@@ -587,7 +577,6 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <div className="pt-6">
                 <button
                   type="submit"
@@ -617,7 +606,6 @@ export default function CreateEvent() {
             </form>
           </div>
 
-          {/* Preview Column */}
           <div className="lg:col-span-1">
             <div className="sticky top-28 space-y-6">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -629,7 +617,6 @@ export default function CreateEvent() {
                 <div className="p-4">
                   <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden pointer-events-none select-none">
                     <div className="relative h-48 w-full bg-gray-100">
-                      {/* Tampilkan Preview */}
                       <PreviewImage imageUrl={previewUrl} title={title} />
                       <div className="absolute top-3 right-3 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-xs font-bold text-green-700 shadow-sm">
                         ACTIVE

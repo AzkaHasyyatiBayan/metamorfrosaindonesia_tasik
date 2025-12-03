@@ -75,8 +75,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Section */}
-      {/* Perbaikan: Menggunakan hanya bg-white/80 agar tidak konflik dengan bg-white */}
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -122,9 +120,7 @@ export default function AdminDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Primary Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Card 1: Total Users */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md hover:border-red-200 transition-all duration-300 group">
             <div className="flex justify-between items-start">
               <div>
@@ -142,7 +138,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Card 2: Active Events */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md hover:border-red-200 transition-all duration-300 group">
             <div className="flex justify-between items-start">
               <div>
@@ -160,7 +155,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Card 3: Registrations */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md hover:border-red-200 transition-all duration-300 group">
             <div className="flex justify-between items-start">
               <div>
@@ -178,7 +172,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Card 4: Volunteers */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md hover:border-red-200 transition-all duration-300 group">
             <div className="flex justify-between items-start">
               <div>
@@ -197,10 +190,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Secondary Section: Actionable Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Action Card: Pending Registrations */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col hover:border-red-300 transition-all duration-300">
             <div className="p-6 flex-1">
               <div className="flex items-center gap-4 mb-4">
@@ -226,7 +217,6 @@ export default function AdminDashboard() {
             </Link>
           </div>
 
-          {/* Action Card: Documentation */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col hover:border-red-300 transition-all duration-300">
             <div className="p-6 flex-1">
               <div className="flex items-center gap-4 mb-4">
@@ -252,9 +242,7 @@ export default function AdminDashboard() {
             </Link>
           </div>
 
-          {/* Metric Card: Participation Rate (Solid Red - No Gradient) */}
           <div className="bg-red-600 rounded-2xl shadow-lg p-6 text-white flex flex-col justify-between relative overflow-hidden group">
-            {/* Decoration circle */}
             <div className="absolute -top-12 -right-12 w-32 h-32 bg-white opacity-10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
             
             <div className="relative z-10">
@@ -282,7 +270,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions Section */}
         <div className="pt-4">
           <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-3">
             <span className="flex h-2 w-2 rounded-full bg-red-600"></span>

@@ -111,7 +111,6 @@ interface OriginalData {
   avatar: string
 }
 
-// Helper types for fallback join when PostgREST relationship is missing
 interface RegistrationRow {
   id: string
   event_id: string
@@ -123,7 +122,6 @@ interface RegistrationRow {
   updated_at: string
 }
 
-// Helper function to safely map fallback join result to Registration type
 function mapFallbackRegistrationForUser(reg: RegistrationRow, eventsMap: Record<string, Event>): Registration {
   return {
     ...reg,
@@ -138,13 +136,11 @@ function mapFallbackRegistrationForUser(reg: RegistrationRow, eventsMap: Record<
   }
 }
 
-// Normalize registration row coming from DB/server to the shape expected by this component
 function normalizeRegistrationForUser(raw: unknown): Registration {
   const r = raw as Record<string, unknown>
   const statusRaw: string = String(r['status'] || r['status_text'] || '')
   const typeRaw: string = String(r['type'] || r['role'] || '')
 
-  // Map status from DB (possibly uppercase like 'PENDING'/'CONFIRMED')
   const status = ((): Registration['status'] => {
     const s = statusRaw.trim().toUpperCase()
     if (!s) return 'pending'
@@ -155,20 +151,17 @@ function normalizeRegistrationForUser(raw: unknown): Registration {
     return s.toLowerCase() as Registration['status']
   })()
 
-  // Map type -> role used in UI (DB may store 'PARTICIPANT'/'VOLUNTEER')
   const role = ((): Registration['role'] => {
     const t = typeRaw.trim().toUpperCase()
     if (!t) return 'peserta'
     if (t === 'PARTICIPANT') return 'peserta'
     if (t === 'VOLUNTEER') return 'volunteer'
-    // fallback: if already in bahasa
     if (t === 'PESERTA') return 'peserta'
     return 'peserta'
   })()
 
   const volunteer_type = (r['volunteer_type'] as string) || (r['volunteerType'] as string) || undefined
 
-  // events might be nested under `events` or `event` or provided separately
   const eventsCandidate = (r['events'] || r['event'] || r['events_detail']) as Record<string, unknown> | undefined
   const events = eventsCandidate ? {
     id: (eventsCandidate['id'] as string) || (r['event_id'] as string) || '',
@@ -239,9 +232,6 @@ export default function UserProfile() {
         .order('created_at', { ascending: false })
 
       if (error) {
-        // If PostgREST reports no relationship between registrations and events,
-        // fallback to fetching registrations and events separately and merging.
-        // PGRST200 indicates missing relationship in the schema cache.
         if (error.code === 'PGRST200' || (error.message && String(error.message).includes('Could not find a relationship'))) {
           console.warn('Relationship registrations->events not found; falling back to manual join')
 
@@ -272,7 +262,6 @@ export default function UserProfile() {
 
           const mapped = (regs as RegistrationRow[] || []).map(r => mapFallbackRegistrationForUser(r, eventsMap))
 
-          // Normalize fields (status, role, event shape) so UI logic is consistent
           setRegistrations(mapped.map(normalizeRegistrationForUser))
           return
         }
@@ -281,7 +270,6 @@ export default function UserProfile() {
         throw error
       }
 
-      // Normalize nested result as well
       setRegistrations((data || []).map(normalizeRegistrationForUser))
     } catch (error) {
       console.error('Error fetching registrations:', error)

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 
-// Definisi tipe data yang sama dengan parent untuk konsistensi
 export type FilterState = {
   category: string[]
   dateRange: {
@@ -18,7 +17,7 @@ interface EventFilterProps {
   onFilterChange: (filters: FilterState) => void
   totalEvents: number
   filteredCount: number
-  categories: string[] // Tambahan prop untuk kategori dinamis dari DB
+  categories: string[]
 }
 
 export default function EventFilter({ 
@@ -30,13 +29,10 @@ export default function EventFilter({
 }: EventFilterProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Helper untuk menentukan apakah date range sesuai dengan preset (Week/Month)
   const getPeriodFromDateRange = (start: string, end: string): string => {
     if (!start || !end) return ''
     
-    // Gunakan tanggal lokal untuk membandingkan input value (YYYY-MM-DD)
     const now = new Date()
-    // Mengimbangi offset zona waktu agar tanggal sesuai dengan string YYYY-MM-DD lokal
     const today = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0]
     
     if (start === today) {
@@ -53,7 +49,6 @@ export default function EventFilter({
     return ''
   }
 
-  // Derived state untuk period
   const period = getPeriodFromDateRange(filters.dateRange.start, filters.dateRange.end)
 
   const handleDateChange = (field: 'start' | 'end', value: string) => {
@@ -75,7 +70,6 @@ export default function EventFilter({
     })
   }
 
-  // Menggunakan 'accessibility' sebagai filter kategori utama
   const handleCategoryChange = (value: string) => {
     onFilterChange({
       ...filters,
@@ -129,9 +123,7 @@ export default function EventFilter({
   )
 
   return (
-    // PERBAIKAN: rounded-[2rem] -> rounded-4xl
     <div className="bg-white rounded-4xl shadow-xl border border-gray-100 p-8 transition-all hover:shadow-2xl duration-500">
-      {/* Header Filter */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 space-y-4 lg:space-y-0">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
@@ -172,9 +164,7 @@ export default function EventFilter({
         </div>
       </div>
 
-      {/* Main Filter Inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-2">
-        {/* Location Input */}
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 group-hover:text-red-500 transition-colors duration-300">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,7 +180,6 @@ export default function EventFilter({
           />
         </div>
 
-        {/* Category / Accessibility Select */}
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 group-hover:text-red-500 transition-colors duration-300">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +205,6 @@ export default function EventFilter({
           </div>
         </div>
 
-        {/* Time Period Select */}
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 group-hover:text-red-500 transition-colors duration-300">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

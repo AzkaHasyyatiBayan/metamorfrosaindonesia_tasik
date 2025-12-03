@@ -2,8 +2,6 @@
 
 import React from 'react';
 
-// --- ICONS DEFINITION ---
-
 export const FlowerIcon = () => (
   <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
     <g className="origin-center">
@@ -124,8 +122,6 @@ export const CircleIcon = () => (
   </svg>
 );
 
-// --- OPTIONS DATA ---
-// Update: bg-gradient-to-br -> bg-linear-to-br untuk kompatibilitas Tailwind v4
 export const avatarOptions = [
   { id: 'flower', icon: <FlowerIcon />, color: 'bg-linear-to-br from-pink-100 to-rose-100 text-pink-600 hover:from-pink-200 hover:to-rose-200 ring-pink-200', name: 'Bunga' },
   { id: 'leaf', icon: <LeafIcon />, color: 'bg-linear-to-br from-green-100 to-emerald-100 text-green-600 hover:from-green-200 hover:to-emerald-200 ring-green-200', name: 'Daun' },
@@ -139,8 +135,6 @@ export const avatarOptions = [
   { id: 'fish', icon: <FishIcon />, color: 'bg-linear-to-br from-teal-100 to-cyan-100 text-teal-600 hover:from-teal-200 hover:to-cyan-200 ring-teal-200', name: 'Ikan' },
   { id: 'dog', icon: <DogIcon />, color: 'bg-linear-to-br from-amber-200 to-yellow-200 text-amber-700 hover:from-amber-300 hover:to-yellow-300 ring-amber-200', name: 'Anjing' },
 ];
-
-// --- COMPONENT ---
 
 interface AvatarSelectorProps {
   value?: string;
@@ -172,7 +166,6 @@ export default function AvatarSelector({ value, onChange }: AvatarSelectorProps)
               `}
               title={option.name}
             >
-              {/* Icon Container */}
               <div className={`
                 transition-transform duration-500 
                 ${isSelected ? 'animate-bounce' : 'group-hover:scale-110'}
@@ -180,7 +173,6 @@ export default function AvatarSelector({ value, onChange }: AvatarSelectorProps)
                 {option.icon}
               </div>
 
-              {/* Selection Indicator (Dot) */}
               {isSelected && (
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
                   <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
