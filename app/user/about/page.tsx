@@ -83,8 +83,7 @@ const aboutSections: AboutSection[] = [
     id: '1',
     title: 'Profil Komunitas',
     icon: <InfoIcon />,
-    content: `Resmi berdiri pada 21 November 2021, Metamorfrosa Indonesia Tasikmalaya hadir menjawab kebutuhan ruang inklusif. 
-    Kami berdedikasi memberdayakan teman disabilitas melalui edukasi dan advokasi, demi memperjuangkan hak, aksesibilitas, dan kesetaraan untuk menciptakan masyarakat Tasikmalaya yang ramah bagi semua.`,
+    content: `Resmi berdiri pada 21 November 2021, Metamorfrosa Indonesia Tasikmalaya hadir menjawab kebutuhan ruang inklusif. Kami berdedikasi memberdayakan teman disabilitas melalui edukasi dan advokasi, demi memperjuangkan hak, aksesibilitas, dan kesetaraan untuk menciptakan masyarakat Tasikmalaya yang ramah bagi semua.`,
   },
   {
     id: '2',
@@ -137,8 +136,8 @@ const aboutSections: AboutSection[] = [
     Email: metamorfrosa.tasik@gmail.com
     Instagram: @metamorfrosa_tasik
     
-    Lokasi: Tasikmalaya, Jawa Barat.
-    Jam Operasional: Senin - Jumat: 09.00 - 17.00 WIB`,
+    Lokasi: Kota Tasikmalaya, Jawa Barat, Indonesia.
+    Jam Operasional: Senin - Jumat (09.00 - 17.00 WIB)`,
   }
 ]
 

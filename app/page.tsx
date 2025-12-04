@@ -76,11 +76,10 @@ export default async function HomePage() {
         
         <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 drop-shadow-lg">
-            Metamorfrosa Community
+            Metamorfrosa Indonesia
           </h1>
           <p className="text-xl md:text-2xl mb-8 leading-relaxed drop-shadow-md">
-            Wadah bagi komunitas untuk berbagi, belajar, dan tumbuh bersama 
-            melalui berbagai event menarik dalam bahasa isyarat
+            Wadah bagi komunitas untuk berbagi, belajar, dan tumbuh bersama melalui berbagai event menarik dalam bahasa isyarat
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/user/events">

@@ -30,12 +30,11 @@ export default function Footer() {
                 <h3 className="text-2xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent">
                   Metamorfrosa
                 </h3>
-                <p className="text-red-400 text-sm font-medium">Community</p>
+                <p className="text-red-400 text-sm font-medium">Indonesia</p>
               </div>
             </div>
             <p className="text-gray-300 text-lg leading-relaxed max-w-2xl mb-6">
-              Wadah transformasi inklusif yang memberdayakan setiap individu untuk berkembang 
-              melalui pembelajaran kolaboratif bahasa isyarat dan komunitas yang saling mendukung.
+              Wadah bagi komunitas untuk berbagi, belajar, dan tumbuh bersama melalui berbagai event menarik dalam bahasa isyarat
             </p>
             
             <div className="flex space-x-4">
@@ -50,7 +49,7 @@ export default function Footer() {
               </a>
               <a 
                 href="https://instagram.com/metamorfrosaindonesia_tasik" 
-                className="w-10 h-10 bg-gray-700 hover:bg-red-600 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group"
+                className="w-10 h-10 bg-gray-700 hover:bg-linear-to-br hover:from-pink-500 hover:via-red-500 hover:to-yellow-500 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group"
                 aria-label="Instagram"
               >
                 <Icons.Instagram />
@@ -133,7 +132,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-gray-300 text-sm">Lokasi</p>
-                  <p className="text-white">Tasikmalaya, Jawa Barat</p>
+                  <p className="text-white">Kota Tasikmalaya, Jawa Barat, Indonesia.</p>
                 </div>
               </li>
             </ul>

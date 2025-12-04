@@ -397,12 +397,19 @@ export default function AdminRegistrations() {
         <div className="mb-8 overflow-x-auto pb-2">
           <div className="flex gap-2">
             {[
-              { key: 'ALL' as const, label: 'Semua', count: totalCount ?? registrations.length, color: 'black' },
+              { key: 'ALL' as const, label: 'Semua', count: totalCount ?? registrations.length, color: 'gray' },
               { key: 'PENDING' as const, label: 'Pending', count: getStatusCount('PENDING'), color: 'yellow' },
               { key: 'CONFIRMED' as const, label: 'Dikonfirmasi', count: getStatusCount('CONFIRMED'), color: 'green' },
               { key: 'REJECTED' as const, label: 'Ditolak', count: getStatusCount('REJECTED'), color: 'red' }
             ].map(({ key, label, count, color }) => {
               const isActive = filter === key
+              const colorClasses = {
+                gray: { bg: 'bg-gray-900', badge: 'bg-white/20 text-white' },
+                yellow: { bg: 'bg-yellow-500', badge: 'bg-white/20 text-white' },
+                green: { bg: 'bg-green-500', badge: 'bg-white/20 text-white' },
+                red: { bg: 'bg-red-500', badge: 'bg-white/20 text-white' }
+              }
+              
               return (
                 <button
                   key={key}
@@ -410,7 +417,7 @@ export default function AdminRegistrations() {
                   className={`
                     flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap
                     ${isActive 
-                      ? `bg-${color === 'black' ? 'black-900' : color + '500'} text-white shadow-md transform scale-[1.02]` 
+                      ? `${colorClasses[color as keyof typeof colorClasses].bg} text-white shadow-md transform scale-[1.02]` 
                       : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
                     }
                   `}
@@ -419,8 +426,11 @@ export default function AdminRegistrations() {
                   <span className={`
                     px-2 py-0.5 rounded-md text-xs font-bold
                     ${isActive 
-                      ? 'bg-white/20 text-white' 
-                      : `bg-${color}-50 text-${color}-600`
+                      ? colorClasses[color as keyof typeof colorClasses].badge
+                      : color === 'gray' ? 'bg-gray-100 text-gray-600' 
+                      : color === 'yellow' ? 'bg-yellow-50 text-yellow-600'
+                      : color === 'green' ? 'bg-green-50 text-green-600'
+                      : 'bg-red-50 text-red-600'
                     }
                   `}>
                     {count}

@@ -273,6 +273,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     if (pathname.startsWith('/admin')) {
       if (!user) {
         router.push('/auth/login')
+      } else if (!userProfile) {
+        return
       } else if (!isAdmin) {
         router.push('/')
       }
@@ -293,7 +295,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         }
       }
     }
-  }, [user, isAdmin, loading, pathname, router])
+  }, [user, isAdmin, loading, pathname, router, userProfile])
 
   const value = {
     user,
