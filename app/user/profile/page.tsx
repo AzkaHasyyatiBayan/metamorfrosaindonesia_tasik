@@ -1,5 +1,5 @@
  'use client'
-import { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../components/AuthProvider'
@@ -570,9 +570,12 @@ export default function UserProfile() {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-6">
               <div className="text-center mb-6">
                 <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                  avatarOptions.find(a => a.id === formData.avatar)?.color || 'bg-red-100 text-red-600'
+                  avatarOptions.find((a: typeof avatarOptions[number]) => a.id === formData.avatar)?.color || 'bg-red-100 text-red-600'
                 }`}>
-                  {avatarOptions.find(a => a.id === formData.avatar)?.icon || <UserIcon />}
+                  {(() => {
+                    const IconComponent = avatarOptions.find((a: typeof avatarOptions[number]) => a.id === formData.avatar)?.icon
+                    return IconComponent ? <IconComponent /> : <UserIcon />
+                  })()}
                 </div>
                 <h3 className="font-bold text-gray-900 text-lg">{formData.name || 'User'}</h3>
                 <p className="text-gray-600 text-sm">{user?.email}</p>
@@ -721,7 +724,7 @@ export default function UserProfile() {
                       Pilih Avatar
                     </label>
                     <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                      {avatarOptions.map((avatar) => (
+                      {avatarOptions.map((avatar: typeof avatarOptions[number]) => (
                         <button
                           key={avatar.id}
                           type="button"
@@ -733,7 +736,7 @@ export default function UserProfile() {
                           }`}
                         >
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center ${avatar.color}`}>
-                            {avatar.icon}
+                            {<avatar.icon />}
                           </div>
                           <span className="text-xs mt-2 text-gray-600">{avatar.name}</span>
                         </button>

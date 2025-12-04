@@ -196,7 +196,6 @@ export async function getAllRegistrations(): Promise<RegistrationWithDetails[]> 
       .limit(100)
 
     if (error) {
-      // If relationship is missing in PostgREST schema cache, fall back
       if (error.code === 'PGRST200' || (error.message && String(error.message).includes('Could not find a relationship'))) {
         console.warn('registrations relationships missing; falling back to manual joins in getAllRegistrations')
 

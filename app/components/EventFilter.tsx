@@ -228,7 +228,6 @@ export default function EventFilter({
         </div>
       </div>
 
-      {/* Expanded Custom Date Range */}
       <div 
         className={`overflow-hidden transition-all duration-500 ease-in-out ${
           isExpanded ? 'max-h-96 opacity-100 mt-6' : 'max-h-0 opacity-0 mt-0'
@@ -236,10 +235,8 @@ export default function EventFilter({
       >
         <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
           <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wide opacity-70 text-center flex items-center justify-center gap-2">
-            {/* PERBAIKAN: h-[1px] -> h-px */}
             <span className="w-8 h-px bg-red-200"></span>
             Rentang Tanggal Custom
-            {/* PERBAIKAN: h-[1px] -> h-px */}
             <span className="w-8 h-px bg-red-200"></span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">

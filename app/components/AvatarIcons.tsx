@@ -122,18 +122,25 @@ export const CircleIcon = () => (
   </svg>
 );
 
-export const avatarOptions = [
-  { id: 'flower', icon: <FlowerIcon />, color: 'bg-linear-to-br from-pink-100 to-rose-100 text-pink-600 hover:from-pink-200 hover:to-rose-200 ring-pink-200', name: 'Bunga' },
-  { id: 'leaf', icon: <LeafIcon />, color: 'bg-linear-to-br from-green-100 to-emerald-100 text-green-600 hover:from-green-200 hover:to-emerald-200 ring-green-200', name: 'Daun' },
-  { id: 'tree', icon: <TreeIcon />, color: 'bg-linear-to-br from-emerald-100 to-teal-100 text-emerald-600 hover:from-emerald-200 hover:to-teal-200 ring-emerald-200', name: 'Pohon' },
-  { id: 'circle', icon: <CircleIcon />, color: 'bg-linear-to-br from-blue-100 to-indigo-100 text-blue-600 hover:from-blue-200 hover:to-indigo-200 ring-blue-200', name: 'Lingkaran' },
-  { id: 'star', icon: <StarIcon />, color: 'bg-linear-to-br from-yellow-100 to-amber-100 text-yellow-600 hover:from-yellow-200 hover:to-amber-200 ring-yellow-200', name: 'Bintang' },
-  { id: 'heart', icon: <HeartIcon />, color: 'bg-linear-to-br from-red-100 to-pink-100 text-red-600 hover:from-red-200 hover:to-pink-200 ring-red-200', name: 'Hati' },
-  { id: 'butterfly', icon: <ButterflyIcon />, color: 'bg-linear-to-br from-purple-100 to-fuchsia-100 text-purple-600 hover:from-purple-200 hover:to-fuchsia-200 ring-purple-200', name: 'Kupu-kupu' },
-  { id: 'mountain', icon: <MountainIcon />, color: 'bg-linear-to-br from-gray-100 to-slate-100 text-gray-600 hover:from-gray-200 hover:to-slate-200 ring-gray-200', name: 'Gunung' },
-  { id: 'sun', icon: <SunIcon />, color: 'bg-linear-to-br from-orange-100 to-yellow-100 text-orange-600 hover:from-orange-200 hover:to-yellow-200 ring-orange-200', name: 'Matahari' },
-  { id: 'fish', icon: <FishIcon />, color: 'bg-linear-to-br from-teal-100 to-cyan-100 text-teal-600 hover:from-teal-200 hover:to-cyan-200 ring-teal-200', name: 'Ikan' },
-  { id: 'dog', icon: <DogIcon />, color: 'bg-linear-to-br from-amber-200 to-yellow-200 text-amber-700 hover:from-amber-300 hover:to-yellow-300 ring-amber-200', name: 'Anjing' },
+export type AvatarOption = {
+  id: string;
+  icon: React.ComponentType;
+  color: string;
+  name: string;
+};
+
+export const avatarOptions: AvatarOption[] = [
+  { id: 'flower', icon: FlowerIcon, color: 'bg-linear-to-br from-pink-100 to-rose-100 text-pink-600 hover:from-pink-200 hover:to-rose-200 ring-pink-200', name: 'Bunga' },
+  { id: 'leaf', icon: LeafIcon, color: 'bg-linear-to-br from-green-100 to-emerald-100 text-green-600 hover:from-green-200 hover:to-emerald-200 ring-green-200', name: 'Daun' },
+  { id: 'tree', icon: TreeIcon, color: 'bg-linear-to-br from-emerald-100 to-teal-100 text-emerald-600 hover:from-emerald-200 hover:to-teal-200 ring-emerald-200', name: 'Pohon' },
+  { id: 'circle', icon: CircleIcon, color: 'bg-linear-to-br from-blue-100 to-indigo-100 text-blue-600 hover:from-blue-200 hover:to-indigo-200 ring-blue-200', name: 'Lingkaran' },
+  { id: 'star', icon: StarIcon, color: 'bg-linear-to-br from-yellow-100 to-amber-100 text-yellow-600 hover:from-yellow-200 hover:to-amber-200 ring-yellow-200', name: 'Bintang' },
+  { id: 'heart', icon: HeartIcon, color: 'bg-linear-to-br from-red-100 to-pink-100 text-red-600 hover:from-red-200 hover:to-pink-200 ring-red-200', name: 'Hati' },
+  { id: 'butterfly', icon: ButterflyIcon, color: 'bg-linear-to-br from-purple-100 to-fuchsia-100 text-purple-600 hover:from-purple-200 hover:to-fuchsia-200 ring-purple-200', name: 'Kupu-kupu' },
+  { id: 'mountain', icon: MountainIcon, color: 'bg-linear-to-br from-gray-100 to-slate-100 text-gray-600 hover:from-gray-200 hover:to-slate-200 ring-gray-200', name: 'Gunung' },
+  { id: 'sun', icon: SunIcon, color: 'bg-linear-to-br from-orange-100 to-yellow-100 text-orange-600 hover:from-orange-200 hover:to-yellow-200 ring-orange-200', name: 'Matahari' },
+  { id: 'fish', icon: FishIcon, color: 'bg-linear-to-br from-teal-100 to-cyan-100 text-teal-600 hover:from-teal-200 hover:to-cyan-200 ring-teal-200', name: 'Ikan' },
+  { id: 'dog', icon: DogIcon, color: 'bg-linear-to-br from-amber-200 to-yellow-200 text-amber-700 hover:from-amber-300 hover:to-yellow-300 ring-amber-200', name: 'Anjing' },
 ];
 
 interface AvatarSelectorProps {
@@ -170,7 +177,7 @@ export default function AvatarSelector({ value, onChange }: AvatarSelectorProps)
                 transition-transform duration-500 
                 ${isSelected ? 'animate-bounce' : 'group-hover:scale-110'}
               `}>
-                {option.icon}
+                <option.icon />
               </div>
 
               {isSelected && (
