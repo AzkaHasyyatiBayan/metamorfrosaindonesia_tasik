@@ -232,7 +232,7 @@ export default function AboutPage() {
         </h1>
         <div className="w-24 h-1.5 bg-red-600 rounded-full mx-auto mb-6 relative z-10"></div>
         <p className="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed relative z-10">
-          Mengenal lebih dekat perjalanan, nilai, dan dedikasi Metamorfrosa Indonesia dalam membangun ruang inklusif di Tasikmalaya.
+          Mengenal lebih dekat perjalanan, nilai, dan dedikasi Metamorfrosa Indonesia Tasikmalaya dalam membangun ruang inklusif di Tasikmalaya.
         </p>
       </div>
 
@@ -334,7 +334,7 @@ export default function AboutPage() {
           &quot;Karena setiap individu berhak mendapatkan kesempatan yang sama untuk berkembang dan berkarya.&quot;
         </blockquote>
         <div className="mt-4 text-red-600 font-bold tracking-wide text-sm uppercase">
-          — Metamorfrosa Indonesia
+          — Metamorfrosa Indonesia Tasikmalaya
         </div>
       </div>
 

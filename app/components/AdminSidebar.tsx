@@ -51,7 +51,6 @@ const ExpandIcon = () => (
 export default function AdminSidebar() {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [logoError, setLogoError] = useState(false)
   
   const { userProfile, loading, isAdmin } = useAuth()
 
@@ -105,21 +104,14 @@ export default function AdminSidebar() {
         
         <div className={`flex items-center ${!isCollapsed ? 'space-x-3' : 'justify-center'}`}>
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-            {!logoError ? (
-              <Image 
-                src="/logo.jpg" 
-                alt="MI"
-                width={32}
-                height={32}
-                className="w-full h-full object-cover"
-                onError={() => setLogoError(true)}
-                priority
-              />
-            ) : (
-              <div className="w-full h-full bg-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold">MI</span>
-              </div>
-            )}
+            <Image 
+              src="/Logo Metamorfrosa_Tasik_Transparan.svg" 
+              alt="MI"
+              width={32}
+              height={32}
+              className="w-full h-full object-contain"
+              priority
+            />
           </div>
           {!isCollapsed && <span className="text-white font-bold text-lg whitespace-nowrap">Admin</span>}
         </div>

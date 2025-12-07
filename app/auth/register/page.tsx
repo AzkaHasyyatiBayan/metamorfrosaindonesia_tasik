@@ -11,7 +11,6 @@ export default function RegisterPage() {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const [logoError, setLogoError] = useState(false)
   const router = useRouter()
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -43,10 +42,6 @@ export default function RegisterPage() {
     }
   }
 
-  const handleImageError = () => {
-    setLogoError(true)
-  }
-
   return (
     <div className="min-h-screen bg-linear-to-br from-red-50 via-white to-orange-50 flex items-center justify-center py-8 px-4">
       <div className="absolute inset-0 overflow-hidden">
@@ -58,19 +53,14 @@ export default function RegisterPage() {
       <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center transform transition-all duration-500 hover:scale-105">
           <div className="mx-auto w-24 h-24 rounded-2xl flex items-center justify-center mb-6">
-            {!logoError ? (
-              <Image 
-                src="/logo.jpg" 
-                alt="Metamorfosa Logo" 
-                width={100}
-                height={100}
-                className="w-16 h-16 object-contain rounded-lg"
-                onError={handleImageError}
-                priority
-              />
-            ) : (
-              <span className="text-white text-3xl font-bold">M</span>
-            )}
+            <Image 
+              src="/Logo Metamorfrosa_Tasik_Transparan.svg" 
+              alt="Metamorfosa Logo" 
+              width={100}
+              height={100}
+              className="w-16 h-16 object-contain rounded-lg"
+              priority
+            />
           </div>
           <h1 className="text-4xl font-bold mb-2 bg-linear-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
             Metamorfrosa

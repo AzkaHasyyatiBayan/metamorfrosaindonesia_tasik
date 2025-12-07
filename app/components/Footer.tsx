@@ -28,9 +28,8 @@ export default function Footer() {
               </div>
               <div>
                 <h3 className="text-2xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  Metamorfrosa
+                  Metamorfrosa Indonesia Tasikmalaya
                 </h3>
-                <p className="text-red-400 text-sm font-medium">Indonesia</p>
               </div>
             </div>
             <p className="text-gray-300 text-lg leading-relaxed max-w-2xl mb-6">

@@ -11,7 +11,6 @@ export default function Navbar() {
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [logoError, setLogoError] = useState(false)
   const pathname = usePathname()
 
   const handleLogout = async () => {
@@ -42,10 +41,10 @@ export default function Navbar() {
               </div>
               <div className="flex flex-col">
                 <span className="text-base font-bold leading-none text-gray-900">
-                  Metamorfosa
+                  Metamorfrosa Indonesia
                 </span>
                 <span className="text-[10px] font-medium tracking-wider text-red-600">
-                  INDONESIA
+                  Tasikmalaya
                 </span>
               </div>
             </div>
@@ -62,29 +61,22 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-3">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative w-12 h-12 overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100 transition-transform duration-300 group-hover:scale-105">
-                {!logoError ? (
-                  <Image
-                    src="/logo.jpg"
-                    alt="Metamorfosa Logo"
-                    fill
-                    className="object-cover transform scale-110"
-                    sizes="48px"
-                    priority
-                    onError={() => setLogoError(true)}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-linear-to-br from-red-600 to-orange-600 flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">MI</span>
-                  </div>
-                )}
+              <div className="relative w-12 h-12 overflow-hidden rounded-xl shadow-sm transition-transform duration-300 group-hover:scale-105">
+                <Image
+                  src="/Logo Metamorfrosa_Tasik_Transparan.svg"
+                  alt="Metamorfosa Logo"
+                  fill
+                  className="object-contain"
+                  sizes="48px"
+                  priority
+                />
               </div>
               <div className="flex flex-col">
                 <span className="text-base font-bold leading-none text-gray-900">
-                  Metamorfosa
+                  Metamorfrosa Indonesia
                 </span>
                 <span className="text-[10px] font-medium tracking-wider text-red-600">
-                  INDONESIA
+                  Tasikmalaya
                 </span>
               </div>
             </Link>
